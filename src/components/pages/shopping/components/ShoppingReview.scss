@@ -9,8 +9,8 @@
 
 .shopping-review-header {
 	padding: 1.5rem;
-	background: linear-gradient(135deg, var(--primary-light) 0%, #f0f9ff 100%);
-	border-bottom: 1px solid #e2e8f0;
+	background: linear-gradient(135deg, var(--primary-light) 0%, var(--info-bg) 100%);
+	border-bottom: 1px solid var(--border-color);
 }
 
 .shopping-review-header h3 {
@@ -60,7 +60,7 @@
 	gap: 0.75rem;
 	padding: 0.75rem;
 	margin-bottom: 0.5rem;
-	background: #f8fafc;
+	background: var(--surface-1);
 	border-radius: 8px;
 	cursor: pointer;
 	transition: all 0.2s;
@@ -68,18 +68,18 @@
 }
 
 .shopping-review-item:hover {
-	background: #f1f5f9;
+	background: var(--surface-2);
 }
 
 .shopping-review-item.selected {
-	background: #ecfdf5;
-	border-color: #10b981;
+	background: var(--success-bg);
+	border-color: var(--success-color);
 }
 
 .shopping-review-item input[type='checkbox'] {
 	width: 20px;
 	height: 20px;
-	accent-color: #10b981;
+	accent-color: var(--success-color);
 }
 
 .shopping-review-item-content {
@@ -105,8 +105,8 @@
 
 .shopping-review-footer {
 	padding: 1rem 1.5rem;
-	background: #f8fafc;
-	border-top: 1px solid #e2e8f0;
+	background: var(--surface-1);
+	border-top: 1px solid var(--border-color);
 	display: flex;
 	justify-content: space-between;
 	align-items: center;

@@ -116,7 +116,7 @@
 	gap: t.$space-2;
 
 	li {
-		background: #fff;
+		background: var(--surface-0);
 		border: 1px solid t.$color-slate-200;
 		border-radius: 4px;
 		padding: t.$space-1 t.$space-2;
@@ -132,7 +132,7 @@
 
 .macros-panel .macro-item {
 	background: white;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 4px;
 	padding: 0.25rem 0.5rem;
 	font-size: 0.8rem;
@@ -144,7 +144,7 @@
 
 .no-data {
 	font-size: 0.8rem;
-	color: #94a3b8;
+	color: var(--text-muted);
 	font-style: italic;
 	margin: 0;
 }
@@ -163,13 +163,13 @@
 	justify-content: space-between;
 	gap: t.$space-3;
 	padding: t.$space-2 t.$space-3;
-	background: #fff;
+	background: var(--surface-0);
 	border: 1px solid t.$color-slate-200;
 	border-radius: t.$radius-sm;
 
 	&.is-selected {
-		border-color: #22c55e;
-		background: #f0fdf4;
+		border-color: var(--success-color);
+		background: var(--success-bg);
 	}
 }
 
@@ -190,8 +190,8 @@
 
 .default-badge {
 	font-size: 0.65rem;
-	background: #fef3c7;
-	color: #b45309;
+	background: var(--warning-light);
+	color: var(--warning-fg);
 	padding: 0.1rem 0.4rem;
 	border-radius: 4px;
 	font-weight: 500;
@@ -199,8 +199,8 @@
 
 .selected-badge {
 	font-size: 0.65rem;
-	background: #dcfce7;
-	color: #16a34a;
+	background: var(--success-bg);
+	color: var(--success-color);
 	padding: 0.1rem 0.4rem;
 	border-radius: 4px;
 	font-weight: 500;
@@ -208,7 +208,7 @@
 
 .variant-macros-summary {
 	font-size: 0.75rem;
-	color: #64748b;
+	color: var(--text-secondary);
 }
 
 .variant-actions {
@@ -266,12 +266,12 @@
 
 .btn-outline {
 	background: white;
-	border: 1px solid #e2e8f0;
-	color: #64748b;
+	border: 1px solid var(--border-color);
+	color: var(--text-secondary);
 }
 
 .btn-outline:hover {
-	background: #f8fafc;
+	background: var(--surface-1);
 }
 
 .add-variant-btn {
@@ -295,7 +295,7 @@
 .new-variant-form {
 	margin-top: 0.75rem;
 	padding-top: 0.75rem;
-	border-top: 1px dashed #e2e8f0;
+	border-top: 1px dashed var(--border-color);
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
@@ -317,7 +317,7 @@
 	align-items: center;
 	gap: 0.25rem;
 	background: white;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	padding: 0.25rem 0.5rem;
 }
@@ -364,7 +364,7 @@
 	right: 0;
 	min-width: 280px;
 	background: white;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 10px;
 	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 	list-style: none;
@@ -378,11 +378,11 @@
 .suggestion-section-label {
 	font-size: 0.7rem;
 	font-weight: 600;
-	color: #64748b;
+	color: var(--text-secondary);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	padding: 0.5rem 0.75rem 0.25rem;
-	border-bottom: 1px solid #f1f5f9;
+	border-bottom: 1px solid var(--surface-2);
 	margin-bottom: 0.25rem;
 }
 
@@ -422,21 +422,21 @@
 
 .suggestion-detail {
 	font-size: 0.75rem;
-	color: #94a3b8;
+	color: var(--text-muted);
 }
 
 .suggestion-unit {
 	font-size: 0.7rem;
 	color: var(--text-secondary);
-	background: #f1f5f9;
+	background: var(--surface-2);
 	padding: 0.15rem 0.5rem;
 	border-radius: 4px;
 	flex-shrink: 0;
 }
 
 .unit-locked {
-	background-color: #f1f5f9 !important;
-	color: #64748b;
+	background-color: var(--surface-2) !important;
+	color: var(--text-secondary);
 	cursor: not-allowed;
 }
 
@@ -444,8 +444,8 @@
 	width: 32px;
 	height: 32px;
 	border: none;
-	background: #f1f5f9;
-	color: #94a3b8;
+	background: var(--surface-2);
+	color: var(--text-muted);
 	font-size: 0.9rem;
 	cursor: pointer;
 	border-radius: 6px;
@@ -456,18 +456,18 @@
 }
 
 .ingredients-macro-btn:hover {
-	background: #fef3c7;
-	color: #b45309;
+	background: var(--warning-light);
+	color: var(--warning-fg);
 }
 
 .ingredients-macro-btn.no-macros {
-	background: #fef3c7;
-	color: #b45309;
+	background: var(--warning-light);
+	color: var(--warning-fg);
 }
 
 .macros-edit-panel {
-	background: #f8fafc;
-	border: 1px solid #e2e8f0;
+	background: var(--surface-1);
+	border: 1px solid var(--border-color);
 	border-radius: 8px;
 	padding: 0.75rem;
 	margin-left: 0;
@@ -492,7 +492,7 @@
 	align-items: center;
 	gap: 0.25rem;
 	background: white;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	padding: 0.25rem 0.5rem;
 }
@@ -520,7 +520,7 @@
 	height: 36px;
 	border: none;
 	background: transparent;
-	color: #94a3b8;
+	color: var(--text-muted);
 	font-size: 1.25rem;
 	cursor: pointer;
 	border-radius: 6px;
@@ -531,8 +531,8 @@
 }
 
 .ingredients-remove-btn:hover {
-	background: #fee2e2;
-	color: #dc2626;
+	background: var(--danger-light);
+	color: var(--danger-color);
 }
 
 .ingredients-add-btn {
@@ -568,9 +568,9 @@
 .add-unit-btn {
 	width: 28px;
 	height: 28px;
-	border: 1px dashed #cbd5e1;
+	border: 1px dashed var(--border-strong);
 	background: transparent;
-	color: #64748b;
+	color: var(--text-secondary);
 	font-size: 1rem;
 	cursor: pointer;
 	border-radius: 4px;
@@ -589,7 +589,7 @@
 
 .new-unit-modal {
 	background: white;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 8px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	margin-top: 0.5rem;
@@ -600,7 +600,7 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 0.75rem 1rem;
-	border-bottom: 1px solid #e2e8f0;
+	border-bottom: 1px solid var(--border-color);
 	font-weight: 600;
 	font-size: 0.9rem;
 }
@@ -609,7 +609,7 @@
 	background: none;
 	border: none;
 	font-size: 1.25rem;
-	color: #64748b;
+	color: var(--text-secondary);
 	cursor: pointer;
 	padding: 0;
 	width: 24px;
@@ -622,8 +622,8 @@
 }
 
 .modal-close-btn:hover {
-	background: #fee2e2;
-	color: #dc2626;
+	background: var(--danger-light);
+	color: var(--danger-color);
 }
 
 .new-unit-modal-body {
@@ -681,7 +681,7 @@
 		grid-template-columns: 1fr;
 		gap: 0.5rem;
 		padding: 0.75rem;
-		background: #f8fafc;
+		background: var(--surface-1);
 		border-radius: 8px;
 	}
 }

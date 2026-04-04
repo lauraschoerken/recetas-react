@@ -1,6 +1,6 @@
 .ingredient-states-panel {
-	background: #f8fafc;
-	border: 1px solid #e2e8f0;
+	background: var(--surface-1);
+	border: 1px solid var(--border-color);
 	border-radius: 8px;
 	padding: 0.75rem 1rem;
 }
@@ -12,15 +12,15 @@
 	margin-bottom: 0.75rem;
 	font-size: 0.85rem;
 	font-weight: 600;
-	color: #475569;
+	color: var(--border-strong);
 }
 
 .add-state-btn {
 	padding: 0.25rem 0.6rem;
 	font-size: 0.75rem;
-	background: #eff6ff;
-	color: #3b82f6;
-	border: 1px solid #3b82f6;
+	background: var(--primary-light);
+	color: var(--primary-color);
+	border: 1px solid var(--primary-color);
 	border-radius: 4px;
 	cursor: pointer;
 	font-weight: 600;
@@ -28,7 +28,7 @@
 }
 
 .add-state-btn:hover {
-	background: #3b82f6;
+	background: var(--primary-color);
 	color: white;
 }
 
@@ -45,13 +45,13 @@
 	gap: 0.75rem;
 	padding: 0.5rem 0.75rem;
 	background: white;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 6px;
 }
 
 .state-row.is-selected {
-	border-color: #22c55e;
-	background: #f0fdf4;
+	border-color: var(--success-color);
+	background: var(--success-bg);
 }
 
 .state-info {
@@ -71,8 +71,8 @@
 
 .default-badge {
 	font-size: 0.65rem;
-	background: #fef3c7;
-	color: #b45309;
+	background: var(--warning-light);
+	color: var(--warning-fg);
 	padding: 0.1rem 0.4rem;
 	border-radius: 4px;
 	font-weight: 500;
@@ -80,8 +80,8 @@
 
 .selected-badge {
 	font-size: 0.65rem;
-	background: #dcfce7;
-	color: #16a34a;
+	background: var(--success-bg);
+	color: var(--success-color);
 	padding: 0.1rem 0.4rem;
 	border-radius: 4px;
 	font-weight: 500;
@@ -89,11 +89,11 @@
 
 .state-macros-summary {
 	font-size: 0.75rem;
-	color: #64748b;
+	color: var(--text-secondary);
 }
 
 .weight-factor-badge {
-	color: #7c3aed;
+	color: var(--accent-fg);
 	font-weight: 500;
 }
 
@@ -106,7 +106,7 @@
 	width: 28px;
 	height: 28px;
 	border: none;
-	background: #f1f5f9;
+	background: var(--surface-2);
 	font-size: 0.8rem;
 	cursor: pointer;
 	border-radius: 4px;
@@ -118,11 +118,11 @@
 }
 
 .state-action-btn:hover {
-	background: #e2e8f0;
+	background: var(--border-color);
 }
 
 .state-action-btn.delete:hover {
-	background: #fee2e2;
+	background: var(--danger-light);
 }
 
 .state-edit-form {
@@ -153,7 +153,7 @@
 .new-state-form {
 	margin-top: 0.75rem;
 	padding-top: 0.75rem;
-	border-top: 1px dashed #e2e8f0;
+	border-top: 1px dashed var(--border-color);
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
@@ -168,7 +168,7 @@
 	align-items: center;
 	gap: 0.25rem;
 	background: white;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	padding: 0.25rem 0.5rem;
 }
@@ -188,23 +188,23 @@
 
 .macro-input span {
 	font-size: 0.7rem;
-	color: #64748b;
+	color: var(--text-secondary);
 	font-weight: 500;
 	min-width: 30px;
 }
 
 .macro-input.weight-factor {
-	background: #f3e8ff;
-	border-color: #c4b5fd;
+	background: var(--accent-bg);
+	border-color: var(--accent-fg);
 }
 
 .macro-input.weight-factor span {
-	color: #7c3aed;
+	color: var(--accent-fg);
 }
 
 .no-data {
 	font-size: 0.8rem;
-	color: #94a3b8;
+	color: var(--text-muted);
 	font-style: italic;
 	margin: 0;
 }
@@ -216,10 +216,10 @@
 
 .btn-outline {
 	background: white;
-	border: 1px solid #e2e8f0;
-	color: #64748b;
+	border: 1px solid var(--border-color);
+	color: var(--text-secondary);
 }
 
 .btn-outline:hover {
-	background: #f8fafc;
+	background: var(--surface-1);
 }

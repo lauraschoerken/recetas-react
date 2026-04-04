@@ -64,7 +64,7 @@
 	top: 8px;
 	right: 8px;
 	background: var(--success-bg);
-	color: var(--success-fg, #fff);
+	color: var(--success-fg, var(--surface-0));
 	font-size: 0.75rem;
 	font-weight: 600;
 	padding: 0.25rem 0.5rem;

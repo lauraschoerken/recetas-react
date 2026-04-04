@@ -2,7 +2,7 @@
 	background: white;
 	border-radius: 12px;
 	padding: 1rem;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
@@ -16,7 +16,7 @@
 }
 
 .ingredient-card.editing {
-	background: #fafafa;
+	background: var(--surface-1);
 	border-color: var(--primary);
 }
 
@@ -37,8 +37,8 @@
 .ingredient-unit {
 	font-size: 0.7rem;
 	padding: 0.2rem 0.5rem;
-	background: #f1f5f9;
-	color: #64748b;
+	background: var(--surface-2);
+	color: var(--text-secondary);
 	border-radius: 4px;
 	font-weight: 500;
 }
@@ -74,63 +74,63 @@
 }
 
 .macro-calories {
-	background: #fef3c7;
+	background: var(--warning-light);
 }
 
 .macro-calories .macro-value {
-	color: #b45309;
+	color: var(--warning-fg);
 }
 
 .macro-calories .macro-label {
-	color: #92400e;
+	color: var(--warning-fg);
 }
 
 .macro-protein {
-	background: #dbeafe;
+	background: var(--info-bg);
 }
 
 .macro-protein .macro-value {
-	color: #1d4ed8;
+	color: var(--macro-protein);
 }
 
 .macro-protein .macro-label {
-	color: #1e40af;
+	color: var(--info-fg);
 }
 
 .macro-carbs {
-	background: #dcfce7;
+	background: var(--success-bg);
 }
 
 .macro-carbs .macro-value {
-	color: #15803d;
+	color: var(--success-color);
 }
 
 .macro-carbs .macro-label {
-	color: #166534;
+	color: var(--success-fg);
 }
 
 .macro-fat {
-	background: #fce7f3;
+	background: var(--danger-light);
 }
 
 .macro-fat .macro-value {
-	color: #be185d;
+	color: var(--macro-fat);
 }
 
 .macro-fat .macro-label {
-	color: #9d174d;
+	color: var(--macro-fat);
 }
 
 .macro-fiber {
-	background: #f3e8ff;
+	background: var(--accent-bg);
 }
 
 .macro-fiber .macro-value {
-	color: #7c3aed;
+	color: var(--accent-fg);
 }
 
 .macro-fiber .macro-label {
-	color: #6b21a8;
+	color: var(--accent-fg);
 }
 
 .ingredient-no-macros {
@@ -140,14 +140,14 @@
 	margin: 0;
 	text-align: center;
 	padding: 0.5rem;
-	background: #f8fafc;
+	background: var(--surface-1);
 	border-radius: 6px;
 }
 
 .variant-label {
 	grid-column: 1 / -1;
 	font-size: 0.7rem;
-	color: #64748b;
+	color: var(--text-secondary);
 	font-weight: 500;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
@@ -171,7 +171,7 @@
 }
 
 .conversions-panel {
-	background: #f8fafc;
+	background: var(--surface-1);
 	border-radius: 8px;
 	padding: 0.75rem;
 	display: flex;
@@ -194,7 +194,7 @@
 	padding: 0.25rem 0.5rem;
 	background: white;
 	border-radius: 4px;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 }
 
 .btn-icon-small {
@@ -212,8 +212,8 @@
 }
 
 .btn-icon-small:hover {
-	background: #fee2e2;
-	color: #dc2626;
+	background: var(--danger-light);
+	color: var(--danger-color);
 }
 
 .add-conversion-form {
@@ -224,8 +224,8 @@
 }
 
 .preferred-unit-section {
-	background: #eff6ff;
-	border: 1px solid #bfdbfe;
+	background: var(--primary-light);
+	border: 1px solid var(--info-bg);
 	border-radius: 6px;
 	padding: 0.5rem 0.75rem;
 	margin-top: 0.25rem;
@@ -236,7 +236,7 @@
 	align-items: center;
 	gap: 0.5rem;
 	font-size: 0.75rem;
-	color: #1e40af;
+	color: var(--info-fg);
 }
 
 .preferred-unit-label span {
@@ -246,7 +246,7 @@
 .form-select-sm {
 	padding: 0.25rem 0.5rem;
 	font-size: 0.75rem;
-	border: 1px solid #93c5fd;
+	border: 1px solid var(--info-bg);
 	border-radius: 4px;
 	background: white;
 	flex: 1;
@@ -269,7 +269,7 @@
 	justify-content: flex-end;
 	margin-top: auto;
 	padding-top: 0.5rem;
-	border-top: 1px solid #f1f5f9;
+	border-top: 1px solid var(--surface-2);
 }
 
 .ingredient-edit-form {
@@ -288,8 +288,8 @@
 .unit-display {
 	font-size: 0.85rem;
 	padding: 0.4rem 0.6rem;
-	background: #f1f5f9;
-	color: #64748b;
+	background: var(--surface-2);
+	color: var(--text-secondary);
 	border-radius: 6px;
 	font-weight: 500;
 }
@@ -315,7 +315,7 @@
 	height: 40px;
 	object-fit: cover;
 	border-radius: 6px;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 }
 
 .ingredient-macros-grid {
@@ -352,7 +352,7 @@
 	width: 30px;
 	height: 30px;
 	border: none;
-	background: #f8fafc;
+	background: var(--surface-1);
 	color: var(--text-secondary);
 	cursor: pointer;
 	border-radius: 6px;
@@ -363,17 +363,17 @@
 }
 
 .btn-icon:hover {
-	background: #e0e7ff;
+	background: var(--primary-light);
 	color: var(--primary);
 }
 
 .btn-icon-danger:hover {
-	background: #fee2e2;
-	color: #dc2626;
+	background: var(--danger-light);
+	color: var(--danger-color);
 }
 
 .variants-panel {
-	background: #f8fafc;
+	background: var(--surface-1);
 	border-radius: 8px;
 	padding: 0.75rem;
 	display: flex;
@@ -394,12 +394,12 @@
 	padding: 0.5rem;
 	background: white;
 	border-radius: 6px;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 }
 
 .variant-item.is-default {
-	border-color: #86efac;
-	background: #f0fdf4;
+	border-color: var(--success-bg);
+	background: var(--success-bg);
 }
 
 .variant-info {
@@ -422,7 +422,7 @@
 .default-badge {
 	font-size: 0.6rem;
 	padding: 0.1rem 0.35rem;
-	background: #22c55e;
+	background: var(--success-color);
 	color: white;
 	border-radius: 4px;
 	font-weight: 500;
@@ -430,7 +430,7 @@
 
 .variant-macros-summary {
 	font-size: 0.7rem;
-	color: #64748b;
+	color: var(--text-secondary);
 }
 
 .variant-actions {
@@ -452,16 +452,16 @@
 }
 
 .weight-factor-input {
-	background: #f3e8ff !important;
-	border-color: #c4b5fd !important;
+	background: var(--accent-bg) !important;
+	border-color: var(--accent-fg) !important;
 }
 
 .weight-factor-input::placeholder {
-	color: #7c3aed;
+	color: var(--accent-fg);
 }
 
 .weight-factor-badge {
-	color: #7c3aed;
+	color: var(--accent-fg);
 	font-weight: 600;
 }
 
@@ -474,7 +474,7 @@
 .new-variant-form {
 	margin-top: 0.5rem;
 	padding-top: 0.75rem;
-	border-top: 1px dashed #cbd5e1;
+	border-top: 1px dashed var(--border-strong);
 }
 
 .add-variant-btn {
@@ -483,8 +483,8 @@
 }
 
 .btn-icon-small.btn-danger:hover {
-	background: #fee2e2;
-	color: #dc2626;
+	background: var(--danger-light);
+	color: var(--danger-color);
 }
 
 @media (max-width: 480px) {

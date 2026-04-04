@@ -3,7 +3,7 @@
 	flex-direction: column;
 	gap: 1rem;
 	padding: 1rem;
-	background: #f8fafc;
+	background: var(--surface-1);
 	border-radius: 12px;
 	margin-bottom: 1rem;
 }
@@ -22,7 +22,7 @@
 .item-type-btn {
 	flex: 1;
 	padding: 0.625rem 1rem;
-	border: 2px solid #e2e8f0;
+	border: 2px solid var(--border-color);
 	background: white;
 	border-radius: 8px;
 	font-weight: 500;
@@ -56,7 +56,7 @@
 	left: 0;
 	right: 0;
 	background: white;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 8px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	list-style: none;
@@ -84,7 +84,7 @@
 .ingredient-autocomplete .suggestion-unit {
 	font-size: 0.75rem;
 	color: var(--text-secondary);
-	background: #f1f5f9;
+	background: var(--surface-2);
 	padding: 0.125rem 0.5rem;
 	border-radius: 4px;
 }
@@ -103,12 +103,12 @@
 
 .variant-select {
 	flex: 1;
-	background: #f3e8ff;
-	border-color: #c4b5fd;
+	background: var(--accent-bg);
+	border-color: var(--accent-fg);
 }
 
 .variant-select:focus {
-	border-color: #7c3aed;
+	border-color: var(--accent-fg);
 	box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 

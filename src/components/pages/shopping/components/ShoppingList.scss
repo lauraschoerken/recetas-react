@@ -22,8 +22,8 @@
 }
 
 .excluded-items-card {
-	background: #fef3c7;
-	border-left: 4px solid #f59e0b;
+	background: var(--warning-light);
+	border-left: 4px solid var(--warning-color);
 }
 
 .excluded-items-list {
@@ -38,7 +38,7 @@
 	gap: 0.5rem;
 	padding: 0.5rem 0.75rem;
 	background: white;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 20px;
 	font-size: 0.85rem;
 	cursor: pointer;
@@ -46,14 +46,14 @@
 }
 
 .excluded-item-tag:hover {
-	background: #ecfdf5;
-	border-color: #10b981;
+	background: var(--success-bg);
+	border-color: var(--success-color);
 }
 
 .restore-icon {
 	width: 18px;
 	height: 18px;
-	background: #10b981;
+	background: var(--success-color);
 	color: white;
 	border-radius: 50%;
 	display: flex;

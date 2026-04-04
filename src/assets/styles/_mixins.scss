@@ -1,20 +1,20 @@
 @mixin theme-light {
-	--bg: #ffffff;
-	--fg: #0f172a;
-	--border: #e5e7eb;
+	--bg: var(--surface-0);
+	--fg: var(--text-primary);
+	--border: var(--border-color);
 
-	--bg-hover: #e2e2e2;
-	--fg-hover: #273147;
+	--bg-hover: var(--surface-2);
+	--fg-hover: var(--text-primary);
 
-	--success-bg: #00ff22fb;
+	--success-bg: var(--success-bg);
 
-	--btn-primary-bg: #2563eb;
-	--btn-primary-fg: #ffffff;
-	--btn-primary-bg-hover: #1d4ed8;
+	--btn-primary-bg: var(--macro-protein);
+	--btn-primary-fg: var(--surface-0);
+	--btn-primary-bg-hover: var(--primary-hover);
 
-	--btn-secondary-bg: #ff0000;
-	--btn-secondary-fg: #ffffff;
-	--btn-secondary-bg-hover: #df0000;
+	--btn-secondary-bg: var(--danger-color);
+	--btn-secondary-fg: var(--surface-0);
+	--btn-secondary-bg-hover: var(--danger-fg);
 
 	--card-radius: 12px;
 	--shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -23,22 +23,22 @@
 }
 
 @mixin theme-dark {
-	--bg: #0f172a;
-	--fg: #e5e7eb;
-	--border: #1f2937;
+	--bg: var(--surface-1);
+	--fg: var(--text-primary);
+	--border: var(--border-color);
 
-	--bg-hover: #273147;
-	--fg-hover: #e2e2e2;
+	--bg-hover: var(--surface-2);
+	--fg-hover: var(--text-primary);
 
-	--success-bg: #00ff22fb;
+	--success-bg: var(--success-bg);
 
-	--btn-primary-bg: #3b83f6cb;
-	--btn-primary-fg: #ffffff;
-	--btn-primary-bg-hover: #60a5faa4;
+	--btn-primary-bg: var(--primary-color);
+	--btn-primary-fg: var(--surface-0);
+	--btn-primary-bg-hover: var(--primary-hover);
 
-	--btn-secondary-bg: #ff00009f;
-	--btn-secondary-fg: #ffffff;
-	--btn-secondary-bg-hover: #df000091;
+	--btn-secondary-bg: var(--danger-color);
+	--btn-secondary-fg: var(--surface-0);
+	--btn-secondary-bg-hover: var(--danger-fg);
 
 	--card-radius: 12px;
 	--shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);

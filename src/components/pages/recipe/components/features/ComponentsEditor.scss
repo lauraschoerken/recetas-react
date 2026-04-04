@@ -43,7 +43,7 @@
 	padding: t.$space-2 t.$space-3;
 	font-size: 0.95rem;
 	font-weight: 500;
-	background: #fff;
+	background: var(--surface-0);
 
 	&:focus {
 		@include t.focus-ring;
@@ -75,7 +75,7 @@
 }
 
 .included-flag {
-	color: #059669;
+	color: var(--success-color);
 }
 
 .variant-remove-btn {
@@ -111,10 +111,10 @@
 	margin-bottom: 0.5rem;
 	font-size: 0.65rem;
 	font-weight: 700;
-	color: #94a3b8;
+	color: var(--text-muted);
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
-	border-bottom: 1px solid #f1f5f9;
+	border-bottom: 1px solid var(--surface-2);
 }
 
 .option-container {
@@ -138,7 +138,7 @@
 }
 
 .option-row.is-default {
-	background: #f0fdf4;
+	background: var(--success-bg);
 }
 
 .option-main {
@@ -152,7 +152,7 @@
 	width: 16px;
 	height: 16px;
 	cursor: pointer;
-	accent-color: #22c55e;
+	accent-color: var(--success-color);
 	flex-shrink: 0;
 }
 
@@ -165,7 +165,7 @@
 	width: 28px;
 	height: 28px;
 	border: 1px solid t.$color-slate-200;
-	background: #fff;
+	background: var(--surface-0);
 	border-radius: t.$radius-sm;
 	font-size: 0.9rem;
 	cursor: pointer;
@@ -177,17 +177,17 @@
 
 	&:hover {
 		background: t.$color-slate-100;
-		border-color: #cbd5e1;
+		border-color: var(--border-strong);
 	}
 
 	&.is-ingredient {
-		background: #f0fdf4;
-		border-color: #86efac;
+		background: var(--success-bg);
+		border-color: var(--success-bg);
 	}
 
 	&.is-recipe {
 		background: t.$color-warning-50;
-		border-color: #fcd34d;
+		border-color: var(--warning-light);
 	}
 }
 
@@ -215,7 +215,7 @@
 	left: 0;
 	right: auto;
 	min-width: 300px;
-	background: #fff;
+	background: var(--surface-0);
 	border: 1px solid t.$color-slate-200;
 	border-radius: 10px;
 	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
@@ -230,11 +230,11 @@
 .suggestion-section-label {
 	font-size: 0.7rem;
 	font-weight: 600;
-	color: #64748b;
+	color: var(--text-secondary);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	padding: 0.5rem 0.75rem 0.25rem;
-	border-bottom: 1px solid #f1f5f9;
+	border-bottom: 1px solid var(--surface-2);
 	margin-bottom: 0.25rem;
 }
 
@@ -274,13 +274,13 @@
 
 .suggestion-detail {
 	font-size: 0.75rem;
-	color: #94a3b8;
+	color: var(--text-muted);
 }
 
 .suggestion-unit {
 	font-size: 0.7rem;
-	color: #64748b;
-	background: #f1f5f9;
+	color: var(--text-secondary);
+	background: var(--surface-2);
 	padding: 0.15rem 0.5rem;
 	border-radius: 4px;
 	flex-shrink: 0;
@@ -301,7 +301,7 @@
 
 .unit-label {
 	font-size: 0.8rem;
-	color: #64748b;
+	color: var(--text-secondary);
 }
 
 .option-actions {
@@ -314,7 +314,7 @@
 	width: 26px;
 	height: 26px;
 	border: none;
-	background: #f1f5f9;
+	background: var(--surface-2);
 	font-size: 0.8rem;
 	cursor: pointer;
 	border-radius: 4px;
@@ -326,7 +326,7 @@
 }
 
 .option-icon-btn:hover {
-	background: #e0f2fe;
+	background: var(--info-bg);
 }
 
 .option-remove-btn {
@@ -334,7 +334,7 @@
 	height: 26px;
 	border: none;
 	background: transparent;
-	color: #94a3b8;
+	color: var(--text-muted);
 	font-size: 1.1rem;
 	cursor: pointer;
 	border-radius: 4px;
@@ -344,14 +344,14 @@
 }
 
 .option-remove-btn:hover {
-	background: #fee2e2;
-	color: #dc2626;
+	background: var(--danger-light);
+	color: var(--danger-color);
 }
 
 .option-info-panel {
 	grid-column: 1 / -1;
-	background: #f8fafc;
-	border: 1px solid #e2e8f0;
+	background: var(--surface-1);
+	border: 1px solid var(--border-color);
 	border-radius: 8px;
 	padding: 0.75rem 1rem;
 	margin-top: 0.25rem;
@@ -360,7 +360,7 @@
 .option-info-panel .info-panel-header {
 	font-size: 0.8rem;
 	font-weight: 600;
-	color: #64748b;
+	color: var(--text-secondary);
 	margin-bottom: 0.5rem;
 	display: flex;
 	align-items: center;
@@ -370,13 +370,13 @@
 
 .option-info-panel .variant-label {
 	font-weight: 400;
-	color: #3b82f6;
+	color: var(--primary-color);
 }
 
 .variant-select-mini {
 	padding: 0.2rem 0.4rem;
 	font-size: 0.75rem;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 4px;
 	background: white;
 }
@@ -385,9 +385,9 @@
 	margin-left: auto;
 	padding: 0.2rem 0.5rem;
 	font-size: 0.7rem;
-	background: #eff6ff;
-	color: #3b82f6;
-	border: 1px solid #3b82f6;
+	background: var(--primary-light);
+	color: var(--primary-color);
+	border: 1px solid var(--primary-color);
 	border-radius: 4px;
 	cursor: pointer;
 	font-weight: 600;
@@ -395,7 +395,7 @@
 }
 
 .add-state-btn:hover {
-	background: #3b82f6;
+	background: var(--primary-color);
 	color: white;
 }
 
@@ -410,7 +410,7 @@
 
 .conversions-list li {
 	background: white;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 4px;
 	padding: 0.25rem 0.5rem;
 	font-size: 0.8rem;
@@ -424,19 +424,19 @@
 
 .macros-panel .macro-item {
 	background: white;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 4px;
 	padding: 0.2rem 0.4rem;
 	font-size: 0.75rem;
 }
 
 .macros-panel .macro-item strong {
-	color: #3b82f6;
+	color: var(--primary-color);
 }
 
 .no-data {
 	font-size: 0.8rem;
-	color: #94a3b8;
+	color: var(--text-muted);
 	font-style: italic;
 	margin: 0;
 }
@@ -444,7 +444,7 @@
 .new-variant-form {
 	margin-top: 0.75rem;
 	padding-top: 0.75rem;
-	border-top: 1px dashed #e2e8f0;
+	border-top: 1px dashed var(--border-color);
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
@@ -466,7 +466,7 @@
 	align-items: center;
 	gap: 0.25rem;
 	background: white;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	padding: 0.25rem 0.5rem;
 }
@@ -486,7 +486,7 @@
 
 .macro-input span {
 	font-size: 0.65rem;
-	color: #64748b;
+	color: var(--text-secondary);
 	font-weight: 500;
 	min-width: 28px;
 }
@@ -504,14 +504,14 @@
 	margin-top: 0.5rem;
 	border: none;
 	background: transparent;
-	color: #3b82f6;
+	color: var(--primary-color);
 	font-size: 0.85rem;
 	cursor: pointer;
 	border-radius: 4px;
 }
 
 .add-option-btn:hover {
-	background: #eff6ff;
+	background: var(--primary-light);
 }
 
 .add-variant-btn {
@@ -576,8 +576,8 @@
 		grid-template-columns: 1fr;
 		gap: 0.35rem;
 		padding: 0.5rem;
-		background: #fafafa;
-		border: 1px solid #e5e7eb;
+		background: var(--surface-1);
+		border: 1px solid var(--border-color);
 		border-radius: 6px;
 		margin: 0.25rem 0;
 	}

@@ -13,8 +13,8 @@
 }
 
 .shopping-item-covered {
-	background-color: #ecfdf5;
-	border: 1px solid #a7f3d0;
+	background-color: var(--success-bg);
+	border: 1px solid var(--success-bg);
 }
 
 .shopping-item-label {
@@ -57,7 +57,7 @@
 }
 
 .shopping-item-athome {
-	color: #10b981;
+	color: var(--success-color);
 	font-weight: 500;
 }
 
@@ -85,7 +85,7 @@
 }
 
 .shopping-item-tobuy-zero {
-	color: #10b981;
+	color: var(--success-color);
 }
 
 .shopping-item-covered-text {
@@ -104,7 +104,7 @@
 	margin-right: 0.5rem;
 	border: none;
 	background: transparent;
-	color: #94a3b8;
+	color: var(--text-muted);
 	font-size: 1.25rem;
 	cursor: pointer;
 	border-radius: 6px;
@@ -120,6 +120,6 @@
 }
 
 .shopping-item-exclude:hover {
-	background: #fee2e2;
-	color: #dc2626;
+	background: var(--danger-light);
+	color: var(--danger-color);
 }

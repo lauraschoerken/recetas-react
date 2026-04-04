@@ -18,7 +18,7 @@
 }
 
 .item-card-dish {
-	border-left: 3px solid #8b5cf6;
+	border-left: 3px solid var(--dish-accent);
 }
 
 .item-card-header {
@@ -52,7 +52,7 @@
 }
 
 .item-card-dish .item-card-title a:hover {
-	color: #8b5cf6;
+	color: var(--dish-accent);
 }
 
 .item-card-badges {
@@ -73,25 +73,25 @@
 }
 
 .badge-variants {
-	background-color: #ede9fe;
-	color: #6d28d9;
+	background-color: var(--accent-bg);
+	color: var(--accent-fg);
 }
 
 .badge-public {
-	background-color: #dcfce7;
-	color: #166534;
+	background-color: var(--success-bg);
+	color: var(--success-fg);
 }
 
 .badge-private {
-	background-color: #fef3c7;
-	color: #92400e;
+	background-color: var(--warning-light);
+	color: var(--warning-fg);
 }
 
 .item-card-image {
 	width: 100%;
 	height: 120px;
 	overflow: hidden;
-	background: #f1f5f9;
+	background: var(--surface-2);
 	flex-shrink: 0;
 }
 
@@ -110,7 +110,7 @@
 }
 
 .item-card-dish .item-card-author {
-	color: #8b5cf6;
+	color: var(--dish-accent);
 }
 
 .item-card-description {
@@ -139,8 +139,8 @@
 .item-card-calories {
 	font-size: 0.7rem;
 	font-weight: 600;
-	color: #d97706;
-	background: #fef3c7;
+	color: var(--macro-calories);
+	background: var(--warning-light);
 	padding: 0.2rem 0.4rem;
 	border-radius: 4px;
 }
@@ -177,12 +177,12 @@
 }
 
 .btn-icon-primary {
-	background: linear-gradient(135deg, var(--primary-color) 0%, #6366f1 100%);
+	background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color) 100%);
 	color: white;
 }
 
 .item-card-dish .btn-icon-primary {
-	background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+	background: linear-gradient(135deg, var(--dish-accent) 0%, var(--primary-color) 100%);
 }
 
 .btn-icon-primary:hover {
@@ -193,7 +193,7 @@
 .btn-icon-outline {
 	background: white;
 	color: var(--text-secondary);
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 }
 
 .btn-icon-outline:hover {
@@ -203,21 +203,21 @@
 }
 
 .item-card-dish .btn-icon-outline:hover {
-	border-color: #8b5cf6;
-	color: #8b5cf6;
-	background: #ede9fe;
+	border-color: var(--dish-accent);
+	color: var(--dish-accent);
+	background: var(--accent-bg);
 }
 
 .btn-icon-danger {
 	background: white;
-	color: #94a3b8;
-	border: 1px solid #e2e8f0;
+	color: var(--text-muted);
+	border: 1px solid var(--border-color);
 }
 
 .btn-icon-danger:hover {
-	border-color: #ef4444;
-	color: #ef4444;
-	background: #fef2f2;
+	border-color: var(--danger-color);
+	color: var(--danger-color);
+	background: var(--danger-light);
 }
 
 @media (max-width: 480px) {

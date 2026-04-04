@@ -174,7 +174,7 @@
 
 /* Nutrition Card */
 .recipe-nutrition-card {
-	background: linear-gradient(135deg, var(--primary-light) 0%, #f0fdf4 100%);
+	background: linear-gradient(135deg, var(--primary-light) 0%, var(--success-bg) 100%);
 	border: 1px solid var(--primary-color);
 	border-radius: var(--radius);
 	padding: 1.25rem;
@@ -223,19 +223,19 @@
 }
 
 .nutrition-item.protein .nutrition-value {
-	color: #3b82f6;
+	color: var(--primary-color);
 }
 
 .nutrition-item.carbs .nutrition-value {
-	color: #f59e0b;
+	color: var(--warning-color);
 }
 
 .nutrition-item.fat .nutrition-value {
-	color: #ef4444;
+	color: var(--danger-color);
 }
 
 .nutrition-item.fiber .nutrition-value {
-	color: #10b981;
+	color: var(--success-color);
 }
 
 .nutrition-total {

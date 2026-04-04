@@ -7,7 +7,7 @@
 	background: white;
 	border-radius: 12px;
 	padding: 1rem;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--border-color);
 	margin-bottom: 0.5rem;
 }
 
@@ -19,10 +19,10 @@
 	margin-bottom: 0.5rem;
 	font-size: 0.7rem;
 	font-weight: 700;
-	color: #94a3b8;
+	color: var(--text-muted);
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
-	border-bottom: 1px solid #e2e8f0;
+	border-bottom: 1px solid var(--border-color);
 }
 
 .included-recipes-body {
@@ -48,7 +48,7 @@
 	height: 36px;
 	border: none;
 	background: transparent;
-	color: #94a3b8;
+	color: var(--text-muted);
 	font-size: 1.25rem;
 	cursor: pointer;
 	border-radius: 6px;
@@ -59,8 +59,8 @@
 }
 
 .included-recipes-remove-btn:hover {
-	background: #fee2e2;
-	color: #dc2626;
+	background: var(--danger-light);
+	color: var(--danger-color);
 }
 
 .included-recipes-add-btn {
@@ -92,7 +92,7 @@
 		grid-template-columns: 1fr;
 		gap: 0.5rem;
 		padding: 0.75rem;
-		background: #f8fafc;
+		background: var(--surface-1);
 		border-radius: 8px;
 	}
 }

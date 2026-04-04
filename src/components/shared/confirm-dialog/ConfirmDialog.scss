@@ -86,10 +86,10 @@
 }
 
 .btn-danger {
-	background-color: #dc2626;
+	background-color: var(--danger-color);
 	color: white;
 }
 
 .btn-danger:hover {
-	background-color: #b91c1c;
+	background-color: var(--danger-fg);
 }

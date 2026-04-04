@@ -123,19 +123,19 @@
 	height: 100%;
 	border-radius: 4px;
 	transition: width 0.3s ease;
-	background: #d97706;
+	background: var(--macro-calories);
 }
 
 .progress-fill.protein {
-	background: #2563eb;
+	background: var(--macro-protein);
 }
 
 .progress-fill.carbs {
-	background: #16a34a;
+	background: var(--success-color);
 }
 
 .progress-fill.fat {
-	background: #db2777;
+	background: var(--macro-fat);
 }
 
 .progress-fill.progress-low {
@@ -147,7 +147,7 @@
 }
 
 .progress-fill.progress-high {
-	background: #ef4444 !important;
+	background: var(--danger-color) !important;
 }
 
 .nutrition-empty {
@@ -200,19 +200,19 @@
 }
 
 .stat-value.calories {
-	color: #d97706;
+	color: var(--macro-calories);
 }
 
 .stat-value.protein {
-	color: #2563eb;
+	color: var(--macro-protein);
 }
 
 .stat-value.carbs {
-	color: #16a34a;
+	color: var(--success-color);
 }
 
 .stat-value.fat {
-	color: #db2777;
+	color: var(--macro-fat);
 }
 
 .stat-label {
@@ -256,52 +256,52 @@
 }
 
 .nutrition-macro.macro-calories {
-	background: #fef3c7;
+	background: var(--warning-light);
 }
 
 .nutrition-macro.macro-calories .nutrition-value {
 	font-size: 2rem;
-	color: #d97706;
+	color: var(--macro-calories);
 }
 
 .nutrition-macro.macro-calories .nutrition-label {
-	color: #92400e;
+	color: var(--warning-fg);
 }
 
 .nutrition-macro.macro-protein {
-	background: #dbeafe;
+	background: var(--info-bg);
 }
 
 .nutrition-macro.macro-protein .nutrition-value {
-	color: #2563eb;
+	color: var(--macro-protein);
 }
 
 .nutrition-macro.macro-protein .nutrition-label {
-	color: #1e40af;
+	color: var(--info-fg);
 }
 
 .nutrition-macro.macro-carbs {
-	background: #dcfce7;
+	background: var(--success-bg);
 }
 
 .nutrition-macro.macro-carbs .nutrition-value {
-	color: #16a34a;
+	color: var(--success-color);
 }
 
 .nutrition-macro.macro-carbs .nutrition-label {
-	color: #166534;
+	color: var(--success-fg);
 }
 
 .nutrition-macro.macro-fat {
-	background: #fce7f3;
+	background: var(--danger-light);
 }
 
 .nutrition-macro.macro-fat .nutrition-value {
-	color: #db2777;
+	color: var(--macro-fat);
 }
 
 .nutrition-macro.macro-fat .nutrition-label {
-	color: #9d174d;
+	color: var(--macro-fat);
 }
 
 .nutrition-with-chart {
@@ -377,15 +377,15 @@
 }
 
 .legend-color.protein {
-	background: #2563eb;
+	background: var(--macro-protein);
 }
 
 .legend-color.carbs {
-	background: #16a34a;
+	background: var(--success-color);
 }
 
 .legend-color.fat {
-	background: #db2777;
+	background: var(--macro-fat);
 }
 
 .legend-text {

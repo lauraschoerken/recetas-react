@@ -86,7 +86,7 @@
 		position: relative;
 		width: 48px;
 		height: 26px;
-		background-color: #cbd5e1;
+		background-color: var(--border-strong);
 		border-radius: 26px;
 		transition: background-color 0.3s;
 		flex-shrink: 0;
@@ -98,7 +98,7 @@
 			left: 3px;
 			width: 20px;
 			height: 20px;
-			background-color: #fff;
+			background-color: var(--surface-0);
 			border-radius: 50%;
 			transition: transform 0.3s;
 			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -127,7 +127,7 @@
 
 	&.is-public {
 		background: t.$color-success-50;
-		border: 1px solid #86efac;
+		border: 1px solid var(--success-bg);
 
 		.toggle-text,
 		.visibility-hint {
@@ -144,7 +144,7 @@
 
 .ingredients-section {
 	margin-top: t.$space-2;
-	background: #fff;
+	background: var(--surface-0);
 	border-radius: var(--radius);
 	padding: t.$space-4;
 	box-shadow: inset 0 0 0 1px t.$color-slate-200;
@@ -162,7 +162,7 @@
 	margin-bottom: t.$space-2;
 	font-size: 0.7rem;
 	font-weight: 700;
-	color: #94a3b8;
+	color: var(--text-muted);
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 	border-bottom: 1px solid t.$color-slate-200;
@@ -214,18 +214,18 @@
 	}
 
 	&.protein {
-		background: #dbeafe;
-		color: #1e40af;
+		background: var(--info-bg);
+		color: var(--info-fg);
 	}
 
 	&.carbs {
-		background: #ede9fe;
-		color: #5b21b6;
+		background: var(--accent-bg);
+		color: var(--accent-fg);
 	}
 
 	&.fat {
 		background: t.$color-danger-50;
-		color: #991b1b;
+		color: var(--danger-fg);
 	}
 
 	&.fiber {

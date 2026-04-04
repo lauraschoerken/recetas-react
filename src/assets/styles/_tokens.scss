@@ -1,23 +1,23 @@
-$color-slate-50: #f8fafc;
-$color-slate-100: #f1f5f9;
-$color-slate-200: #e2e8f0;
-$color-slate-400: #94a3b8;
-$color-slate-500: #64748b;
-$color-slate-800: #1e293b;
+$color-slate-50: var(--surface-1);
+$color-slate-100: var(--surface-2);
+$color-slate-200: var(--border-color);
+$color-slate-400: var(--text-muted);
+$color-slate-500: var(--text-secondary);
+$color-slate-800: var(--text-primary);
 
-$color-primary-50: #eff6ff;
-$color-primary-500: #3b82f6;
-$color-primary-600: #2563eb;
+$color-primary-50: var(--primary-light);
+$color-primary-500: var(--primary-color);
+$color-primary-600: var(--macro-protein);
 
-$color-success-50: #dcfce7;
-$color-success-600: #16a34a;
-$color-success-700: #166534;
+$color-success-50: var(--success-bg);
+$color-success-600: var(--success-color);
+$color-success-700: var(--success-fg);
 
-$color-danger-50: #fee2e2;
-$color-danger-700: #b91c1c;
+$color-danger-50: var(--danger-light);
+$color-danger-700: var(--danger-fg);
 
-$color-warning-50: #fef3c7;
-$color-warning-700: #92400e;
+$color-warning-50: var(--warning-light);
+$color-warning-700: var(--warning-fg);
 
 $space-1: 0.25rem;
 $space-2: 0.5rem;
@@ -37,7 +37,7 @@ $bp-sm: 600px;
 }
 
 @mixin card-surface {
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid $color-slate-200;
 	border-radius: $radius-lg;
 }
