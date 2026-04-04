@@ -1,6 +1,6 @@
 import './NutritionEditor.css'
 
-import { useEffect, useMemo,useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { IngredientVariant } from '@/services/recipe'
 

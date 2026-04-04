@@ -1,6 +1,6 @@
 import './StepsList.css'
 
-import { useEffect,useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface StepsListProps {
 	steps: string[]

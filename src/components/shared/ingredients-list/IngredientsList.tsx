@@ -1,10 +1,12 @@
 import './IngredientsList.css'
 
-import { useEffect, useRef,useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
+import {
+	IngredientStatesPanel,
+	IngredientVariant,
+} from '@/components/shared/ingredient-states-panel'
 import { api } from '@/services/api'
-
-import { IngredientStatesPanel, IngredientVariant } from './IngredientStatesPanel'
 
 interface UnitConversion {
 	id: number

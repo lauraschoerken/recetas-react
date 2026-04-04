@@ -1,39 +1,7 @@
+import type { DailyNutrition, Ingredient, IngredientVariant, UnitConversion } from '@/models'
 import { api } from '@/services/api'
 
-export interface UnitConversion {
-	id: number
-	unitName: string
-	gramsPerUnit: number
-	ingredientId: number
-}
-
-export interface IngredientVariant {
-	id: number
-	name: string
-	isDefault: boolean
-	calories?: number | null
-	protein?: number | null
-	carbs?: number | null
-	fat?: number | null
-	fiber?: number | null
-	weightFactor: number
-	ingredientId: number
-}
-
-export interface Ingredient {
-	id: number
-	name: string
-	unit: string
-	preferredUnit?: string | null
-	imageUrl?: string | null
-	calories?: number | null
-	protein?: number | null
-	carbs?: number | null
-	fat?: number | null
-	fiber?: number | null
-	conversions?: UnitConversion[]
-	variants?: IngredientVariant[]
-}
+export type { DailyNutrition, Ingredient, IngredientVariant, UnitConversion } from '@/models'
 
 export interface CreateIngredientData {
 	name: string
@@ -73,14 +41,6 @@ export interface UpdateVariantData {
 export interface CreateConversionData {
 	unitName: string
 	gramsPerUnit: number
-}
-
-export interface DailyNutrition {
-	calories: number
-	protein: number
-	carbs: number
-	fat: number
-	fiber: number
 }
 
 class IngredientService {

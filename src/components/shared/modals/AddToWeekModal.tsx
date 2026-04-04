@@ -1,6 +1,6 @@
-import { useCallback,useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { Modal } from '@/components/shared/Modal'
+import { Modal } from '@/components/shared/modal'
 import { Recipe, recipeService } from '@/services/recipe'
 import { shoppingService, WeekPlanType } from '@/services/shopping'
 import { useDialog } from '@/utils/dialog/DialogContext'
@@ -146,7 +146,7 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 	const updateComponentSelection = async (
 		componentId: number,
 		field: 'enabled' | 'selectedOptionId',
-		value: any
+		value: boolean | number | null
 	) => {
 		// Find the component being updated
 		const comp = componentSelections.find((cs) => cs.componentId === componentId)

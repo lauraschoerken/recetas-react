@@ -1,8 +1,11 @@
 import './ComponentsEditor.css'
 
-import { useEffect, useRef,useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-import { IngredientStatesPanel, IngredientVariant } from '@/components/shared/IngredientStatesPanel'
+import {
+	IngredientStatesPanel,
+	IngredientVariant,
+} from '@/components/shared/ingredient-states-panel'
 import { api } from '@/services/api'
 import {
 	CreateComponentData,
@@ -39,6 +42,7 @@ interface ComponentsEditorProps {
 }
 
 type OptionType = 'recipe' | 'ingredient'
+type IngredientOptionField = 'ingredientName' | 'quantity' | 'unit'
 
 function getOptionType(opt: CreateComponentOptionData): OptionType {
 	const hasRecipeId = 'recipeId' in opt
@@ -142,7 +146,11 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 		onChange(updated)
 	}
 
-	const updateComponent = (index: number, field: keyof CreateComponentData, value: any) => {
+	const updateComponent = (
+		index: number,
+		field: keyof CreateComponentData,
+		value: CreateComponentData[keyof CreateComponentData]
+	) => {
 		const updated = [...components]
 		if (field === 'name' && typeof value === 'string') {
 			value = capitalizeFirst(value)
@@ -180,7 +188,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 		const updated = JSON.parse(JSON.stringify(components))
 		const oldOption = updated[compIndex].options[optIndex]
 
-		const newOption: any = {
+		const newOption: CreateComponentOptionData = {
 			name: oldOption.name || '',
 			isDefault: oldOption.isDefault,
 		}
@@ -190,7 +198,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 			newOption.recipeServings = 1
 		} else {
 			newOption.ingredientName = ''
-			newOption.quantity = null
+			newOption.quantity = undefined
 			newOption.unit = 'g'
 		}
 
@@ -222,14 +230,14 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 	const updateIngredientOption = (
 		compIndex: number,
 		optIndex: number,
-		field: string,
-		value: any
+		field: IngredientOptionField,
+		value: string | number | undefined
 	) => {
 		const updated = [...components]
 		const opt = updated[compIndex].options[optIndex]
 
 		if (field === 'ingredientName') {
-			const capitalized = capitalizeFirst(value)
+			const capitalized = capitalizeFirst(typeof value === 'string' ? value : '')
 			opt.ingredientName = capitalized
 			opt.name = capitalized
 
@@ -242,9 +250,9 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 				searchIngredients(capitalized, inputId)
 			}, 300)
 		} else if (field === 'quantity') {
-			opt.quantity = value
+			opt.quantity = typeof value === 'number' ? value : undefined
 		} else if (field === 'unit') {
-			opt.unit = value
+			opt.unit = typeof value === 'string' ? value : undefined
 		}
 
 		onChange(updated)

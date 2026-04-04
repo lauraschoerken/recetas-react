@@ -2,6 +2,11 @@
 
 import './commands'
 
+interface TaskResult {
+	success?: boolean
+	message?: string
+}
+
 beforeEach(() => {
 	// Clear localStorage before each test
 	cy.window().then((win) => {
@@ -17,7 +22,7 @@ afterEach(function () {
 
 // Limpiar todos los datos de test antes de ejecutar la suite
 before(() => {
-	cy.task('cleanupAllTestData').then((result: any) => {
+	cy.task<TaskResult>('cleanupAllTestData').then((result) => {
 		if (result.success) {
 			cy.log(`Pre-test cleanup: ${result.message}`)
 		}
@@ -26,14 +31,14 @@ before(() => {
 
 // Limpiar ingredientes de test después de toda la suite
 after(() => {
-	cy.task('cleanupTestIngredients').then((result: any) => {
+	cy.task<TaskResult>('cleanupTestIngredients').then((result) => {
 		if (result.success) {
 			cy.log(`Post-test cleanup: ${result.message}`)
 		}
 	})
 })
 
-Cypress.on('uncaught:exception', (err, runnable) => {
+Cypress.on('uncaught:exception', (_err, _runnable) => {
 	// Prevent Cypress from failing tests on uncaught exceptions
 	return false
 })

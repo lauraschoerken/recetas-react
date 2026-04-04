@@ -1,26 +1,7 @@
+import type { AuthResponse, LoginData, RegisterData, User } from '@/models'
 import { api } from '@/services/api'
 
-export interface User {
-	id: number
-	email: string
-	name: string
-}
-
-export interface AuthResponse {
-	user: User
-	token: string
-}
-
-export interface LoginData {
-	email: string
-	password: string
-}
-
-export interface RegisterData {
-	email: string
-	password: string
-	name: string
-}
+export type { AuthResponse, LoginData, RegisterData, User } from '@/models'
 
 export const authService = {
 	async login(data: LoginData): Promise<AuthResponse> {

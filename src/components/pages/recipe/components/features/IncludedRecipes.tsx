@@ -1,6 +1,6 @@
 import './IncludedRecipes.css'
 
-import { useEffect,useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Recipe, recipeService } from '@/services/recipe'
 

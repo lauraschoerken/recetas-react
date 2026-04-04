@@ -1,7 +1,7 @@
-import { createContext, ReactNode,useCallback, useContext, useState } from 'react'
+import { createContext, ReactNode, useCallback, useContext, useState } from 'react'
 
-import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
-import { ToastContainer, ToastData } from '@/components/shared/Toast'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { ToastContainer, ToastData } from '@/components/shared/toast'
 
 interface ConfirmOptions {
 	title: string

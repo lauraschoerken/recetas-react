@@ -1,58 +1,21 @@
+import type {
+	ActivityLevel,
+	DailyNutrition,
+	Goal,
+	RecommendedMacros,
+	UserProfile,
+	WeeklyNutrition,
+} from '@/models'
 import { api } from '@/services/api'
 
-export type Gender = 'male' | 'female'
-export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active'
-export type Goal = 'maintain' | 'lose' | 'gain'
-
-export interface UserProfile {
-	imageUrl?: string
-	weight?: number
-	height?: number
-	age?: number
-	gender?: Gender
-	activityLevel?: ActivityLevel
-	goal?: Goal
-	customCalories?: number
-	customProtein?: number
-	customCarbs?: number
-	customFat?: number
-}
-
-export interface RecommendedMacros {
-	calories: number
-	protein: number
-	carbs: number
-	fat: number
-	bmr: number
-	tdee: number
-}
-
-export interface DailyNutrition {
-	date: string
-	calories: number
-	protein: number
-	carbs: number
-	fat: number
-	fiber: number
-}
-
-export interface WeeklyNutrition {
-	days: DailyNutrition[]
-	totals: {
-		calories: number
-		protein: number
-		carbs: number
-		fat: number
-		fiber: number
-	}
-	averages: {
-		calories: number
-		protein: number
-		carbs: number
-		fat: number
-		fiber: number
-	}
-}
+export type {
+	ActivityLevel,
+	DailyNutrition,
+	Goal,
+	RecommendedMacros,
+	UserProfile,
+	WeeklyNutrition,
+} from '@/models'
 
 export const ACTIVITY_LEVEL_LABELS: Record<ActivityLevel, string> = {
 	sedentary: 'Sedentario (poco o nada de ejercicio)',

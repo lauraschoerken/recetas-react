@@ -1,4 +1,7 @@
-const API_URL = '/api'
+const API_MODE = (import.meta.env.VITE_API_MODE as 'mock' | 'api' | 'real' | undefined) ?? 'api'
+const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') ?? ''
+const API_PREFIX = (import.meta.env.VITE_API_PREFIX as string | undefined) ?? '/api'
+const API_URL = API_MODE === 'mock' ? '' : `${API_BASE}${API_PREFIX}`
 
 interface RequestOptions {
 	method?: string

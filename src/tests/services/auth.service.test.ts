@@ -1,18 +1,69 @@
-import { beforeEach,describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest'
+
+const { postMock } = vi.hoisted(() => ({
+	postMock: vi.fn(),
+}))
+
+vi.mock('@/services/api', () => ({
+	api: {
+		post: postMock,
+	},
+}))
 
 import { authService } from '@/services/auth'
 
 describe('AuthService', () => {
+	const getItemMock = () => localStorage.getItem as unknown as Mock
+
 	beforeEach(() => {
 		vi.clearAllMocks()
+		postMock.mockReset()
 		localStorage.getItem = vi.fn()
 		localStorage.setItem = vi.fn()
 		localStorage.removeItem = vi.fn()
 	})
 
+	describe('login', () => {
+		it('stores token and user when login succeeds', async () => {
+			const data = { email: 'test@test.com', password: 'secret' }
+			const response = {
+				token: 'jwt-token',
+				user: { id: 1, email: 'test@test.com', name: 'Test' },
+			}
+
+			postMock.mockResolvedValue(response)
+
+			const result = await authService.login(data)
+
+			expect(postMock).toHaveBeenCalledWith('/auth/login', data)
+			expect(localStorage.setItem).toHaveBeenCalledWith('token', response.token)
+			expect(localStorage.setItem).toHaveBeenCalledWith('user', JSON.stringify(response.user))
+			expect(result).toEqual(response)
+		})
+	})
+
+	describe('register', () => {
+		it('stores token and user when register succeeds', async () => {
+			const data = { email: 'new@test.com', password: 'secret', name: 'New User' }
+			const response = {
+				token: 'new-jwt-token',
+				user: { id: 2, email: 'new@test.com', name: 'New User' },
+			}
+
+			postMock.mockResolvedValue(response)
+
+			const result = await authService.register(data)
+
+			expect(postMock).toHaveBeenCalledWith('/auth/register', data)
+			expect(localStorage.setItem).toHaveBeenCalledWith('token', response.token)
+			expect(localStorage.setItem).toHaveBeenCalledWith('user', JSON.stringify(response.user))
+			expect(result).toEqual(response)
+		})
+	})
+
 	describe('isAuthenticated', () => {
 		it('returns true when token exists in localStorage', () => {
-			;(localStorage.getItem as any).mockReturnValue('test-token')
+			getItemMock().mockReturnValue('test-token')
 
 			const result = authService.isAuthenticated()
 
@@ -21,7 +72,7 @@ describe('AuthService', () => {
 		})
 
 		it('returns false when no token exists', () => {
-			;(localStorage.getItem as any).mockReturnValue(null)
+			getItemMock().mockReturnValue(null)
 
 			const result = authService.isAuthenticated()
 
@@ -32,7 +83,7 @@ describe('AuthService', () => {
 	describe('getUser', () => {
 		it('returns user from localStorage', () => {
 			const user = { id: 1, email: 'test@test.com', name: 'Test' }
-			;(localStorage.getItem as any).mockReturnValue(JSON.stringify(user))
+			getItemMock().mockReturnValue(JSON.stringify(user))
 
 			const result = authService.getUser()
 
@@ -41,7 +92,7 @@ describe('AuthService', () => {
 		})
 
 		it('returns null when no user exists', () => {
-			;(localStorage.getItem as any).mockReturnValue(null)
+			getItemMock().mockReturnValue(null)
 
 			const result = authService.getUser()
 
@@ -51,13 +102,13 @@ describe('AuthService', () => {
 
 	describe('isAuthenticated', () => {
 		it('returns true when token exists', () => {
-			;(localStorage.getItem as any).mockReturnValue('token')
+			getItemMock().mockReturnValue('token')
 
 			expect(authService.isAuthenticated()).toBe(true)
 		})
 
 		it('returns false when no token exists', () => {
-			;(localStorage.getItem as any).mockReturnValue(null)
+			getItemMock().mockReturnValue(null)
 
 			expect(authService.isAuthenticated()).toBe(false)
 		})

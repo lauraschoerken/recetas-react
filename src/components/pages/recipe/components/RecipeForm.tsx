@@ -2,8 +2,8 @@ import './RecipeForm.css'
 
 import { useMemo, useState } from 'react'
 
-import { IngredientItem, IngredientsList } from '@/components/shared/IngredientsList'
-import { StepsList } from '@/components/shared/StepsList'
+import { IngredientItem, IngredientsList } from '@/components/shared/ingredients-list'
+import { StepsList } from '@/components/shared/steps-list'
 import { CreateComponentData, CreateRecipeData, Recipe } from '@/services/recipe'
 
 import { ComponentsEditor } from './features/ComponentsEditor'
@@ -82,7 +82,7 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 			return {
 				id: `ing-${idx}`,
 				name: capitalizeFirst(i.name),
-				quantity: i.quantity,
+				quantity: i.quantity ?? 0,
 				unit: i.unit,
 				isFromDatabase: true,
 				databaseId: i.id,

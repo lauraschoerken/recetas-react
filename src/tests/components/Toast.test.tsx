@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { ToastContainer } from '@/components/shared/Toast'
+import { ToastContainer } from '@/components/shared/toast'
 
 describe('ToastContainer', () => {
 	const mockOnRemove = vi.fn()

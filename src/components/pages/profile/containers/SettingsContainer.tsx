@@ -1,6 +1,6 @@
 import './SettingsContainer.css'
 
-import { useEffect,useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
 	ACTIVITY_LEVEL_LABELS,
@@ -63,7 +63,7 @@ export function SettingsContainer() {
 		}
 	}
 
-	const handleChange = (field: keyof UserProfile, value: any) => {
+	const handleChange = <K extends keyof UserProfile>(field: K, value: UserProfile[K]) => {
 		setProfile((prev) => ({ ...prev, [field]: value }))
 	}
 
@@ -147,7 +147,12 @@ export function SettingsContainer() {
 								<select
 									className='form-input'
 									value={profile.gender || ''}
-									onChange={(e) => handleChange('gender', e.target.value || undefined)}>
+									onChange={(e) =>
+										handleChange(
+											'gender',
+											e.target.value ? (e.target.value as UserProfile['gender']) : undefined
+										)
+									}>
 									<option value=''>Seleccionar...</option>
 									<option value='male'>Hombre</option>
 									<option value='female'>Mujer</option>

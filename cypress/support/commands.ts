@@ -1,4 +1,11 @@
 /// <reference types="cypress" />
+/* eslint-disable @typescript-eslint/no-namespace */
+
+interface TaskResult {
+	success?: boolean
+	message?: string
+	error?: string
+}
 
 declare global {
 	namespace Cypress {
@@ -53,7 +60,7 @@ Cypress.Commands.add('registerAndLogin', (name = 'Test User') => {
 })
 
 Cypress.Commands.add('cleanupUser', (email: string) => {
-	cy.task('cleanupUser', email).then((result: any) => {
+	cy.task<TaskResult>('cleanupUser', email).then((result) => {
 		if (result.error) {
 			cy.log(`Cleanup warning: ${result.error}`)
 		} else {
@@ -64,7 +71,7 @@ Cypress.Commands.add('cleanupUser', (email: string) => {
 
 Cypress.Commands.add('cleanupCurrentUser', () => {
 	if (currentTestUserEmail) {
-		cy.task('cleanupUser', currentTestUserEmail).then((result: any) => {
+		cy.task<TaskResult>('cleanupUser', currentTestUserEmail).then((result) => {
 			if (result.success) {
 				cy.log(`Cleaned up: ${currentTestUserEmail}`)
 			}
@@ -74,7 +81,7 @@ Cypress.Commands.add('cleanupCurrentUser', () => {
 })
 
 Cypress.Commands.add('cleanupAllTestData', () => {
-	cy.task('cleanupAllTestData').then((result: any) => {
+	cy.task<TaskResult>('cleanupAllTestData').then((result) => {
 		if (result.error) {
 			cy.log(`Cleanup warning: ${result.error}`)
 		} else {

@@ -1,4 +1,4 @@
-import { ItemCard, ItemCardData } from '@/components/shared/ItemCard'
+import { ItemCard, ItemCardData } from '@/components/shared/item-card'
 import { Recipe } from '@/services/recipe'
 
 interface RecipeCardProps {
