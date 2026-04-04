@@ -1,5 +1,6 @@
 .item-card {
-	background-color: var(--card-background);
+	background: linear-gradient(180deg, var(--card-background) 0%, var(--surface-1) 100%);
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius);
 	box-shadow: var(--shadow);
 	overflow: hidden;
@@ -7,14 +8,16 @@
 	flex-direction: column;
 	transition:
 		box-shadow 0.2s,
-		transform 0.2s;
-	max-width: 280px;
-	height: 280px;
+		transform 0.2s,
+		border-color 0.2s;
+	max-width: 100%;
+	min-height: 280px;
 }
 
 .item-card:hover {
 	box-shadow: var(--shadow-lg);
-	transform: translateY(-2px);
+	transform: translateY(-1px);
+	border-color: var(--border-strong);
 }
 
 .item-card-dish {
@@ -22,7 +25,7 @@
 }
 
 .item-card-header {
-	padding: 0.75rem 1rem;
+	padding: 0.85rem 1rem;
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
@@ -133,6 +136,7 @@
 	margin-top: auto;
 	padding: 0.75rem 1rem;
 	border-top: 1px solid var(--border-color);
+	background: var(--surface-1);
 	gap: 0.5rem;
 }
 
@@ -166,19 +170,22 @@
 .btn-icon {
 	width: 30px;
 	height: 30px;
-	border: none;
+	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	cursor: pointer;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	transition: all 0.2s;
+	transition: all 0.18s;
 	text-decoration: none;
+	background: var(--surface-0);
+	color: var(--text-secondary);
 }
 
 .btn-icon-primary {
-	background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color) 100%);
-	color: white;
+	background: var(--primary-color);
+	color: var(--text-inverse);
+	border-color: color-mix(in srgb, var(--primary-color) 70%, var(--border-color) 30%);
 }
 
 .item-card-dish .btn-icon-primary {
@@ -186,14 +193,14 @@
 }
 
 .btn-icon-primary:hover {
-	transform: scale(1.05);
-	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+	transform: translateY(-1px);
+	background: var(--primary-hover);
+	box-shadow: 0 6px 16px rgba(59, 130, 246, 0.2);
 }
 
 .btn-icon-outline {
-	background: white;
 	color: var(--text-secondary);
-	border: 1px solid var(--border-color);
+	background: var(--surface-0);
 }
 
 .btn-icon-outline:hover {
@@ -209,9 +216,8 @@
 }
 
 .btn-icon-danger {
-	background: white;
+	background: var(--surface-0);
 	color: var(--text-muted);
-	border: 1px solid var(--border-color);
 }
 
 .btn-icon-danger:hover {

@@ -11,7 +11,11 @@ export const getInitialTheme = (): Theme => {
 
 export const applyTheme = (theme: Theme) => {
 	const root = document.documentElement
-	if (theme === 'dark') root.classList.add('theme-dark')
-	else root.classList.remove('theme-dark')
+	root.classList.remove('theme-dark', 'theme-light')
+	if (theme === 'dark') {
+		root.classList.add('theme-dark')
+	} else {
+		root.classList.add('theme-light')
+	}
 	localStorage.setItem(STORAGE_KEY, theme)
 }
