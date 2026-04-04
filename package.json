@@ -7,7 +7,16 @@
 		"dev": "vite --mode dev",
 		"build": "tsc -b && vite build --mode prod",
 		"lint": "eslint .",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"test": "vitest",
+		"test:run": "vitest run",
+		"test:coverage": "vitest run --coverage",
+		"test:ui": "vitest --ui",
+		"cy:open": "cypress open",
+		"cy:run": "cypress run",
+		"test:e2e": "cypress run",
+		"test:e2e:open": "cypress open",
+		"cy:cleanup": "node -e \"fetch('http://localhost:3001/api/test/cleanup-all-test-data', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({secret: 'cypress-test-secret'})}).then(r => r.json()).then(console.log)\""
 	},
 	"dependencies": {
 		"i18next": "^25.3.6",
@@ -19,12 +28,17 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.33.0",
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/react": "^16.3.2",
+		"@testing-library/user-event": "^14.6.1",
 		"@types/node": "^24.3.0",
 		"@types/react": "^19.1.10",
 		"@types/react-dom": "^19.1.7",
 		"@typescript-eslint/eslint-plugin": "^8.39.1",
 		"@typescript-eslint/parser": "^8.39.1",
 		"@vitejs/plugin-react": "^5.0.0",
+		"@vitest/ui": "^4.1.0",
+		"cypress": "^15.12.0",
 		"eslint": "^9.33.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-import-resolver-typescript": "^4.4.4",
@@ -33,9 +47,11 @@
 		"eslint-plugin-react-refresh": "^0.4.20",
 		"eslint-plugin-simple-import-sort": "^12.1.1",
 		"globals": "^16.3.0",
+		"jsdom": "^29.0.1",
 		"prettier": "^3.6.2",
 		"typescript": "~5.8.3",
 		"typescript-eslint": "^8.39.1",
-		"vite": "^7.1.2"
+		"vite": "^7.1.2",
+		"vitest": "^4.1.0"
 	}
 }

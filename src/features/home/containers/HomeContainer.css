@@ -1,0 +1,104 @@
+.home-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.home-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: #f1f5f9;
+  padding: 0.375rem;
+  border-radius: 12px;
+}
+
+.home-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.home-tab:hover {
+  color: var(--text-primary);
+}
+
+.home-tab.active {
+  background: white;
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.home-tab-icon {
+  font-size: 1.25rem;
+}
+
+.home-tab-label {
+  font-size: 0.9rem;
+}
+
+.home-tab-count {
+  background: var(--primary-light);
+  color: var(--primary-color);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.home-tab.active .home-tab-count {
+  background: var(--primary-color);
+  color: white;
+}
+
+.home-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.add-item-btn {
+  align-self: flex-start;
+}
+
+.home-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.home-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+}
+
+.home-empty p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+@media (max-width: 640px) {
+  .home-tabs {
+    flex-direction: column;
+  }
+  
+  .home-tab {
+    justify-content: flex-start;
+  }
+  
+  .home-items-grid {
+    grid-template-columns: 1fr;
+  }
+}

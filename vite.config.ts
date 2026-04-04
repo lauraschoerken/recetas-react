@@ -19,6 +19,15 @@ export default defineConfig(({ mode }) => {
 		plugins: [react()],
 		envDir: envRoot,
 		resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
+		server: {
+			port: 3000,
+			proxy: {
+				'/api': {
+					target: 'http://localhost:3001',
+					changeOrigin: true,
+				},
+			},
+		},
 
 		define: {
 			__APP_NAME__: JSON.stringify(env.VITE_APP_NAME ?? 'App'),
