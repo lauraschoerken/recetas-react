@@ -4,7 +4,7 @@ import { useContext } from 'react'
 
 import { ThemeContext } from '@/utils/Theme/theme-context'
 
-import { MoonIcon,SunIcon } from './icons'
+import { MoonIcon, SunIcon } from './icons'
 
 export const ThemeToggle = () => {
 	const { theme, toggle } = useContext(ThemeContext)

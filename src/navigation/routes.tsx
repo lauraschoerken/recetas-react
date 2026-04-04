@@ -1,19 +1,17 @@
-import { Navigate, Outlet, createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
 
+import { LoginContainer } from '@/components/pages/auth/containers/LoginContainer'
+import { RegisterContainer } from '@/components/pages/auth/containers/RegisterContainer'
+import { HomeContainer } from '@/components/pages/home/containers/HomeContainer'
+import { IngredientListContainer } from '@/components/pages/ingredient/containers/IngredientListContainer'
+import { SettingsContainer } from '@/components/pages/profile/containers/SettingsContainer'
+import { RecipeDetailContainer } from '@/components/pages/recipe/containers/RecipeDetailContainer'
+import { RecipeFormContainer } from '@/components/pages/recipe/containers/RecipeFormContainer'
+import { RecipeListContainer } from '@/components/pages/recipe/containers/RecipeListContainer'
+import { ShoppingListContainer } from '@/components/pages/shopping/containers/ShoppingListContainer'
+import { WeekPlanContainer } from '@/components/pages/weekplan/containers/WeekPlanContainer'
 import { IndexLayout } from '@/layouts'
-import { LoginContainer } from '@/features/auth/containers/LoginContainer'
-import { RegisterContainer } from '@/features/auth/containers/RegisterContainer'
-import { HomeContainer } from '@/features/home/containers/HomeContainer'
-import { IngredientListContainer } from '@/features/ingredient/containers/IngredientListContainer'
-import { SettingsContainer } from '@/features/profile/containers/SettingsContainer'
-import { RecipeDetailContainer } from '@/features/recipe/containers/RecipeDetailContainer'
-import { RecipeFormContainer } from '@/features/recipe/containers/RecipeFormContainer'
-import { RecipeListContainer } from '@/features/recipe/containers/RecipeListContainer'
-import { ShoppingListContainer } from '@/features/shopping/containers/ShoppingListContainer'
-import { WeekPlanContainer } from '@/features/weekplan/containers/WeekPlanContainer'
 import { authService } from '@/services/auth'
-
-import Demo from '../components/Demo/containers/Demo'
 
 const ProtectedRoutes = () => {
 	if (!authService.isAuthenticated()) {
@@ -63,7 +61,6 @@ export const router = createBrowserRouter([
 					{ path: 'week-plan', element: <WeekPlanContainer /> },
 					{ path: 'shopping-list', element: <ShoppingListContainer /> },
 					{ path: 'settings', element: <SettingsContainer /> },
-					{ path: 'demo', element: <Demo /> },
 				],
 			},
 		],

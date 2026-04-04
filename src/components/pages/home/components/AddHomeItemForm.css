@@ -1,0 +1,134 @@
+.add-home-item-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	padding: 1rem;
+	background: #f8fafc;
+	border-radius: 12px;
+	margin-bottom: 1rem;
+}
+
+.form-row {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.item-type-selector {
+	display: flex;
+	gap: 0.5rem;
+	width: 100%;
+}
+
+.item-type-btn {
+	flex: 1;
+	padding: 0.625rem 1rem;
+	border: 2px solid #e2e8f0;
+	background: white;
+	border-radius: 8px;
+	font-weight: 500;
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.item-type-btn:hover {
+	border-color: var(--primary-light);
+}
+
+.item-type-btn.active {
+	border-color: var(--primary-color);
+	background: var(--primary-light);
+	color: var(--primary-color);
+}
+
+.ingredient-input-row {
+	position: relative;
+}
+
+.ingredient-autocomplete {
+	flex: 1;
+	position: relative;
+}
+
+.ingredient-autocomplete .ingredient-suggestions {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	background: white;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	list-style: none;
+	margin: 4px 0 0 0;
+	padding: 0.25rem;
+	z-index: 100;
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.ingredient-autocomplete .ingredient-suggestion-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.5rem 0.75rem;
+	cursor: pointer;
+	border-radius: 6px;
+	transition: background 0.15s;
+}
+
+.ingredient-autocomplete .ingredient-suggestion-item:hover {
+	background: var(--primary-light);
+}
+
+.ingredient-autocomplete .suggestion-unit {
+	font-size: 0.75rem;
+	color: var(--text-secondary);
+	background: #f1f5f9;
+	padding: 0.125rem 0.5rem;
+	border-radius: 4px;
+}
+
+.variant-row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.variant-label {
+	font-size: 0.875rem;
+	color: var(--text-secondary);
+	white-space: nowrap;
+}
+
+.variant-select {
+	flex: 1;
+	background: #f3e8ff;
+	border-color: #c4b5fd;
+}
+
+.variant-select:focus {
+	border-color: #7c3aed;
+	box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.quantity-row {
+	display: grid;
+	grid-template-columns: 80px 1fr;
+	gap: 0.5rem;
+}
+
+.qty-input {
+	text-align: center;
+}
+
+.form-actions {
+	justify-content: flex-end;
+	margin-top: 0.5rem;
+}
+
+@media (max-width: 480px) {
+	.quantity-row {
+		grid-template-columns: 1fr 1fr;
+	}
+}

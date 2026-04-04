@@ -1,96 +1,97 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { Modal } from '@/components/shared/Modal';
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
+
+import { Modal } from '@/components/shared/Modal'
 
 describe('Modal', () => {
-  const defaultProps = {
-    isOpen: true,
-    onClose: vi.fn(),
-    title: 'Test Modal'
-  };
+	const defaultProps = {
+		isOpen: true,
+		onClose: vi.fn(),
+		title: 'Test Modal',
+	}
 
-  it('renders when isOpen is true', () => {
-    render(
-      <Modal {...defaultProps}>
-        <p>Modal content</p>
-      </Modal>
-    );
+	it('renders when isOpen is true', () => {
+		render(
+			<Modal {...defaultProps}>
+				<p>Modal content</p>
+			</Modal>
+		)
 
-    expect(screen.getByText('Test Modal')).toBeInTheDocument();
-    expect(screen.getByText('Modal content')).toBeInTheDocument();
-  });
+		expect(screen.getByText('Test Modal')).toBeInTheDocument()
+		expect(screen.getByText('Modal content')).toBeInTheDocument()
+	})
 
-  it('does not render when isOpen is false', () => {
-    render(
-      <Modal {...defaultProps} isOpen={false}>
-        <p>Modal content</p>
-      </Modal>
-    );
+	it('does not render when isOpen is false', () => {
+		render(
+			<Modal {...defaultProps} isOpen={false}>
+				<p>Modal content</p>
+			</Modal>
+		)
 
-    expect(screen.queryByText('Test Modal')).not.toBeInTheDocument();
-  });
+		expect(screen.queryByText('Test Modal')).not.toBeInTheDocument()
+	})
 
-  it('calls onClose when close button is clicked', async () => {
-    const user = userEvent.setup();
-    const onClose = vi.fn();
-    
-    render(
-      <Modal {...defaultProps} onClose={onClose}>
-        <p>Content</p>
-      </Modal>
-    );
+	it('calls onClose when close button is clicked', async () => {
+		const user = userEvent.setup()
+		const onClose = vi.fn()
 
-    const closeButton = screen.getByRole('button');
-    await user.click(closeButton);
+		render(
+			<Modal {...defaultProps} onClose={onClose}>
+				<p>Content</p>
+			</Modal>
+		)
 
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
+		const closeButton = screen.getByRole('button')
+		await user.click(closeButton)
 
-  it('calls onClose when overlay is clicked', async () => {
-    const user = userEvent.setup();
-    const onClose = vi.fn();
-    
-    render(
-      <Modal {...defaultProps} onClose={onClose}>
-        <p>Content</p>
-      </Modal>
-    );
+		expect(onClose).toHaveBeenCalledTimes(1)
+	})
 
-    const overlay = document.querySelector('.modal-overlay');
-    if (overlay) {
-      await user.click(overlay);
-    }
+	it('calls onClose when overlay is clicked', async () => {
+		const user = userEvent.setup()
+		const onClose = vi.fn()
 
-    expect(onClose).toHaveBeenCalled();
-  });
+		render(
+			<Modal {...defaultProps} onClose={onClose}>
+				<p>Content</p>
+			</Modal>
+		)
 
-  it('does not close when content is clicked', async () => {
-    const user = userEvent.setup();
-    const onClose = vi.fn();
-    
-    render(
-      <Modal {...defaultProps} onClose={onClose}>
-        <p>Content</p>
-      </Modal>
-    );
+		const overlay = document.querySelector('.modal-overlay')
+		if (overlay) {
+			await user.click(overlay)
+		}
 
-    await user.click(screen.getByText('Content'));
+		expect(onClose).toHaveBeenCalled()
+	})
 
-    expect(onClose).not.toHaveBeenCalled();
-  });
+	it('does not close when content is clicked', async () => {
+		const user = userEvent.setup()
+		const onClose = vi.fn()
 
-  it('renders children correctly', () => {
-    render(
-      <Modal {...defaultProps}>
-        <form>
-          <input type="text" placeholder="Test input" />
-          <button type="submit">Submit</button>
-        </form>
-      </Modal>
-    );
+		render(
+			<Modal {...defaultProps} onClose={onClose}>
+				<p>Content</p>
+			</Modal>
+		)
 
-    expect(screen.getByPlaceholderText('Test input')).toBeInTheDocument();
-    expect(screen.getByText('Submit')).toBeInTheDocument();
-  });
-});
+		await user.click(screen.getByText('Content'))
+
+		expect(onClose).not.toHaveBeenCalled()
+	})
+
+	it('renders children correctly', () => {
+		render(
+			<Modal {...defaultProps}>
+				<form>
+					<input type='text' placeholder='Test input' />
+					<button type='submit'>Submit</button>
+				</form>
+			</Modal>
+		)
+
+		expect(screen.getByPlaceholderText('Test input')).toBeInTheDocument()
+		expect(screen.getByText('Submit')).toBeInTheDocument()
+	})
+})

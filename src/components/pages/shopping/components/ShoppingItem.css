@@ -1,0 +1,125 @@
+.shopping-item {
+	display: flex;
+	align-items: center;
+	background-color: var(--card-background);
+	border-radius: var(--radius);
+	margin-bottom: 0.5rem;
+	box-shadow: var(--shadow);
+	transition: all 0.2s;
+}
+
+.shopping-item:hover {
+	box-shadow: var(--shadow-md);
+}
+
+.shopping-item-covered {
+	background-color: #ecfdf5;
+	border: 1px solid #a7f3d0;
+}
+
+.shopping-item-label {
+	display: flex;
+	align-items: center;
+	padding: 0.875rem 1rem;
+	cursor: pointer;
+	gap: 1rem;
+	flex: 1;
+}
+
+.shopping-item-checkbox {
+	width: 20px;
+	height: 20px;
+	cursor: pointer;
+	accent-color: var(--primary-color);
+	flex-shrink: 0;
+}
+
+.shopping-item-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.shopping-item-name {
+	text-transform: capitalize;
+	font-weight: 500;
+	display: block;
+}
+
+.shopping-item-breakdown {
+	display: flex;
+	gap: 0.75rem;
+	margin-top: 0.25rem;
+	font-size: 0.75rem;
+}
+
+.shopping-item-total {
+	color: var(--text-secondary);
+}
+
+.shopping-item-athome {
+	color: #10b981;
+	font-weight: 500;
+}
+
+.shopping-item-tobuy {
+	min-width: 120px;
+	text-align: right;
+	color: var(--primary-color);
+	font-weight: 600;
+	font-size: 1rem;
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 0.125rem;
+}
+
+.shopping-item-preferred {
+	font-size: 1rem;
+}
+
+.shopping-item-base-qty {
+	font-size: 0.7rem;
+	color: var(--text-secondary);
+	font-weight: 400;
+}
+
+.shopping-item-tobuy-zero {
+	color: #10b981;
+}
+
+.shopping-item-covered-text {
+	font-size: 0.875rem;
+	font-weight: 500;
+}
+
+.shopping-item-checked .shopping-item-name {
+	text-decoration: line-through;
+	color: var(--text-secondary);
+}
+
+.shopping-item-exclude {
+	width: 36px;
+	height: 36px;
+	margin-right: 0.5rem;
+	border: none;
+	background: transparent;
+	color: #94a3b8;
+	font-size: 1.25rem;
+	cursor: pointer;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transition: all 0.2s;
+}
+
+.shopping-item:hover .shopping-item-exclude {
+	opacity: 1;
+}
+
+.shopping-item-exclude:hover {
+	background: #fee2e2;
+	color: #dc2626;
+}

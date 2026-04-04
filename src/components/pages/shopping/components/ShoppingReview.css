@@ -1,0 +1,123 @@
+.shopping-review {
+	background: white;
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-md);
+	max-width: 600px;
+	margin: 0 auto;
+	overflow: hidden;
+}
+
+.shopping-review-header {
+	padding: 1.5rem;
+	background: linear-gradient(135deg, var(--primary-light) 0%, #f0f9ff 100%);
+	border-bottom: 1px solid #e2e8f0;
+}
+
+.shopping-review-header h3 {
+	margin: 0 0 0.5rem 0;
+	color: var(--text-primary);
+}
+
+.shopping-review-subtitle {
+	margin: 0 0 1rem 0;
+	color: var(--text-secondary);
+	font-size: 0.9rem;
+}
+
+.shopping-review-actions-top {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.shopping-review-list {
+	max-height: 400px;
+	overflow-y: auto;
+	padding: 1rem;
+}
+
+.shopping-review-group {
+	margin-bottom: 1.5rem;
+}
+
+.shopping-review-group:last-child {
+	margin-bottom: 0;
+}
+
+.shopping-review-group-title {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--primary-color);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	margin: 0 0 0.75rem 0;
+	padding-bottom: 0.5rem;
+	border-bottom: 2px solid var(--primary-light);
+}
+
+.shopping-review-item {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.75rem;
+	margin-bottom: 0.5rem;
+	background: #f8fafc;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s;
+	border: 2px solid transparent;
+}
+
+.shopping-review-item:hover {
+	background: #f1f5f9;
+}
+
+.shopping-review-item.selected {
+	background: #ecfdf5;
+	border-color: #10b981;
+}
+
+.shopping-review-item input[type='checkbox'] {
+	width: 20px;
+	height: 20px;
+	accent-color: #10b981;
+}
+
+.shopping-review-item-content {
+	flex: 1;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.shopping-review-item-name {
+	font-weight: 500;
+	color: var(--text-primary);
+	text-transform: capitalize;
+}
+
+.shopping-review-item-qty {
+	font-size: 0.85rem;
+	color: var(--text-secondary);
+	background: white;
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+}
+
+.shopping-review-footer {
+	padding: 1rem 1.5rem;
+	background: #f8fafc;
+	border-top: 1px solid #e2e8f0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.shopping-review-count {
+	font-size: 0.9rem;
+	color: var(--text-secondary);
+}
+
+.shopping-review-actions {
+	display: flex;
+	gap: 0.5rem;
+}

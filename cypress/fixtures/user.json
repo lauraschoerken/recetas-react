@@ -1,11 +1,11 @@
 {
-  "validUser": {
-    "name": "Test User",
-    "email": "testuser@example.com",
-    "password": "password123"
-  },
-  "invalidCredentials": {
-    "email": "wrong@example.com",
-    "password": "wrongpassword"
-  }
+	"validUser": {
+		"name": "Test User",
+		"email": "testuser@example.com",
+		"password": "password123"
+	},
+	"invalidCredentials": {
+		"email": "wrong@example.com",
+		"password": "wrongpassword"
+	}
 }
