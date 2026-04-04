@@ -1,5 +1,5 @@
-import { useEffect,useState } from 'react'
-import { useNavigate,useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 
 import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
 import { Recipe, recipeService } from '@/services/recipe'

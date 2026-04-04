@@ -1,13 +1,13 @@
 import './RecipeForm.css'
 
-import { useMemo,useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import { IngredientItem,IngredientsList } from '@/components/shared/IngredientsList'
+import { IngredientItem, IngredientsList } from '@/components/shared/IngredientsList'
 import { StepsList } from '@/components/shared/StepsList'
-import { CreateComponentData,CreateRecipeData, Recipe } from '@/services/recipe'
+import { CreateComponentData, CreateRecipeData, Recipe } from '@/services/recipe'
 
 import { ComponentsEditor } from './features/ComponentsEditor'
-import { IncludedRecipe,IncludedRecipes } from './features/IncludedRecipes'
+import { IncludedRecipe, IncludedRecipes } from './features/IncludedRecipes'
 import { NutritionEditor } from './features/NutritionEditor'
 
 type TabId = 'recipe' | 'nutrition'
