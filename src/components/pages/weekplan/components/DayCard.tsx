@@ -1,8 +1,9 @@
-import './DayCard.css'
+import './DayCard.scss'
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { CheckIcon, CookIcon, DeleteIcon } from '@/components/shared/icons'
 import { WeekPlan } from '@/services/shopping'
 
 interface DayCardProps {
@@ -109,7 +110,7 @@ export function DayCard({
 					)}
 					{isCompleted && (
 						<span className='done-icon' title={isPrep ? 'Cocinado' : 'Consumido'}>
-							✓
+							<CheckIcon size={14} aria-hidden='true' />
 						</span>
 					)}
 					{hasComponents(plan) && <span className='day-card-badge'>Variantes</span>}
@@ -125,7 +126,7 @@ export function DayCard({
 								className='day-card-cook'
 								onClick={() => handleOpenCookModal(plan)}
 								title='Marcar como cocinado'>
-								🍳
+								<CookIcon size={14} aria-hidden='true' />
 							</button>
 						)}
 						{!isPrep && !plan.consumed && onConsume && (
@@ -133,11 +134,11 @@ export function DayCard({
 								className='day-card-consume'
 								onClick={() => onConsume(plan.id)}
 								title='Marcar como consumido'>
-								✓
+								<CheckIcon size={14} aria-hidden='true' />
 							</button>
 						)}
 						<button className='day-card-remove' onClick={() => onRemove(plan.id)} title='Eliminar'>
-							×
+							<DeleteIcon size={14} aria-hidden='true' />
 						</button>
 					</div>
 				</div>

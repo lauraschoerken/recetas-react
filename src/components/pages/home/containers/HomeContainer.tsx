@@ -1,4 +1,4 @@
-import './HomeContainer.css'
+import './HomeContainer.scss'
 
 import { useEffect,useState } from 'react'
 

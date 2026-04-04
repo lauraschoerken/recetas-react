@@ -1,4 +1,4 @@
-import './SettingsContainer.css'
+import './SettingsContainer.scss'
 
 import { useEffect, useState } from 'react'
 
@@ -183,9 +183,6 @@ export function SettingsContainer() {
 										type='button'
 										className={`goal-btn ${profile.goal === value ? 'active' : ''}`}
 										onClick={() => handleChange('goal', value as Goal)}>
-										{value === 'lose' && '📉'}
-										{value === 'maintain' && '⚖️'}
-										{value === 'gain' && '📈'}
 										<span>{label}</span>
 									</button>
 								))}

@@ -1,4 +1,4 @@
-import './RecipeDetail.css'
+import './RecipeDetail.scss'
 
 import { Link } from 'react-router-dom'
 

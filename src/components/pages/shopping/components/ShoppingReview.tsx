@@ -1,4 +1,4 @@
-import './ShoppingReview.css'
+import './ShoppingReview.scss'
 
 import { useEffect,useState } from 'react'
 

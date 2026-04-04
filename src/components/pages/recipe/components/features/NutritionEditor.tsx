@@ -1,4 +1,4 @@
-import './NutritionEditor.css'
+import './NutritionEditor.scss'
 
 import { useEffect, useMemo, useState } from 'react'
 

@@ -1,5 +1,6 @@
-import './ShoppingItem.css'
+import './ShoppingItem.scss'
 
+import { CloseIcon } from '@/components/shared/icons'
 import { ShoppingItem } from '@/services/shopping'
 
 interface ShoppingItemRowProps {
@@ -67,7 +68,7 @@ export function ShoppingItemRow({ item, checked, onToggle, onExclude }: Shopping
 			</label>
 			{onExclude && !checked && needsToBuy && (
 				<button className='shopping-item-exclude' onClick={onExclude} title='Excluir de la lista'>
-					×
+					<CloseIcon size={14} aria-hidden='true' />
 				</button>
 			)}
 		</li>

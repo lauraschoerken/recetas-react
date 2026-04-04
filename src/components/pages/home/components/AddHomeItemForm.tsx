@@ -1,4 +1,4 @@
-import './AddHomeItemForm.css'
+import './AddHomeItemForm.scss'
 
 import { useEffect, useRef, useState } from 'react'
 

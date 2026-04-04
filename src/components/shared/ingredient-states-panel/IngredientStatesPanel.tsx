@@ -1,7 +1,8 @@
-import './IngredientStatesPanel.css'
+import './IngredientStatesPanel.scss'
 
 import { useState } from 'react'
 
+import { DeleteIcon, EditIcon, StarIcon } from '@/components/shared/icons'
 import { api } from '@/services/api'
 
 export interface IngredientVariant {
@@ -325,7 +326,7 @@ export function IngredientStatesPanel({
 											className='state-action-btn'
 											onClick={() => startEditVariant(variant)}
 											title='Editar'>
-											✏️
+											<EditIcon size={14} aria-hidden='true' />
 										</button>
 										{!variant.isDefault && (
 											<button
@@ -333,7 +334,7 @@ export function IngredientStatesPanel({
 												className='state-action-btn'
 												onClick={() => handleSetDefaultVariant(variant.id)}
 												title='Marcar como por defecto'>
-												⭐
+												<StarIcon size={14} aria-hidden='true' />
 											</button>
 										)}
 										{data.variants.length > 1 && (
@@ -342,7 +343,7 @@ export function IngredientStatesPanel({
 												className='state-action-btn delete'
 												onClick={() => handleDeleteVariant(variant.id)}
 												title='Eliminar'>
-												🗑️
+												<DeleteIcon size={14} aria-hidden='true' />
 											</button>
 										)}
 									</div>

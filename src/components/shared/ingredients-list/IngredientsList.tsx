@@ -1,7 +1,8 @@
-import './IngredientsList.css'
+import './IngredientsList.scss'
 
 import { useEffect, useRef, useState } from 'react'
 
+import { ChartIcon, CloseIcon, ScaleIcon } from '@/components/shared/icons'
 import {
 	IngredientStatesPanel,
 	IngredientVariant,
@@ -447,7 +448,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 														setShowConversionsId(showConversionsId === ing.id ? null : ing.id)
 													}
 													title='Ver conversiones de unidad'>
-													⚖️
+													<ScaleIcon size={14} aria-hidden='true' />
 												</button>
 												<button
 													type='button'
@@ -458,7 +459,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 															? 'Ver/editar estados y macros'
 															: 'Crear ingrediente y añadir macros'
 													}>
-													📊
+													<ChartIcon size={14} aria-hidden='true' />
 												</button>
 											</>
 										)}
@@ -466,7 +467,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 											type='button'
 											className='ingredients-remove-btn'
 											onClick={() => removeIngredient(ing.id)}>
-											×
+											<CloseIcon size={14} aria-hidden='true' />
 										</button>
 									</div>
 								</div>
@@ -529,7 +530,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 													setNewUnitName('')
 													setNewUnitGrams('')
 												}}>
-												×
+												<CloseIcon size={14} aria-hidden='true' />
 											</button>
 										</div>
 										<div className='new-unit-modal-body'>

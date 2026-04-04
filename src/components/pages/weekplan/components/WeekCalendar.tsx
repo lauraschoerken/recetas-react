@@ -1,4 +1,4 @@
-import './WeekCalendar.css'
+import './WeekCalendar.scss'
 
 import { WeekPlan } from '@/services/shopping'
 
@@ -72,7 +72,7 @@ export function WeekCalendar({
 
 			{/* Fila de Comidas */}
 			<DayCardRow
-				title='🍽️ Comidas'
+				title='Comidas'
 				type='meal'
 				days={days}
 				onRemove={onRemove}
@@ -82,7 +82,7 @@ export function WeekCalendar({
 
 			{/* Fila de A Preparar */}
 			<DayCardRow
-				title='👨‍🍳 A Preparar'
+				title='A Preparar'
 				type='prep'
 				days={days}
 				onRemove={onRemove}

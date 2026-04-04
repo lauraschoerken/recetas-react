@@ -1,7 +1,8 @@
-import './IncludedRecipes.css'
+import './IncludedRecipes.scss'
 
 import { useEffect, useState } from 'react'
 
+import { CloseIcon } from '@/components/shared/icons'
 import { Recipe, recipeService } from '@/services/recipe'
 
 export interface IncludedRecipe {
@@ -97,7 +98,7 @@ export function IncludedRecipes({ recipes, onChange }: IncludedRecipesProps) {
 								className='included-recipes-remove-btn'
 								onClick={() => removeRecipe(index)}
 								title='Eliminar'>
-								×
+								<CloseIcon size={14} aria-hidden='true' />
 							</button>
 						</div>
 					))}
@@ -133,7 +134,7 @@ export function IncludedRecipes({ recipes, onChange }: IncludedRecipesProps) {
 								type='button'
 								className='included-recipes-remove-btn'
 								style={{ visibility: 'hidden' }}>
-								×
+								<CloseIcon size={14} aria-hidden='true' />
 							</button>
 						</div>
 					)}

@@ -1,7 +1,8 @@
-import './IngredientListContainer.css'
+import './IngredientListContainer.scss'
 
-import { useEffect,useState } from 'react'
+import { useEffect, useState } from 'react'
 
+import { CloseIcon } from '@/components/shared/icons'
 import { Ingredient, ingredientService, UpdateIngredientData } from '@/services/ingredient'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
@@ -450,7 +451,7 @@ export function IngredientListContainer() {
 														type='button'
 														className='btn-icon-small'
 														onClick={() => removeVariantRow(variant.id)}>
-														✕
+														<CloseIcon size={14} aria-hidden='true' />
 													</button>
 												)}
 											</div>
@@ -550,7 +551,7 @@ export function IngredientListContainer() {
 												type='button'
 												className='btn-icon-small'
 												onClick={() => removeConversionRow(index)}>
-												✕
+												<CloseIcon size={14} aria-hidden='true' />
 											</button>
 										</div>
 									))}
@@ -608,7 +609,7 @@ export function IngredientListContainer() {
 											className='btn-icon-small'
 											onClick={() => removeBulkRow(ing.id)}
 											disabled={bulkIngredients.length === 1}>
-											✕
+											<CloseIcon size={14} aria-hidden='true' />
 										</button>
 									</div>
 								))}

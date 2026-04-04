@@ -1,4 +1,6 @@
-import './IngredientInput.css'
+import './IngredientInput.scss'
+
+import { CloseIcon } from '@/components/shared/icons'
 
 interface IngredientForm {
 	name: string
@@ -68,7 +70,7 @@ export function IngredientInput({
 					className='ingredient-remove'
 					onClick={onRemove}
 					title='Eliminar ingrediente'>
-					×
+					<CloseIcon size={14} aria-hidden='true' />
 				</button>
 			) : (
 				<div style={{ width: 40 }} />

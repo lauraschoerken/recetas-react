@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -13,7 +13,7 @@ describe('ToastContainer', () => {
 		render(<ToastContainer toasts={toasts} onRemove={mockOnRemove} />)
 
 		expect(screen.getByText('Success message')).toBeInTheDocument()
-		expect(screen.getByText('✓')).toBeInTheDocument()
+		expect(document.querySelector('.toast-success .toast-icon svg')).toBeInTheDocument()
 	})
 
 	it('renders error toast correctly', () => {
@@ -22,7 +22,7 @@ describe('ToastContainer', () => {
 		render(<ToastContainer toasts={toasts} onRemove={mockOnRemove} />)
 
 		expect(screen.getByText('Error message')).toBeInTheDocument()
-		expect(screen.getByText('✕')).toBeInTheDocument()
+		expect(document.querySelector('.toast-error .toast-icon svg')).toBeInTheDocument()
 	})
 
 	it('renders multiple toasts', () => {

@@ -1,8 +1,9 @@
-import './DayCardRow.css'
+import './DayCardRow.scss'
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { CheckIcon, CookIcon, DeleteIcon } from '@/components/shared/icons'
 import { WeekPlan } from '@/services/shopping'
 
 interface DayData {
@@ -104,7 +105,11 @@ export function DayCardRow({
 				onDragStart={(e) => handleDragStart(e, plan)}>
 				<div className='row-plan-header'>
 					{!isCompleted && <span className='drag-handle'>⋮⋮</span>}
-					{isCompleted && <span className='done-icon'>✓</span>}
+					{isCompleted && (
+						<span className='done-icon'>
+							<CheckIcon size={14} aria-hidden='true' />
+						</span>
+					)}
 					<Link to={getItemLink(plan)} className='row-plan-title'>
 						{getItemTitle(plan)}
 					</Link>
@@ -117,7 +122,7 @@ export function DayCardRow({
 								className='action-cook'
 								onClick={() => handleOpenCookModal(plan)}
 								title='Marcar como cocinado'>
-								🍳
+								<CookIcon size={14} aria-hidden='true' />
 							</button>
 						)}
 						{type === 'meal' && !plan.consumed && onConsume && (
@@ -125,11 +130,11 @@ export function DayCardRow({
 								className='action-consume'
 								onClick={() => onConsume(plan.id)}
 								title='Marcar como consumido'>
-								✓
+								<CheckIcon size={14} aria-hidden='true' />
 							</button>
 						)}
 						<button className='action-remove' onClick={() => onRemove(plan.id)} title='Eliminar'>
-							×
+							<DeleteIcon size={14} aria-hidden='true' />
 						</button>
 					</div>
 				</div>
@@ -202,13 +207,13 @@ export function DayCardRow({
 										type='button'
 										className={`cook-modal-location-btn ${leftoverLocation === 'nevera' ? 'active' : ''}`}
 										onClick={() => setLeftoverLocation('nevera')}>
-										❄️ Nevera
+										Nevera
 									</button>
 									<button
 										type='button'
 										className={`cook-modal-location-btn ${leftoverLocation === 'congelador' ? 'active' : ''}`}
 										onClick={() => setLeftoverLocation('congelador')}>
-										🧊 Congelador
+										Congelador
 									</button>
 								</div>
 							</div>

@@ -1,5 +1,5 @@
 import '@/assets/styles/index.scss'
-import '@/assets/styles/front-global.css'
+import '@/assets/styles/front-global.scss'
 
 import { RouterProvider } from 'react-router-dom'
 

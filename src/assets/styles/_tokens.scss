@@ -1,0 +1,49 @@
+$color-slate-50: #f8fafc;
+$color-slate-100: #f1f5f9;
+$color-slate-200: #e2e8f0;
+$color-slate-400: #94a3b8;
+$color-slate-500: #64748b;
+$color-slate-800: #1e293b;
+
+$color-primary-50: #eff6ff;
+$color-primary-500: #3b82f6;
+$color-primary-600: #2563eb;
+
+$color-success-50: #dcfce7;
+$color-success-600: #16a34a;
+$color-success-700: #166534;
+
+$color-danger-50: #fee2e2;
+$color-danger-700: #b91c1c;
+
+$color-warning-50: #fef3c7;
+$color-warning-700: #92400e;
+
+$space-1: 0.25rem;
+$space-2: 0.5rem;
+$space-3: 0.75rem;
+$space-4: 1rem;
+$space-6: 1.5rem;
+$space-8: 2rem;
+
+$radius-sm: 6px;
+$radius-md: 8px;
+$radius-lg: 12px;
+
+$bp-sm: 600px;
+
+@mixin transition-fast {
+	transition: all 0.2s;
+}
+
+@mixin card-surface {
+	background: white;
+	border: 1px solid $color-slate-200;
+	border-radius: $radius-lg;
+}
+
+@mixin focus-ring {
+	outline: none;
+	border-color: $color-primary-500;
+	box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}

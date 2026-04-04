@@ -1,6 +1,8 @@
-import './Toast.css'
+import './Toast.scss'
 
 import { useEffect } from 'react'
+
+import { CheckIcon, CloseIcon, InfoIcon, WarningIcon } from '@/components/shared/icons'
 
 export interface ToastData {
 	id: string
@@ -34,13 +36,13 @@ function ToastItem({ toast, onRemove }: { toast: ToastData; onRemove: (id: strin
 	const getIcon = () => {
 		switch (toast.type) {
 			case 'success':
-				return '✓'
+				return <CheckIcon size={16} aria-hidden='true' />
 			case 'error':
-				return '✕'
+				return <CloseIcon size={16} aria-hidden='true' />
 			case 'warning':
-				return '⚠'
+				return <WarningIcon size={16} aria-hidden='true' />
 			case 'info':
-				return 'ℹ'
+				return <InfoIcon size={16} aria-hidden='true' />
 		}
 	}
 
@@ -49,7 +51,7 @@ function ToastItem({ toast, onRemove }: { toast: ToastData; onRemove: (id: strin
 			<span className='toast-icon'>{getIcon()}</span>
 			<span className='toast-message'>{toast.message}</span>
 			<button className='toast-close' onClick={() => onRemove(toast.id)}>
-				×
+				<CloseIcon size={14} aria-hidden='true' />
 			</button>
 		</div>
 	)

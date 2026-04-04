@@ -1,7 +1,8 @@
-import './ComponentsEditor.css'
+import './ComponentsEditor.scss'
 
 import { useEffect, useRef, useState } from 'react'
 
+import { ChartIcon, CloseIcon, ScaleIcon } from '@/components/shared/icons'
 import {
 	IngredientStatesPanel,
 	IngredientVariant,
@@ -403,7 +404,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 									className='variant-remove-btn'
 									onClick={() => removeComponent(compIndex)}
 									title='Eliminar variante'>
-									×
+									<CloseIcon size={14} aria-hidden='true' />
 								</button>
 							</div>
 
@@ -585,7 +586,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 																	)
 																}
 																title='Ver conversiones'>
-																⚖️
+																<ScaleIcon size={14} aria-hidden='true' />
 															</button>
 															<button
 																type='button'
@@ -598,7 +599,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 																		? 'Ver macros'
 																		: 'Crear ingrediente y añadir macros'
 																}>
-																📊
+																<ChartIcon size={14} aria-hidden='true' />
 															</button>
 														</>
 													)}
@@ -607,7 +608,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 														className='option-remove-btn'
 														onClick={() => removeOption(compIndex, optIndex)}
 														title='Eliminar'>
-														×
+														<CloseIcon size={14} aria-hidden='true' />
 													</button>
 												</div>
 											</div>

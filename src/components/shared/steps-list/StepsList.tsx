@@ -1,6 +1,8 @@
-import './StepsList.css'
+import './StepsList.scss'
 
 import { useEffect, useRef, useState } from 'react'
+
+import { CloseIcon } from '@/components/shared/icons'
 
 interface StepsListProps {
 	steps: string[]
@@ -121,7 +123,7 @@ export function StepsList({ steps, onChange }: StepsListProps) {
 								className='step-btn step-btn-remove'
 								onClick={() => removeStep(index)}
 								title='Eliminar'>
-								×
+								<CloseIcon size={14} aria-hidden='true' />
 							</button>
 						</div>
 					))}

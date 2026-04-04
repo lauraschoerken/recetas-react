@@ -1,4 +1,4 @@
-import './RecipeForm.css'
+import './RecipeForm.scss'
 
 import { useMemo, useState } from 'react'
 

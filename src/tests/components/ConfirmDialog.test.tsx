@@ -72,12 +72,12 @@ describe('ConfirmDialog', () => {
 	it('shows danger icon for danger type', () => {
 		render(<ConfirmDialog {...defaultProps} type='danger' />)
 
-		expect(screen.getByText('⚠️')).toBeInTheDocument()
+		expect(document.querySelector('.confirm-dialog-icon.danger svg')).toBeInTheDocument()
 	})
 
 	it('shows info icon for info type', () => {
 		render(<ConfirmDialog {...defaultProps} type='info' />)
 
-		expect(screen.getByText('ℹ️')).toBeInTheDocument()
+		expect(document.querySelector('.confirm-dialog-icon.info svg')).toBeInTheDocument()
 	})
 })

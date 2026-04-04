@@ -1,6 +1,8 @@
-import './ConfirmDialog.css'
+import './ConfirmDialog.scss'
 
 import { useEffect } from 'react'
+
+import { InfoIcon, WarningIcon } from '@/components/shared/icons'
 
 export interface ConfirmDialogProps {
 	isOpen: boolean
@@ -49,11 +51,11 @@ export function ConfirmDialog({
 	const getIcon = () => {
 		switch (type) {
 			case 'danger':
-				return '⚠️'
+				return <WarningIcon size={28} aria-hidden='true' />
 			case 'warning':
-				return '⚡'
+				return <WarningIcon size={28} aria-hidden='true' />
 			case 'info':
-				return 'ℹ️'
+				return <InfoIcon size={28} aria-hidden='true' />
 		}
 	}
 

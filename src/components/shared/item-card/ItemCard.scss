@@ -148,7 +148,19 @@
 .item-card-actions {
 	display: flex;
 	gap: 0.25rem;
+	width: 100%;
+	align-items: center;
+}
+
+.item-card-actions-left {
+	display: flex;
+	gap: 0.25rem;
+}
+
+.item-card-actions-right {
+	display: flex;
 	margin-left: auto;
+	gap: 0.25rem;
 }
 
 .btn-icon {

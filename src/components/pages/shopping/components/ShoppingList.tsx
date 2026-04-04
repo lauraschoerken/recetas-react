@@ -1,4 +1,4 @@
-import './ShoppingList.css'
+import './ShoppingList.scss'
 
 import { ShoppingItem } from '@/services/shopping'
 
