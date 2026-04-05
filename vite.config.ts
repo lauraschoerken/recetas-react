@@ -20,10 +20,10 @@ export default defineConfig(({ mode }) => {
 		envDir: envRoot,
 		resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
 		server: {
-			port: 3000,
+			port: Number(env.VITE_DEV_PORT ?? 3000),
 			proxy: {
 				'/api': {
-					target: 'http://localhost:3002',
+					target: env.VITE_API_URL ?? 'http://localhost:3002',
 					changeOrigin: true,
 				},
 			},
