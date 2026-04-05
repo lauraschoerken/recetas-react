@@ -13,7 +13,7 @@ export const Header = () => {
 				<Link to='/' className='link brand'>
 					{APP_NAME}
 				</Link>
-				<nav className='nav'>
+				<nav className='nav__actions'>
 					<ThemeToggle />
 					<LanguageSelect />
 				</nav>
