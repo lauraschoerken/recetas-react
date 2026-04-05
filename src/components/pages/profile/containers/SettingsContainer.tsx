@@ -56,7 +56,7 @@ export function SettingsContainer() {
 			const macros = await profileService.getRecommendedMacros()
 			setRecommendedMacros(macros)
 			toast.success('Perfil guardado correctamente')
-		} catch (error) {
+		} catch {
 			toast.error('Error al guardar el perfil')
 		} finally {
 			setSaving(false)

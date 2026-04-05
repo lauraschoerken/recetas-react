@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
 			if (!fs.existsSync(dest)) {
 				try {
 					fs.copyFileSync(src, dest)
-				} catch (e) {
+				} catch {
 					// ignore copy errors
 				}
 			}

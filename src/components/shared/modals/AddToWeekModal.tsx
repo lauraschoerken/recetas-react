@@ -36,7 +36,7 @@ interface AddToWeekModalProps {
 
 export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeekModalProps) {
 	const { toast } = useDialog()
-	const [fullRecipe, setFullRecipe] = useState<Recipe | null>(null)
+	const [, setFullRecipe] = useState<Recipe | null>(null)
 	const [plannedDate, setPlannedDate] = useState('')
 	const [servings, setServings] = useState(4)
 	const [planType, setPlanType] = useState<WeekPlanType>('meal')
