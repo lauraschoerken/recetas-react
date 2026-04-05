@@ -1,0 +1,233 @@
+/* Styles extracted from AddToWeekModal inline styles (cleaned and variableized) */
+
+.awm-variants-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.awm-subcomponent {
+	margin-top: 0.5rem;
+}
+
+.awm-comp-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+.awm-comp-header.with-gap {
+	margin-bottom: 0.5rem;
+}
+
+.awm-checkbox {
+	cursor: pointer;
+	width: 16px;
+	height: 16px;
+}
+
+.awm-comp-name {
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--fg);
+}
+.awm-comp-name.small {
+	font-weight: 500;
+	font-size: 0.85rem;
+}
+
+.awm-badge {
+	font-size: 0.7rem;
+	color: var(--chip-fg);
+	background: var(--chip-bg);
+	padding: 0.1rem 0.4rem;
+	border-radius: 4px;
+}
+.awm-badge.xs {
+	font-size: 0.65rem;
+	padding: 0.1rem 0.3rem;
+}
+
+.awm-has-variants {
+	background: var(--success-bg);
+	color: var(--success-fg);
+	font-size: 0.65rem;
+	padding: 0.1rem 0.4rem;
+}
+
+.awm-select {
+	width: 100%;
+	padding: 0.4rem 0.5rem;
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	font-size: 0.85rem;
+	background: var(--surface-1);
+}
+
+.awm-select.alt {
+	border-color: var(--accent-100);
+	font-size: 0.8rem;
+	padding: 0.35rem 0.5rem;
+}
+
+.awm-subvariants {
+	margin-top: 0.5rem;
+	margin-left: 0.75rem;
+	padding-left: 0.75rem;
+	border-top: 1px dashed var(--success-fg);
+}
+
+.awm-subvariant-header {
+	font-size: 0.7rem;
+	color: var(--accent-700);
+	margin-bottom: 0.25rem;
+	font-weight: 500;
+}
+
+.awm-component {
+	padding: 0.75rem;
+	border-radius: 8px;
+	transition:
+		background 0.12s,
+		border-color 0.12s;
+}
+.awm-component.awm-enabled {
+	background: var(--success-bg-opaque);
+	border: 1px solid var(--success-fg);
+}
+.awm-component.awm-disabled {
+	background: var(--surface-1);
+	border: 1px solid var(--border-color);
+}
+
+.awm-subcomponent-block {
+	margin-top: 0.75rem;
+	padding-top: 0.5rem;
+	padding-left: 0.75rem;
+	border-top: 1px dashed var(--success-fg);
+	border-left: 3px solid var(--accent);
+	background: var(--surface-1);
+	border-radius: 0 0 6px 6px;
+	margin-left: -0.75rem;
+	margin-right: -0.75rem;
+	margin-bottom: -0.75rem;
+	padding-bottom: 0.5rem;
+	padding-right: 0.75rem;
+}
+
+.awm-subcomponent-block .awm-subvariant-header {
+	color: var(--accent-700);
+}
+
+/* Variant block tweaks: label smaller and muted, select full width and themed */
+.awm-subcomponent-block .awm-comp-name {
+	font-size: 0.75rem;
+	color: var(--text-muted);
+	display: block;
+	margin-bottom: 0.4rem;
+}
+
+.awm-subcomponent-block .awm-select {
+	width: 100%;
+	background: var(--surface-0);
+	color: var(--text-primary);
+	border: 1px solid var(--border-color);
+	padding: 0.45rem 0.65rem;
+	border-radius: 8px;
+	box-shadow: none;
+}
+
+.awm-subcomponent-block .awm-select option {
+	color: var(--text-primary);
+}
+
+.awm-subcomponent-block {
+	padding: 0.9rem;
+	border-radius: 8px;
+	border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.awm-loading {
+	padding: 0.5rem;
+	text-align: center;
+	color: var(--text-muted);
+	font-size: 0.85rem;
+}
+.awm-icon {
+	margin-right: 0.25rem;
+}
+
+/* Scoped button styles for the modal actions */
+.awm-root .flex.gap-1.mt-2 {
+	display: flex;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+}
+
+.awm-root .btn {
+	padding: 0.45rem 0.9rem;
+	border-radius: 8px;
+	font-weight: 600;
+	min-height: 36px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	cursor: pointer;
+	transition:
+		transform 0.08s ease,
+		box-shadow 0.12s ease,
+		filter 0.08s ease;
+}
+
+.awm-root .btn:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.awm-root .btn.btn-outline {
+	background: transparent;
+	color: var(--text-primary);
+	border: 1px solid var(--border-color);
+	box-shadow: none;
+}
+
+.awm-root .btn.btn-outline:hover {
+	border-color: var(--primary-color);
+	color: var(--primary-color);
+	background: var(--primary-light);
+}
+
+.awm-root .btn.btn-primary {
+	background: var(--primary-color);
+	color: var(--text-inverse);
+	border: 1px solid rgba(0, 0, 0, 0.06);
+	box-shadow: var(--shadow);
+}
+
+.awm-root .btn.btn-primary:hover {
+	background: var(--primary-hover);
+}
+
+/* Plan type buttons inside this modal */
+.awm-root .plan-type-selector {
+	display: flex;
+	gap: 0.5rem;
+}
+.awm-root .plan-type-btn {
+	flex: 1;
+	padding: 0.55rem 0.75rem;
+	border-radius: 8px;
+	background: transparent;
+	border: 1px solid var(--border-color);
+	color: var(--text-primary);
+	font-weight: 600;
+	cursor: pointer;
+}
+.awm-root .plan-type-btn:hover {
+	background: var(--surface-2);
+}
+.awm-root .plan-type-btn.active {
+	background: var(--primary-color);
+	color: var(--text-inverse);
+	border-color: var(--primary-color);
+}

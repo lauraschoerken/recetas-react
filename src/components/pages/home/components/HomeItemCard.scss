@@ -3,19 +3,22 @@
 	flex-direction: column;
 	gap: 0.5rem;
 	padding: 1rem;
-	background: white;
-	border-radius: 12px;
+	background: var(--card-background);
+	border-radius: var(--radius);
 	border: 1px solid var(--border-color);
-	transition: all 0.2s;
+	transition:
+		box-shadow 0.18s ease,
+		border-color 0.18s ease,
+		transform 0.12s ease;
 }
 
 .home-item-card:hover {
-	border-color: var(--primary-light);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	border-color: var(--primary-color);
+	box-shadow: var(--shadow-lg);
 }
 
 .home-item-card.is-recipe {
-	border-left: 3px solid var(--primary-color);
+	border-left: 3px solid var(--dish-accent);
 }
 
 .home-item-main {
@@ -44,9 +47,9 @@
 .home-item-badge {
 	font-size: 0.65rem;
 	padding: 0.15rem 0.4rem;
-	background: var(--primary-light);
-	color: var(--primary-color);
-	border-radius: 4px;
+	background: var(--accent-bg);
+	color: var(--accent-fg);
+	border-radius: 6px;
 	text-transform: uppercase;
 	font-weight: 600;
 	flex-shrink: 0;
@@ -57,7 +60,7 @@
 	padding: 0.15rem 0.4rem;
 	background: var(--accent-bg);
 	color: var(--accent-fg);
-	border-radius: 4px;
+	border-radius: 6px;
 	font-weight: 500;
 	flex-shrink: 0;
 }
@@ -201,10 +204,10 @@
 	position: absolute;
 	top: 100%;
 	right: 0;
-	background: white;
+	background: var(--card-background);
 	border: 1px solid var(--border-color);
 	border-radius: 8px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow-lg);
 	min-width: 160px;
 	z-index: 100;
 	overflow: hidden;

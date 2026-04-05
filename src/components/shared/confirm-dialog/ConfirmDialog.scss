@@ -4,13 +4,14 @@
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background-color: rgba(0, 0, 0, 0.5);
+	background-color: rgba(2, 6, 23, 0.55);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	z-index: 1100;
 	padding: 1rem;
 	animation: fadeIn 0.15s ease-out;
+	backdrop-filter: blur(4px);
 }
 
 @keyframes fadeIn {
@@ -24,13 +25,14 @@
 
 .confirm-dialog {
 	background-color: var(--card-background);
-	border-radius: 16px;
-	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-	max-width: 400px;
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-xl);
+	max-width: 420px;
 	width: 100%;
-	padding: 1.5rem;
+	padding: 1.25rem 1.5rem;
 	text-align: center;
-	animation: slideUp 0.2s ease-out;
+	animation: slideUp 0.18s ease-out;
 }
 
 @keyframes slideUp {
@@ -50,15 +52,15 @@
 }
 
 .confirm-dialog-icon.danger {
-	filter: grayscale(0);
+	color: var(--danger-color);
 }
 
 .confirm-dialog-icon.warning {
-	filter: grayscale(0);
+	color: var(--warning-color);
 }
 
 .confirm-dialog-icon.info {
-	filter: grayscale(0);
+	color: var(--primary-color);
 }
 
 .confirm-dialog-title {
@@ -85,9 +87,22 @@
 	min-width: 100px;
 }
 
+.btn {
+	padding: 0.6rem 0.9rem;
+	border-radius: var(--radius-sm);
+	font-weight: 600;
+}
+
+.btn-neutral {
+	background: transparent;
+	border: 1px solid var(--border-color);
+	color: var(--text-primary);
+}
+
 .btn-danger {
 	background-color: var(--danger-color);
-	color: white;
+	color: var(--text-inverse);
+	border: 1px solid transparent;
 }
 
 .btn-danger:hover {

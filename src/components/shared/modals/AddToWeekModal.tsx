@@ -1,3 +1,5 @@
+import './AddToWeekModal.scss'
+
 import { useCallback, useEffect, useState } from 'react'
 
 import { Modal } from '@/components/shared/modal'
@@ -230,7 +232,7 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} title='Añadir al plan semanal'>
-			<div>
+			<div className='awm-root'>
 				<p className='mb-2'>
 					<strong>{recipe.title}</strong>
 				</p>
@@ -283,7 +285,7 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 				{componentSelections.length > 0 && (
 					<div className='form-group' style={{ marginTop: '1rem' }}>
 						<label className='form-label'>Variantes</label>
-						<div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+						<div className='awm-variants-list'>
 							{(() => {
 								// Agrupar por receta padre
 								const mainComponents = componentSelections.filter((cs) => !cs.parentRecipeId)
@@ -306,14 +308,9 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 									const hasSubVariants = subSubComps && subSubComps.length > 0
 
 									return (
-										<div key={sc.componentId} style={{ marginTop: '0.5rem' }}>
+										<div key={sc.componentId} className='awm-subcomponent'>
 											<div
-												style={{
-													display: 'flex',
-													alignItems: 'center',
-													gap: '0.5rem',
-													marginBottom: sc.enabled && sc.options.length > 1 ? '0.5rem' : 0,
-												}}>
+												className={`awm-comp-header ${sc.enabled && sc.options.length > 1 ? 'with-gap' : ''}`}>
 												{sc.isOptional && (
 													<input
 														type='checkbox'
@@ -321,29 +318,16 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 														onChange={(e) =>
 															updateComponentSelection(sc.componentId, 'enabled', e.target.checked)
 														}
-														style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+														className='awm-checkbox'
 													/>
 												)}
-												<span style={{ fontWeight: 500, fontSize: '0.85rem' }}>
+												<span className='awm-comp-name small'>
 													{sc.options.length === 1 && (
-														<span style={{ marginRight: '0.25rem' }}>
-															{selectedOpt?.isRecipe ? '📖' : '🥬'}
-														</span>
+														<span className='awm-icon'>{selectedOpt?.isRecipe ? '📖' : '🥬'}</span>
 													)}
 													{sc.componentName}
 												</span>
-												{sc.isOptional && (
-													<span
-														style={{
-															fontSize: '0.65rem',
-															color: '#94a3b8',
-															background: '#f1f5f9',
-															padding: '0.1rem 0.3rem',
-															borderRadius: '4px',
-														}}>
-														opcional
-													</span>
-												)}
+												{sc.isOptional && <span className='awm-badge xs'>opcional</span>}
 											</div>
 											{sc.enabled && sc.options.length > 1 && (
 												<select
@@ -355,14 +339,7 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 															parseInt(e.target.value)
 														)
 													}
-													style={{
-														width: '100%',
-														padding: '0.35rem 0.5rem',
-														border: '1px solid #bae6fd',
-														borderRadius: '6px',
-														fontSize: '0.8rem',
-														background: 'white',
-													}}>
+													className='awm-select alt'>
 													{sc.options.map((opt) => (
 														<option key={opt.id} value={opt.id}>
 															{opt.isRecipe ? '📖' : '🥬'} {opt.name}
@@ -372,22 +349,8 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 											)}
 											{/* Sub-sub-componentes recursivos */}
 											{hasSubVariants && sc.enabled && (
-												<div
-													style={{
-														marginTop: '0.5rem',
-														marginLeft: '0.75rem',
-														paddingLeft: '0.75rem',
-														borderLeft: '2px solid #7dd3fc',
-													}}>
-													<div
-														style={{
-															fontSize: '0.7rem',
-															color: '#0369a1',
-															marginBottom: '0.25rem',
-															fontWeight: 500,
-														}}>
-														📖 {selectedOpt?.name}
-													</div>
+												<div className='awm-subvariants'>
+													<div className='awm-subvariant-header'>📖 {selectedOpt?.name}</div>
 													{subSubComps.map((ssc) => renderSubComponent(ssc))}
 												</div>
 											)}
@@ -405,19 +368,9 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 									return (
 										<div
 											key={cs.componentId}
-											style={{
-												padding: '0.75rem',
-												background: cs.enabled ? '#f0fdf4' : '#f8fafc',
-												border: `1px solid ${cs.enabled ? '#86efac' : '#e2e8f0'}`,
-												borderRadius: '8px',
-											}}>
+											className={`awm-component ${cs.enabled ? 'awm-enabled' : 'awm-disabled'}`}>
 											<div
-												style={{
-													display: 'flex',
-													alignItems: 'center',
-													gap: '0.5rem',
-													marginBottom: cs.enabled && cs.options.length > 1 ? '0.5rem' : 0,
-												}}>
+												className={`awm-comp-header ${cs.enabled && cs.options.length > 1 ? 'with-gap' : ''}`}>
 												{cs.isOptional && (
 													<input
 														type='checkbox'
@@ -425,40 +378,18 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 														onChange={(e) =>
 															updateComponentSelection(cs.componentId, 'enabled', e.target.checked)
 														}
-														style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+														className='awm-checkbox'
 													/>
 												)}
-												<span style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+												<span className='awm-comp-name'>
 													{cs.options.length === 1 && (
-														<span style={{ marginRight: '0.25rem' }}>
-															{selectedOpt?.isRecipe ? '📖' : '🥬'}
-														</span>
+														<span className='awm-icon'>{selectedOpt?.isRecipe ? '📖' : '🥬'}</span>
 													)}
 													{cs.componentName}
 												</span>
-												{cs.isOptional && (
-													<span
-														style={{
-															fontSize: '0.7rem',
-															color: '#94a3b8',
-															background: '#f1f5f9',
-															padding: '0.1rem 0.4rem',
-															borderRadius: '4px',
-														}}>
-														opcional
-													</span>
-												)}
+												{cs.isOptional && <span className='awm-badge'>opcional</span>}
 												{hasSubVariants && cs.enabled && (
-													<span
-														style={{
-															fontSize: '0.65rem',
-															color: '#059669',
-															background: '#d1fae5',
-															padding: '0.1rem 0.4rem',
-															borderRadius: '4px',
-														}}>
-														tiene variantes
-													</span>
+													<span className='awm-badge awm-has-variants'>tiene variantes</span>
 												)}
 											</div>
 											{cs.enabled && cs.options.length > 1 && (
@@ -471,14 +402,7 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 															parseInt(e.target.value)
 														)
 													}
-													style={{
-														width: '100%',
-														padding: '0.4rem 0.5rem',
-														border: '1px solid #d1d5db',
-														borderRadius: '6px',
-														fontSize: '0.85rem',
-														background: 'white',
-													}}>
+													className='awm-select'>
 													{cs.options.map((opt) => (
 														<option key={opt.id} value={opt.id}>
 															{opt.isRecipe ? '📖' : '🥬'} {opt.name}
@@ -488,30 +412,8 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 											)}
 											{/* Sub-componentes dentro del mismo bloque */}
 											{hasSubVariants && cs.enabled && (
-												<div
-													style={{
-														marginTop: '0.75rem',
-														paddingTop: '0.5rem',
-														paddingLeft: '0.75rem',
-														borderTop: '1px dashed #86efac',
-														borderLeft: '3px solid #0ea5e9',
-														background: '#f0f9ff',
-														borderRadius: '0 0 6px 6px',
-														marginLeft: '-0.75rem',
-														marginRight: '-0.75rem',
-														marginBottom: '-0.75rem',
-														paddingBottom: '0.5rem',
-														paddingRight: '0.75rem',
-													}}>
-													<div
-														style={{
-															fontSize: '0.7rem',
-															color: '#0369a1',
-															marginBottom: '0.25rem',
-															fontWeight: 500,
-														}}>
-														📖 {selectedOpt?.name}
-													</div>
+												<div className='awm-subcomponent-block'>
+													<div className='awm-subvariant-header'>📖 {selectedOpt?.name}</div>
 													{subComps.map((sc) => renderSubComponent(sc))}
 												</div>
 											)}
