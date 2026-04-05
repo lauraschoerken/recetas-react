@@ -60,20 +60,24 @@
 	border: none;
 	padding: 0;
 	font: inherit;
-	transition: opacity 0.2s ease;
+	font-weight: 300;
+	opacity: 0.75;
 
 	&:hover {
-		opacity: 0.7;
+		opacity: 1;
+		transform: translateY(-2px);
 	}
 }
 
 .link-active {
-	text-decoration: underline;
+	text-decoration: none;
 	font-weight: 600;
 	color: var(--fg);
+	opacity: 1;
 
 	&:hover {
 		opacity: 1;
+		transform: translateY(-3px);
 	}
 }
 
