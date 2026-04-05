@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => {
 		envDir: finalEnvDir,
 		resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
 		server: {
-			port: Number(env.VITE_DEV_PORT ?? 3000),
+			port: Number(env.VITE_DEV_PORT),
 			proxy: {
 				'/api': {
 					target: env.VITE_API_URL,

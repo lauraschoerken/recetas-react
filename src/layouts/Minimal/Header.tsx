@@ -15,7 +15,7 @@ export const Header = () => {
 				</Link>
 				<nav className='nav__actions'>
 					<ThemeToggle />
-					<LanguageSelect />
+					<LanguageSelect big />
 				</nav>
 			</div>
 		</header>

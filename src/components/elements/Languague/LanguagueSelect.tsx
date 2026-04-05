@@ -5,7 +5,11 @@ import { useTranslation } from 'react-i18next'
 
 import { AVAILABLE_LANGS } from '@/utils/constants'
 
-const LanguageSelect = () => {
+type Props = {
+	big?: boolean
+}
+
+const LanguageSelect = ({ big = false }: Props) => {
 	const { i18n } = useTranslation()
 	const initial = i18n.language?.split('-')[0] || 'es'
 	const [open, setOpen] = useState(false)
@@ -55,7 +59,7 @@ const LanguageSelect = () => {
 	return (
 		<div
 			ref={wrapRef}
-			className={`cselect ${open ? 'is-open' : ''}`}
+			className={`cselect ${open ? 'is-open' : ''} ${big ? 'cselect--big' : ''}`}
 			role='combobox'
 			aria-haspopup='listbox'
 			aria-expanded={open}
@@ -69,6 +73,14 @@ const LanguageSelect = () => {
 				aria-expanded={open}
 				onClick={() => setOpen((o) => !o)}>
 				<span className='cselect__icon' aria-hidden='true' />
+				{big && (
+					<>
+						<span className='cselect__value' aria-hidden='true'>
+							{label}
+						</span>
+						<span className='cselect__chevron' aria-hidden='true' />
+					</>
+				)}
 			</button>
 
 			{open && (
