@@ -2,6 +2,7 @@ export interface User {
 	id: number
 	email: string
 	name: string
+	imageUrl?: string
 }
 
 export interface AuthResponse {
@@ -18,4 +19,5 @@ export interface RegisterData {
 	email: string
 	password: string
 	name: string
+	imageUrl?: string
 }

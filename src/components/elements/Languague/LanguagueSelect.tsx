@@ -69,8 +69,6 @@ const LanguageSelect = () => {
 				aria-expanded={open}
 				onClick={() => setOpen((o) => !o)}>
 				<span className='cselect__icon' aria-hidden='true' />
-				<span className='cselect__value'>{label}</span>
-				<span className='cselect__chevron' aria-hidden='true' />
 			</button>
 
 			{open && (

@@ -1,23 +1,23 @@
 .ingredient-card {
-	background: white;
+	background: var(--card-background);
 	border-radius: 12px;
 	padding: 1rem;
 	border: 1px solid var(--border-color);
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
-	transition: all 0.2s ease;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	transition: all 0.18s ease;
+	box-shadow: var(--shadow);
 }
 
 .ingredient-card:hover {
-	border-color: var(--primary-light);
-	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+	border-color: var(--primary-hover);
+	box-shadow: var(--shadow-lg);
 }
 
 .ingredient-card.editing {
 	background: var(--surface-1);
-	border-color: var(--primary);
+	border-color: var(--primary-color);
 }
 
 .ingredient-header {
@@ -167,7 +167,7 @@
 }
 
 .conversions-toggle:hover {
-	color: var(--primary);
+	color: var(--primary-color);
 }
 
 .conversions-panel {
@@ -192,7 +192,7 @@
 	font-size: 0.8rem;
 	color: var(--text-primary);
 	padding: 0.25rem 0.5rem;
-	background: white;
+	background: var(--surface-0);
 	border-radius: 4px;
 	border: 1px solid var(--border-color);
 }
@@ -248,7 +248,7 @@
 	font-size: 0.75rem;
 	border: 1px solid var(--info-bg);
 	border-radius: 4px;
-	background: white;
+	background: var(--surface-0);
 	flex: 1;
 	min-width: 0;
 }
@@ -364,7 +364,7 @@
 
 .btn-icon:hover {
 	background: var(--primary-light);
-	color: var(--primary);
+	color: var(--primary-color);
 }
 
 .btn-icon-danger:hover {
@@ -392,13 +392,13 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 0.5rem;
-	background: white;
+	background: var(--surface-0);
 	border-radius: 6px;
 	border: 1px solid var(--border-color);
 }
 
 .variant-item.is-default {
-	border-color: var(--success-bg);
+	border-color: var(--success-color);
 	background: var(--success-bg);
 }
 
@@ -423,7 +423,7 @@
 	font-size: 0.6rem;
 	padding: 0.1rem 0.35rem;
 	background: var(--success-color);
-	color: white;
+	color: var(--text-inverse);
 	border-radius: 4px;
 	font-weight: 500;
 }

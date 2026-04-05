@@ -8,6 +8,7 @@ export const authService = {
 		const response = await api.post<AuthResponse>('/auth/login', data)
 		localStorage.setItem('token', response.token)
 		localStorage.setItem('user', JSON.stringify(response.user))
+		console.log('Login successful:', response.user)
 		return response
 	},
 
