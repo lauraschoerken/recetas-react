@@ -1,8 +1,8 @@
 import './HomeContainer.scss'
 
-import { useEffect,useState } from 'react'
+import { useEffect, useState } from 'react'
 
-import { CreateHomeItemData,HomeItem, HomeLocation, homeService } from '@/services/home'
+import { CreateHomeItemData, HomeItem, HomeLocation, homeService } from '@/services/home'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
 import { AddHomeItemForm } from '../components/AddHomeItemForm'
@@ -27,7 +27,6 @@ export function HomeContainer() {
 
 	const initializeHome = async () => {
 		try {
-			await homeService.processConsumed()
 			const data = await homeService.getAll()
 			setItems(data)
 		} catch (error) {
