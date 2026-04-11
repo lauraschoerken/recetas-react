@@ -11,8 +11,12 @@ export interface WeekPlan {
 	consumed: boolean
 	userId: number
 	recipeId: number | null
+	ingredientId: number | null
+	ingredientQty: number | null
+	ingredientUnit: string | null
 	createdAt: string
 	recipe: Recipe | null
+	ingredient: { id: number; name: string; unit: string; imageUrl?: string | null } | null
 	selections?: { optionId: number }[]
 }
 
@@ -28,7 +32,10 @@ export interface ShoppingItem {
 }
 
 export interface CreateWeekPlanData {
-	recipeId: number
+	recipeId?: number
+	ingredientId?: number
+	ingredientQty?: number
+	ingredientUnit?: string
 	plannedDate: string
 	servings?: number
 	type?: WeekPlanType

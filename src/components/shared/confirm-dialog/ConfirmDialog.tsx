@@ -1,6 +1,7 @@
 import './ConfirmDialog.scss'
 
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { InfoIcon, WarningIcon } from '@/components/shared/icons'
 
@@ -19,12 +20,15 @@ export function ConfirmDialog({
 	isOpen,
 	title,
 	message,
-	confirmText = 'Confirmar',
-	cancelText = 'Cancelar',
+	confirmText,
+	cancelText,
 	type = 'danger',
 	onConfirm,
 	onCancel,
 }: ConfirmDialogProps) {
+	const { t } = useTranslation()
+	const resolvedConfirmText = confirmText ?? t('confirm')
+	const resolvedCancelText = cancelText ?? t('cancel')
 	useEffect(() => {
 		if (isOpen) {
 			document.body.style.overflow = 'hidden'
@@ -67,12 +71,12 @@ export function ConfirmDialog({
 				<p className='confirm-dialog-message'>{message}</p>
 				<div className='confirm-dialog-actions'>
 					<button className='btn btn-outline' onClick={onCancel}>
-						{cancelText}
+						{resolvedCancelText}
 					</button>
 					<button
 						className={`btn btn-${type === 'danger' ? 'danger' : 'primary'}`}
 						onClick={onConfirm}>
-						{confirmText}
+						{resolvedConfirmText}
 					</button>
 				</div>
 			</div>

@@ -50,4 +50,10 @@ export const shoppingService = {
 	async markAsConsumed(planId: number): Promise<ConsumeResult> {
 		return api.post<ConsumeResult>(`/week-plan/${planId}/consume`, {})
 	},
+
+	async addManualItems(
+		items: { ingredientId: number; quantity: number; unit: string }[]
+	): Promise<{ added: number }> {
+		return api.post<{ added: number }>('/shopping-list/add', { items })
+	},
 }

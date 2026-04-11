@@ -1,6 +1,7 @@
 import './DayCardRow.scss'
 
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { CheckIcon, CookIcon, DeleteIcon } from '@/components/shared/icons'
@@ -33,18 +34,23 @@ export function DayCardRow({
 	onCook,
 	onConsume,
 }: DayCardRowProps) {
+	const { t } = useTranslation()
 	const [cookingPlan, setCookingPlan] = useState<WeekPlan | null>(null)
 	const [leftoverServings, setLeftoverServings] = useState(0)
 	const [leftoverLocation, setLeftoverLocation] = useState<'nevera' | 'congelador'>('nevera')
 	const [dragOverDate, setDragOverDate] = useState<string | null>(null)
 
 	const getItemTitle = (plan: WeekPlan) => {
-		return plan.recipe?.title || 'Sin titulo'
+		if (plan.ingredient) return `🥬 ${plan.ingredient.name}`
+		return plan.recipe?.title || t('noTitle')
 	}
 
 	const getItemLink = (plan: WeekPlan) => {
+		if (plan.ingredient) return '#'
 		return plan.recipe ? `/recipes/${plan.recipeId}` : '#'
 	}
+
+	const isIngredientPlan = (plan: WeekPlan) => !!plan.ingredientId
 
 	const hasComponents = (plan: WeekPlan) => {
 		return plan.recipe?.components && plan.recipe.components.length > 0
@@ -115,25 +121,29 @@ export function DayCardRow({
 					</Link>
 				</div>
 				<div className='row-plan-footer'>
-					<span className='row-plan-servings'>{plan.servings} porc.</span>
+					<span className='row-plan-servings'>
+						{isIngredientPlan(plan)
+							? `${plan.ingredientQty} ${plan.ingredientUnit}`
+							: `${plan.servings} ${t('weekPlan.portions')}`}
+					</span>
 					<div className='row-plan-actions'>
-						{type === 'prep' && !plan.cooked && (
+						{!isIngredientPlan(plan) && type === 'prep' && !plan.cooked && (
 							<button
 								className='action-cook'
 								onClick={() => handleOpenCookModal(plan)}
-								title='Marcar como cocinado'>
+								title={t('weekPlan.cookTitle')}>
 								<CookIcon size={14} aria-hidden='true' />
 							</button>
 						)}
-						{type === 'meal' && !plan.consumed && onConsume && (
+						{!isIngredientPlan(plan) && type === 'meal' && !plan.consumed && onConsume && (
 							<button
 								className='action-consume'
 								onClick={() => onConsume(plan.id)}
-								title='Marcar como consumido'>
+								title={t('weekPlan.markConsumed')}>
 								<CheckIcon size={14} aria-hidden='true' />
 							</button>
 						)}
-						<button className='action-remove' onClick={() => onRemove(plan.id)} title='Eliminar'>
+						<button className='action-remove' onClick={() => onRemove(plan.id)} title={t('delete')}>
 							<DeleteIcon size={14} aria-hidden='true' />
 						</button>
 					</div>
@@ -172,12 +182,14 @@ export function DayCardRow({
 			{cookingPlan && (
 				<div className='cook-modal-overlay' onClick={handleCancelCook}>
 					<div className='cook-modal' onClick={(e) => e.stopPropagation()}>
-						<h3>Marcar como cocinado</h3>
+						<h3>{t('weekPlan.cookTitle')}</h3>
 						<p className='cook-modal-recipe'>{getItemTitle(cookingPlan)}</p>
-						<p className='cook-modal-servings'>Raciones preparadas: {cookingPlan.servings}</p>
+						<p className='cook-modal-servings'>
+							{t('weekPlan.preparedServings')} {cookingPlan.servings}
+						</p>
 
 						<div className='cook-modal-field'>
-							<label htmlFor='leftovers'>Raciones a guardar en casa:</label>
+							<label htmlFor='leftovers'>{t('weekPlan.storeServings')}</label>
 							<input
 								type='number'
 								id='leftovers'
@@ -192,28 +204,28 @@ export function DayCardRow({
 							/>
 							<small className='cook-modal-hint'>
 								{leftoverServings === 0
-									? 'No se guardará nada (se consumirá todo)'
+									? t('weekPlan.consumeAll')
 									: leftoverServings === cookingPlan.servings
-										? 'Se guardarán todas las raciones'
-										: `Se consumirán ${cookingPlan.servings - leftoverServings} raciones`}
+										? t('weekPlan.storeAll')
+										: t('weekPlan.consumeSome', { count: cookingPlan.servings - leftoverServings })}
 							</small>
 						</div>
 
 						{leftoverServings > 0 && (
 							<div className='cook-modal-field'>
-								<label>Guardar en:</label>
+								<label>{t('weekPlan.storeIn')}</label>
 								<div className='cook-modal-location-options'>
 									<button
 										type='button'
 										className={`cook-modal-location-btn ${leftoverLocation === 'nevera' ? 'active' : ''}`}
 										onClick={() => setLeftoverLocation('nevera')}>
-										Nevera
+										{t('weekPlan.fridgeLocation')}
 									</button>
 									<button
 										type='button'
 										className={`cook-modal-location-btn ${leftoverLocation === 'congelador' ? 'active' : ''}`}
 										onClick={() => setLeftoverLocation('congelador')}>
-										Congelador
+										{t('weekPlan.freezerLocation')}
 									</button>
 								</div>
 							</div>
@@ -221,10 +233,10 @@ export function DayCardRow({
 
 						<div className='cook-modal-actions'>
 							<button className='cook-modal-cancel' onClick={handleCancelCook}>
-								Cancelar
+								{t('cancel')}
 							</button>
 							<button className='cook-modal-confirm' onClick={handleConfirmCook}>
-								Confirmar
+								{t('confirm')}
 							</button>
 						</div>
 					</div>

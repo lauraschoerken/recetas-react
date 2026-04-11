@@ -263,6 +263,54 @@
 	font-size: 0.8rem;
 }
 
+.threshold-toggle {
+	background: none;
+	border: none;
+	color: var(--text-secondary);
+	font-size: 0.75rem;
+	cursor: pointer;
+	padding: 0.25rem 0;
+	text-align: left;
+	transition: color 0.2s;
+}
+
+.threshold-toggle:hover {
+	color: var(--primary-color);
+}
+
+.threshold-active-badge {
+	color: var(--success-color, #22c55e);
+	font-weight: 600;
+	margin-left: 0.25rem;
+}
+
+.threshold-panel {
+	background: var(--surface-1);
+	border-radius: 8px;
+	padding: 0.75rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.threshold-panel .form-hint {
+	font-size: 0.75rem;
+	color: var(--text-secondary);
+	margin: 0;
+}
+
+.threshold-form {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.threshold-form .form-input,
+.threshold-form .form-select {
+	max-width: 120px;
+}
+
 .ingredient-actions {
 	display: flex;
 	gap: 0.25rem;

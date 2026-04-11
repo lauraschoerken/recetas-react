@@ -1,9 +1,11 @@
 import './IngredientListContainer.scss'
 
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { CloseIcon } from '@/components/shared/icons'
 import { Ingredient, ingredientService, UpdateIngredientData } from '@/services/ingredient'
+import { shoppingService } from '@/services/shopping'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
 import { IngredientCard } from '../components/IngredientCard'
@@ -33,6 +35,7 @@ interface BulkIngredient {
 }
 
 export function IngredientListContainer() {
+	const { t } = useTranslation()
 	const { confirm, toast } = useDialog()
 	const [ingredients, setIngredients] = useState<Ingredient[]>([])
 	const [loading, setLoading] = useState(true)
@@ -44,6 +47,7 @@ export function IngredientListContainer() {
 	const [newName, setNewName] = useState('')
 	const [newUnit, setNewUnit] = useState<'g' | 'ml'>('g')
 	const [newImageUrl, setNewImageUrl] = useState('')
+	const [newDefaultLocation, setNewDefaultLocation] = useState('')
 	const [newVariants, setNewVariants] = useState<NewVariant[]>([
 		{
 			id: `var-${Date.now()}`,
@@ -64,6 +68,15 @@ export function IngredientListContainer() {
 		{ id: `bulk-${Date.now()}`, name: '', unit: 'g' },
 	])
 	const [bulkCreating, setBulkCreating] = useState(false)
+
+	// Estado para añadir al plan semanal
+	const [weekPlanIngredient, setWeekPlanIngredient] = useState<Ingredient | null>(null)
+	const [weekPlanQty, setWeekPlanQty] = useState<number>(100)
+	const [weekPlanUnit, setWeekPlanUnit] = useState<string>('g')
+	const [weekPlanDate, setWeekPlanDate] = useState<string>(
+		() => new Date().toISOString().split('T')[0]
+	)
+	const [addingToWeekPlan, setAddingToWeekPlan] = useState(false)
 
 	useEffect(() => {
 		loadIngredients()
@@ -201,6 +214,7 @@ export function IngredientListContainer() {
 				name: newName.charAt(0).toUpperCase() + newName.slice(1),
 				unit: newUnit,
 				imageUrl: newImageUrl || undefined,
+				defaultLocation: newDefaultLocation || undefined,
 				variants: validVariants,
 			})
 
@@ -228,9 +242,9 @@ export function IngredientListContainer() {
 
 			await loadIngredients()
 			resetForm()
-			toast.success('Ingrediente creado correctamente')
+			toast.success(t('ingredients.created'))
 		} catch (error) {
-			toast.error('Error al crear ingrediente')
+			toast.error(t('ingredients.createError'))
 		}
 	}
 
@@ -238,16 +252,17 @@ export function IngredientListContainer() {
 		try {
 			await ingredientService.update(id, data)
 			await loadIngredients()
+			toast.success(t('ingredients.updated'))
 		} catch (error) {
-			toast.error('Error al actualizar ingrediente')
+			toast.error(t('ingredients.updateError'))
 		}
 	}
 
 	const handleDelete = async (id: number) => {
 		const confirmed = await confirm({
-			title: 'Eliminar ingrediente',
-			message: '¿Estás seguro de que quieres eliminar este ingrediente?',
-			confirmText: 'Eliminar',
+			title: t('ingredients.deleteTitle'),
+			message: t('ingredients.deleteConfirm'),
+			confirmText: t('delete'),
 			type: 'danger',
 		})
 		if (!confirmed) return
@@ -255,9 +270,50 @@ export function IngredientListContainer() {
 		try {
 			await ingredientService.delete(id)
 			setIngredients(ingredients.filter((ing) => ing.id !== id))
-			toast.success('Ingrediente eliminado')
+			toast.success(t('ingredients.deleted'))
 		} catch (error) {
-			toast.error('Error al eliminar ingrediente. Puede estar siendo usado en recetas.')
+			toast.error(t('ingredients.deleteError'))
+		}
+	}
+
+	const handleAddToShopping = async (ingredient: Ingredient) => {
+		try {
+			await shoppingService.addManualItems([
+				{
+					ingredientId: ingredient.id,
+					quantity: 1,
+					unit: ingredient.unit,
+				},
+			])
+			toast.success(t('ingredients.addedToShopping'))
+		} catch {
+			toast.error(t('ingredients.addToShoppingError'))
+		}
+	}
+
+	const handleOpenAddToWeekPlan = (ingredient: Ingredient) => {
+		setWeekPlanIngredient(ingredient)
+		setWeekPlanQty(100)
+		setWeekPlanUnit(ingredient.unit)
+		setWeekPlanDate(new Date().toISOString().split('T')[0])
+	}
+
+	const handleAddToWeekPlan = async () => {
+		if (!weekPlanIngredient || weekPlanQty <= 0) return
+		setAddingToWeekPlan(true)
+		try {
+			await shoppingService.addToWeekPlan({
+				ingredientId: weekPlanIngredient.id,
+				ingredientQty: weekPlanQty,
+				ingredientUnit: weekPlanUnit,
+				plannedDate: weekPlanDate,
+			})
+			toast.success(t('ingredients.addedToWeekPlan'))
+			setWeekPlanIngredient(null)
+		} catch {
+			toast.error(t('ingredients.addToWeekPlanError'))
+		} finally {
+			setAddingToWeekPlan(false)
 		}
 	}
 
@@ -265,6 +321,7 @@ export function IngredientListContainer() {
 		setNewName('')
 		setNewUnit('g')
 		setNewImageUrl('')
+		setNewDefaultLocation('')
 		setNewVariants([
 			{
 				id: `var-${Date.now()}`,
@@ -339,9 +396,9 @@ export function IngredientListContainer() {
 			await ingredientService.createBulk(validIngredients)
 			await loadIngredients()
 			resetForm()
-			toast.success(`${validIngredients.length} ingrediente(s) creado(s)`)
+			toast.success(`${validIngredients.length} ${t('ingredients.bulkCreated')}`)
 		} catch (error) {
-			toast.error('Error al crear ingredientes')
+			toast.error(t('ingredients.bulkCreateError'))
 		} finally {
 			setBulkCreating(false)
 		}
@@ -352,15 +409,15 @@ export function IngredientListContainer() {
 	)
 
 	if (loading) {
-		return <div className='loading'>Cargando ingredientes...</div>
+		return <div className='loading'>{t('ingredients.loading')}</div>
 	}
 
 	return (
 		<div className='ingredient-list-container'>
 			<div className='page-header'>
-				<h1 className='page-title'>Ingredientes</h1>
+				<h1 className='page-title'>{t('ingredients.title')}</h1>
 				<button className='btn btn-primary' onClick={() => setShowAddForm(!showAddForm)}>
-					{showAddForm ? 'Cancelar' : '+ Nuevo Ingrediente'}
+					{showAddForm ? t('ingredients.cancelBtn') : t('ingredients.new')}
 				</button>
 			</div>
 
@@ -371,13 +428,13 @@ export function IngredientListContainer() {
 							type='button'
 							className={`mode-btn ${addMode === 'single' ? 'active' : ''}`}
 							onClick={() => setAddMode('single')}>
-							Un ingrediente
+							{t('ingredients.single')}
 						</button>
 						<button
 							type='button'
 							className={`mode-btn ${addMode === 'multiple' ? 'active' : ''}`}
 							onClick={() => setAddMode('multiple')}>
-							Varios ingredientes
+							{t('ingredients.multiple')}
 						</button>
 					</div>
 
@@ -387,7 +444,7 @@ export function IngredientListContainer() {
 								<input
 									type='text'
 									className='form-input'
-									placeholder='Nombre del ingrediente'
+									placeholder={t('ingredients.namePlaceholder')}
 									value={newName}
 									onChange={(e) => setNewName(e.target.value)}
 									required
@@ -408,7 +465,7 @@ export function IngredientListContainer() {
 								<input
 									type='url'
 									className='form-input'
-									placeholder='URL de imagen (opcional)'
+									placeholder={t('ingredients.imageUrlPlaceholder')}
 									value={newImageUrl}
 									onChange={(e) => setNewImageUrl(e.target.value)}
 								/>
@@ -422,9 +479,19 @@ export function IngredientListContainer() {
 									</div>
 								)}
 							</div>
-
+							<div className='form-row'>
+								<select
+									className='form-input'
+									value={newDefaultLocation}
+									onChange={(e) => setNewDefaultLocation(e.target.value)}>
+									<option value=''>{t('ingredients.defaultLocationOption')}</option>
+									<option value='nevera'>{t('homePage.fridge')}</option>
+									<option value='congelador'>{t('homePage.freezer')}</option>
+									<option value='despensa'>{t('homePage.pantry')}</option>
+								</select>
+							</div>
 							<div className='variants-section'>
-								<p className='form-hint'>Estados (valores nutricionales por 100{newUnit}):</p>
+								<p className='form-hint'>{t('ingredients.statesHint', { unit: newUnit })}</p>
 
 								<div className='variants-list-create'>
 									{newVariants.map((variant) => (
@@ -437,12 +504,12 @@ export function IngredientListContainer() {
 													name='defaultVariant'
 													checked={variant.isDefault}
 													onChange={() => updateVariantRow(variant.id, 'isDefault', true)}
-													title='Predeterminado'
+													title={t('default')}
 												/>
 												<input
 													type='text'
 													className='form-input variant-name-input'
-													placeholder='Crudo, Cocinado, Frito...'
+													placeholder={t('ingredients.variantsPlaceholder')}
 													value={variant.name}
 													onChange={(e) => updateVariantRow(variant.id, 'name', e.target.value)}
 												/>
@@ -459,7 +526,7 @@ export function IngredientListContainer() {
 												<input
 													type='number'
 													className='form-input'
-													placeholder='kcal'
+													placeholder={t('weekPlan.kcal')}
 													value={variant.calories}
 													onChange={(e) => updateVariantRow(variant.id, 'calories', e.target.value)}
 													min={0}
@@ -467,7 +534,7 @@ export function IngredientListContainer() {
 												<input
 													type='number'
 													className='form-input'
-													placeholder='prot'
+													placeholder={t('weekPlan.prot')}
 													value={variant.protein}
 													onChange={(e) => updateVariantRow(variant.id, 'protein', e.target.value)}
 													min={0}
@@ -476,7 +543,7 @@ export function IngredientListContainer() {
 												<input
 													type='number'
 													className='form-input'
-													placeholder='carbs'
+													placeholder={t('weekPlan.carbsShort')}
 													value={variant.carbs}
 													onChange={(e) => updateVariantRow(variant.id, 'carbs', e.target.value)}
 													min={0}
@@ -485,7 +552,7 @@ export function IngredientListContainer() {
 												<input
 													type='number'
 													className='form-input'
-													placeholder='grasa'
+													placeholder={t('weekPlan.fatShort')}
 													value={variant.fat}
 													onChange={(e) => updateVariantRow(variant.id, 'fat', e.target.value)}
 													min={0}
@@ -494,7 +561,7 @@ export function IngredientListContainer() {
 												<input
 													type='number'
 													className='form-input'
-													placeholder='fibra'
+													placeholder={t('fiber')}
 													value={variant.fiber}
 													onChange={(e) => updateVariantRow(variant.id, 'fiber', e.target.value)}
 													min={0}
@@ -509,12 +576,12 @@ export function IngredientListContainer() {
 									type='button'
 									className='btn btn-outline btn-sm add-variant-create-btn'
 									onClick={addVariantRow}>
-									+ Añadir otro estado
+									{t('ingredients.addAnother')}
 								</button>
 							</div>
 
 							<button type='button' className='conversions-toggle-btn' onClick={toggleConversions}>
-								{showConversions ? '▼' : '▶'} Conversiones de unidades
+								{showConversions ? '▼' : '▶'} {t('recipes.unitConversions')}
 							</button>
 
 							{showConversions && (
@@ -560,26 +627,23 @@ export function IngredientListContainer() {
 										type='button'
 										className='btn btn-outline btn-sm add-conversion-btn'
 										onClick={addConversionRow}>
-										+ Añadir conversión
+										{t('ingredients.addConversion')}
 									</button>
 								</div>
 							)}
 
 							<div className='form-actions'>
 								<button type='button' className='btn btn-outline' onClick={resetForm}>
-									Cancelar
+									{t('cancel')}
 								</button>
 								<button type='submit' className='btn btn-primary'>
-									Crear Ingrediente
+									{t('ingredients.createBtn')}
 								</button>
 							</div>
 						</form>
 					) : (
 						<form onSubmit={handleBulkCreate}>
-							<p className='form-hint bulk-hint'>
-								Añade varios ingredientes rápidamente. Los valores nutricionales se pueden editar
-								después.
-							</p>
+							<p className='form-hint bulk-hint'>{t('ingredients.bulkHint')}</p>
 
 							<div className='bulk-ingredients-list'>
 								{bulkIngredients.map((ing, index) => (
@@ -588,7 +652,7 @@ export function IngredientListContainer() {
 										<input
 											type='text'
 											className='form-input'
-											placeholder='Nombre del ingrediente'
+											placeholder={t('ingredients.namePlaceholder')}
 											value={ing.name}
 											onChange={(e) => updateBulkName(ing.id, e.target.value)}
 											onKeyDown={(e) => handleBulkKeyDown(e, index)}
@@ -619,20 +683,22 @@ export function IngredientListContainer() {
 								type='button'
 								className='btn btn-outline btn-sm add-bulk-row-btn'
 								onClick={addBulkRow}>
-								+ Añadir otro ingrediente
+								{t('ingredients.addAnother')}
 							</button>
 
 							<div className='form-actions'>
 								<button type='button' className='btn btn-outline' onClick={resetForm}>
-									Cancelar
+									{t('cancel')}
 								</button>
 								<button
 									type='submit'
 									className='btn btn-primary'
 									disabled={bulkCreating || !bulkIngredients.some((ing) => ing.name.trim())}>
 									{bulkCreating
-										? 'Creando...'
-										: `Crear ${bulkIngredients.filter((ing) => ing.name.trim()).length} ingrediente(s)`}
+										? t('loading')
+										: t('ingredients.createCount', {
+												count: bulkIngredients.filter((ing) => ing.name.trim()).length,
+											})}
 								</button>
 							</div>
 						</form>
@@ -644,23 +710,25 @@ export function IngredientListContainer() {
 				<input
 					type='text'
 					className='form-input search-input'
-					placeholder='Buscar ingrediente...'
+					placeholder={t('ingredients.searchPlaceholder')}
 					value={searchTerm}
 					onChange={(e) => setSearchTerm(e.target.value)}
 				/>
 			</div>
 
 			<div className='ingredient-stats'>
-				<span>{filteredIngredients.length} ingredientes</span>
+				<span>{t('ingredients.count', { count: filteredIngredients.length })}</span>
 				<span className='ingredient-stats-separator'>|</span>
 				<span>
-					{filteredIngredients.filter((i) => i.calories != null).length} con info nutricional
+					{t('ingredients.withNutrition', {
+						count: filteredIngredients.filter((i) => i.calories != null).length,
+					})}
 				</span>
 			</div>
 
 			{filteredIngredients.length === 0 ? (
 				<div className='empty-state'>
-					<p>No se encontraron ingredientes</p>
+					<p>{t('ingredients.noResults')}</p>
 				</div>
 			) : (
 				<div className='ingredients-grid'>
@@ -671,8 +739,65 @@ export function IngredientListContainer() {
 							onUpdate={handleUpdate}
 							onDelete={handleDelete}
 							onConversionChange={loadIngredients}
+							onAddToShopping={handleAddToShopping}
+							onAddToWeekPlan={handleOpenAddToWeekPlan}
 						/>
 					))}
+				</div>
+			)}
+
+			{weekPlanIngredient && (
+				<div className='modal-overlay' onClick={() => setWeekPlanIngredient(null)}>
+					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
+						<h3>{t('ingredients.addToWeekPlanTitle', { name: weekPlanIngredient.name })}</h3>
+
+						<div className='form-group'>
+							<label>{t('weekPlan.dateLabel')}</label>
+							<input
+								type='date'
+								value={weekPlanDate}
+								onChange={(e) => setWeekPlanDate(e.target.value)}
+							/>
+						</div>
+
+						<div className='form-row'>
+							<div className='form-group'>
+								<label>{t('ingredients.quantityPlaceholder')}</label>
+								<input
+									type='number'
+									min='0'
+									step='any'
+									value={weekPlanQty}
+									onChange={(e) => setWeekPlanQty(parseFloat(e.target.value) || 0)}
+								/>
+							</div>
+							<div className='form-group'>
+								<label>{t('ingredients.unitHeader')}</label>
+								<select value={weekPlanUnit} onChange={(e) => setWeekPlanUnit(e.target.value)}>
+									<option value={weekPlanIngredient.unit}>{weekPlanIngredient.unit}</option>
+									{weekPlanIngredient.unit === 'g' && <option value='kg'>kg</option>}
+									{weekPlanIngredient.unit === 'ml' && <option value='l'>l</option>}
+									{(weekPlanIngredient.conversions || []).map((c) => (
+										<option key={c.id} value={c.unitName}>
+											{c.unitName}
+										</option>
+									))}
+								</select>
+							</div>
+						</div>
+
+						<div className='modal-actions'>
+							<button className='btn btn-outline' onClick={() => setWeekPlanIngredient(null)}>
+								{t('cancel')}
+							</button>
+							<button
+								className='btn btn-primary'
+								disabled={weekPlanQty <= 0 || addingToWeekPlan}
+								onClick={handleAddToWeekPlan}>
+								{addingToWeekPlan ? t('weekPlan.adding') : t('weekPlan.addBtn')}
+							</button>
+						</div>
+					</div>
 				</div>
 			)}
 		</div>

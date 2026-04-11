@@ -1,6 +1,7 @@
 import './IngredientsList.scss'
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { ChartIcon, CloseIcon, ScaleIcon } from '@/components/shared/icons'
 import {
@@ -57,6 +58,7 @@ function capitalizeFirst(str: string): string {
 }
 
 export function IngredientsList({ ingredients, onChange }: IngredientsListProps) {
+	const { t } = useTranslation()
 	const [suggestions, setSuggestions] = useState<Record<string, Suggestion[]>>({})
 	const [activeInputId, setActiveInputId] = useState<string | null>(null)
 	const [showNewUnitModal, setShowNewUnitModal] = useState<string | null>(null)
@@ -335,10 +337,10 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 			{ingredients.length > 0 && (
 				<div className='ingredients-table'>
 					<div className='ingredients-table-header'>
-						<span>Ingrediente</span>
-						<span>Estado</span>
-						<span>Cantidad</span>
-						<span>Unidad</span>
+						<span>{t('ingredients.ingredientLabel')}</span>
+						<span>{t('ingredients.stateHeader')}</span>
+						<span>{t('ingredients.quantityPlaceholder')}</span>
+						<span>{t('ingredients.unitHeader')}</span>
 						<span></span>
 					</div>
 					<div className='ingredients-table-body'>
@@ -349,7 +351,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 										{ing.name && !ing.isFromDatabase && (
 											<span
 												className='new-ingredient-badge'
-												title='Ingrediente nuevo - se creará al guardar'>
+												title={t('ingredients.newIngredientTitle')}>
 												✨
 											</span>
 										)}
@@ -363,7 +365,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 											onKeyDown={(e) => {
 												if (e.key === 'Enter') e.preventDefault()
 											}}
-											placeholder='Nombre del ingrediente'
+											placeholder={t('ingredients.namePlaceholder')}
 											autoComplete='off'
 										/>
 										{activeInputId === ing.id && suggestions[ing.id]?.length > 0 && (
@@ -378,7 +380,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 															<span className='suggestion-name'>{capitalizeFirst(s.name)}</span>
 															{s.variants && s.variants.length > 1 && (
 																<span className='suggestion-detail'>
-																	{s.variants.length} estados
+																	{t('ingredients.statesCount', { count: s.variants.length })}
 																</span>
 															)}
 														</div>
@@ -401,7 +403,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 												))}
 											</select>
 										) : (
-											<span className='variant-default'>Crudo</span>
+											<span className='variant-default'>{t('ingredients.rawVariant')}</span>
 										)}
 									</div>
 									<input
@@ -433,7 +435,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 												type='button'
 												className='add-unit-btn'
 												onClick={() => setShowNewUnitModal(ing.id)}
-												title='Añadir nueva unidad de medida'>
+												title={t('ingredients.addUnitTitle')}>
 												+
 											</button>
 										)}
@@ -447,7 +449,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 													onClick={() =>
 														setShowConversionsId(showConversionsId === ing.id ? null : ing.id)
 													}
-													title='Ver conversiones de unidad'>
+													title={t('ingredients.viewConversions')}>
 													<ScaleIcon size={14} aria-hidden='true' />
 												</button>
 												<button
@@ -456,8 +458,8 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 													onClick={() => setShowMacrosId(showMacrosId === ing.id ? null : ing.id)}
 													title={
 														ing.isFromDatabase
-															? 'Ver/editar estados y macros'
-															: 'Crear ingrediente y añadir macros'
+															? t('ingredients.viewEditMacros')
+															: t('ingredients.createAndAddMacros')
 													}>
 													<ChartIcon size={14} aria-hidden='true' />
 												</button>
@@ -473,7 +475,9 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 								</div>
 								{showConversionsId === ing.id && ing.conversions && (
 									<div className='ingredient-info-panel'>
-										<div className='info-panel-header'>Conversiones de unidad</div>
+										<div className='info-panel-header'>
+											{t('ingredients.unitConversionsHeader')}
+										</div>
 										{ing.conversions.length > 0 ? (
 											<ul className='conversions-list'>
 												{ing.conversions.map((c) => (
@@ -483,7 +487,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 												))}
 											</ul>
 										) : (
-											<p className='no-data'>No hay conversiones configuradas</p>
+											<p className='no-data'>{t('ingredients.noConversions')}</p>
 										)}
 									</div>
 								)}
@@ -504,24 +508,23 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 									) : (
 										<div className='ingredient-info-panel new-ingredient-panel'>
 											<div className='info-panel-header'>
-												Ingrediente nuevo: {capitalizeFirst(ing.name)}
+												{t('ingredients.newIngredientName', { name: capitalizeFirst(ing.name) })}
 											</div>
-											<p className='new-ingredient-hint'>
-												Este ingrediente no existe en la base de datos. Se creará automáticamente al
-												añadir estados/macros.
-											</p>
+											<p className='new-ingredient-hint'>{t('ingredients.newIngredientHint')}</p>
 											<button
 												type='button'
 												className='btn btn-primary btn-sm'
 												onClick={() => handleCreateIngredient(ing.id)}>
-												Crear ingrediente y configurar macros
+												{t('ingredients.createAndConfigMacros')}
 											</button>
 										</div>
 									))}
 								{showNewUnitModal === ing.id && (
 									<div className='new-unit-modal'>
 										<div className='new-unit-modal-header'>
-											<span>Nueva unidad para {capitalizeFirst(ing.name)}</span>
+											<span>
+												{t('ingredients.newUnitFor', { name: capitalizeFirst(ing.name) })}
+											</span>
 											<button
 												type='button'
 												className='modal-close-btn'
@@ -541,7 +544,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 													className='form-input'
 													value={newUnitName}
 													onChange={(e) => setNewUnitName(e.target.value)}
-													placeholder='diente, cucharada...'
+													placeholder={t('ingredients.unitPlaceholder')}
 												/>
 												<span>=</span>
 												<input
@@ -560,7 +563,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 												className='btn btn-primary btn-sm'
 												onClick={() => handleAddNewConversion(ing.id)}
 												disabled={!newUnitName.trim() || !newUnitGrams}>
-												Guardar conversión
+												{t('recipes.saveConversion')}
 											</button>
 										</div>
 									</div>
@@ -572,7 +575,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 			)}
 
 			<button type='button' className='ingredients-add-btn' onClick={addIngredient}>
-				+ Añadir ingrediente
+				{t('ingredients.addIngredientBtn')}
 			</button>
 		</div>
 	)

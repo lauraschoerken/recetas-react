@@ -2,6 +2,7 @@ import './AuthForm.scss'
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 interface LoginFormProps {
 	onSubmit: (email: string, password: string) => void
@@ -10,6 +11,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSubmit, error, loading }: LoginFormProps) {
+	const { t } = useTranslation()
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
 
@@ -21,14 +23,14 @@ export function LoginForm({ onSubmit, error, loading }: LoginFormProps) {
 	return (
 		<div className='auth-container'>
 			<div className='auth-card'>
-				<h1 className='auth-title'>Iniciar Sesión</h1>
-				<p className='auth-subtitle'>Accede a tus recetas</p>
+				<h1 className='auth-title'>{t('auth.login')}</h1>
+				<p className='auth-subtitle'>{t('auth.loginSubtitle')}</p>
 
 				<form onSubmit={handleSubmit} className='auth-form'>
 					{error && <div className='auth-error'>{error}</div>}
 
 					<div className='form-group'>
-						<label className='form-label'>Email</label>
+						<label className='form-label'>{t('auth.email')}</label>
 						<input
 							type='email'
 							className='form-input'
@@ -40,7 +42,7 @@ export function LoginForm({ onSubmit, error, loading }: LoginFormProps) {
 					</div>
 
 					<div className='form-group'>
-						<label className='form-label'>Contraseña</label>
+						<label className='form-label'>{t('auth.password')}</label>
 						<input
 							type='password'
 							className='form-input'
@@ -52,12 +54,12 @@ export function LoginForm({ onSubmit, error, loading }: LoginFormProps) {
 					</div>
 
 					<button type='submit' className='btn btn-primary auth-submit' disabled={loading}>
-						{loading ? 'Entrando...' : 'Entrar'}
+						{loading ? t('auth.loggingIn') : t('auth.enter')}
 					</button>
 				</form>
 
 				<p className='auth-footer'>
-					¿No tienes cuenta? <Link to='/register'>Regístrate</Link>
+					{t('auth.noAccount')} <Link to='/register'>{t('auth.register')}</Link>
 				</p>
 			</div>
 		</div>

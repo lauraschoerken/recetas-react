@@ -1,13 +1,16 @@
 import '../layout.scss'
 
 import { Link, NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
+import { AlertBell } from '@/components/elements/AlertBell/AlertBell'
 import LanguageSelect from '@/components/elements/Languague/LanguagueSelect'
 import { ThemeToggle } from '@/components/elements/Theme/ThemeToggle'
 import { UserMenu } from '@/components/elements/User/UserMenu'
 import { APP_NAME } from '@/utils/constants'
 
 export const Header = () => {
+	const { t } = useTranslation()
 	const activeClass = 'link-active'
 
 	return (
@@ -22,30 +25,31 @@ export const Header = () => {
 							<NavLink
 								to='/recipes'
 								className={({ isActive }) => (isActive ? activeClass : 'link')}>
-								Recetas
+								{t('nav.recipes')}
 							</NavLink>
 							<NavLink to='/home' className={({ isActive }) => (isActive ? activeClass : 'link')}>
-								Casa
+								{t('nav.home')}
 							</NavLink>
 							<NavLink
 								to='/ingredients'
 								className={({ isActive }) => (isActive ? activeClass : 'link')}>
-								Ingredientes
+								{t('nav.ingredients')}
 							</NavLink>
 							<NavLink
 								to='/week-plan'
 								className={({ isActive }) => (isActive ? activeClass : 'link')}>
-								Plan semanal
+								{t('nav.weekPlan')}
 							</NavLink>
 							<NavLink
 								to='/shopping-list'
 								className={({ isActive }) => (isActive ? activeClass : 'link')}>
-								Compra
+								{t('nav.shopping')}
 							</NavLink>
 						</div>
 					</>
 					<div className='nav__actions'>
-						<ThemeToggle />
+						{' '}
+						<AlertBell /> <ThemeToggle />
 						<LanguageSelect />
 						<UserMenu />
 					</div>

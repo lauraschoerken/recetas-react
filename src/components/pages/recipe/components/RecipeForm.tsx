@@ -1,6 +1,7 @@
 import './RecipeForm.scss'
 
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { IngredientItem, IngredientsList } from '@/components/shared/ingredients-list'
 import { StepsList } from '@/components/shared/steps-list'
@@ -54,6 +55,7 @@ interface RecipeFormProps {
 }
 
 export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: RecipeFormProps) {
+	const { t } = useTranslation()
 	const [activeTab, setActiveTab] = useState<TabId>('recipe')
 	const [title, setTitle] = useState(initialData?.title || '')
 	const [description, setDescription] = useState(initialData?.description || '')
@@ -63,6 +65,7 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 	)
 	const [servings, setServings] = useState(initialData?.servings || 4)
 	const [isPublic, setIsPublic] = useState(initialData?.isPublic || false)
+	const [defaultLocation, setDefaultLocation] = useState(initialData?.defaultLocation || '')
 
 	// Macros manuales
 	const [customMacros, setCustomMacros] = useState<CustomMacrosState>({
@@ -245,6 +248,7 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 			imageUrl: imageUrl || undefined,
 			servings,
 			isPublic,
+			defaultLocation: defaultLocation || undefined,
 			ingredients:
 				validIngredients.length > 0
 					? validIngredients.map((i) => ({
@@ -455,37 +459,37 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 
 			<div className='form-section'>
 				<div className='form-group'>
-					<label className='form-label'>Título *</label>
+					<label className='form-label'>{t('recipes.titleLabel')}</label>
 					<input
 						type='text'
 						className='form-input'
 						value={title}
 						onChange={(e) => setTitle(e.target.value)}
-						placeholder='Ej: Tortilla de patatas, Pasta carbonara...'
+						placeholder={t('recipes.titlePlaceholder')}
 						required
 					/>
 				</div>
 
 				<div className='form-group'>
-					<label className='form-label'>Descripción</label>
+					<label className='form-label'>{t('recipes.descriptionLabel')}</label>
 					<textarea
 						className='form-input form-textarea'
 						value={description}
 						onChange={(e) => setDescription(e.target.value)}
-						placeholder='Una breve descripción de tu receta...'
+						placeholder={t('recipes.descriptionPlaceholder')}
 						rows={3}
 					/>
 				</div>
 
 				<div className='form-group'>
-					<label className='form-label'>URL de imagen</label>
+					<label className='form-label'>{t('recipes.imageUrlLabel')}</label>
 					<div className='image-url-input'>
 						<input
 							type='url'
 							className='form-input'
 							value={imageUrl}
 							onChange={(e) => setImageUrl(e.target.value)}
-							placeholder='https://ejemplo.com/imagen-receta.jpg'
+							placeholder={t('recipes.imagePlaceholder')}
 						/>
 						{imageUrl && (
 							<div className='image-preview'>
@@ -503,7 +507,7 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 			<div className='form-section'>
 				<div className='form-grid-2'>
 					<div className='form-group'>
-						<label className='form-label'>Porciones</label>
+						<label className='form-label'>{t('recipes.servingsLabel')}</label>
 						<input
 							type='number'
 							className='form-input'
@@ -516,7 +520,7 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 					</div>
 
 					<div className='form-group'>
-						<label className='form-label'>Visibilidad</label>
+						<label className='form-label'>{t('recipes.visibilityLabel')}</label>
 						<div className={`visibility-box ${isPublic ? 'is-public' : 'is-private'}`}>
 							<label className='toggle-container'>
 								<input
@@ -527,11 +531,22 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 								<span className='toggle-slider'></span>
 							</label>
 							<span className='visibility-hint'>
-								{isPublic
-									? 'Pública - Todos podrán ver esta receta'
-									: 'Privada - Solo tú podrás verla'}
+								{isPublic ? t('recipes.publicHint') : t('recipes.privateHint')}
 							</span>
 						</div>
+					</div>
+
+					<div className='form-group'>
+						<label className='form-label'>{t('recipes.saveInLabel')}</label>
+						<select
+							className='form-input'
+							value={defaultLocation}
+							onChange={(e) => setDefaultLocation(e.target.value)}>
+							<option value=''>{t('recipes.noPreference')}</option>
+							<option value='nevera'>{t('homePage.fridge')}</option>
+							<option value='congelador'>{t('homePage.freezer')}</option>
+							<option value='despensa'>{t('homePage.pantry')}</option>
+						</select>
 					</div>
 				</div>
 			</div>
@@ -541,68 +556,68 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 					type='button'
 					className={`form-tab ${activeTab === 'recipe' ? 'active' : ''}`}
 					onClick={() => setActiveTab('recipe')}>
-					Ingredientes
+					{t('recipes.ingredientsTab')}
 				</button>
 				<button
 					type='button'
 					className={`form-tab ${activeTab === 'nutrition' ? 'active' : ''}`}
 					onClick={() => setActiveTab('nutrition')}>
-					Nutrición
+					{t('recipes.nutritionTab')}
 				</button>
 			</div>
 
 			{activeTab === 'recipe' && (
 				<>
 					<div className='form-section'>
-						<label className='form-label'>Ingredientes directos</label>
-						<p className='form-hint'>Ingredientes que se usan directamente</p>
+						<label className='form-label'>{t('recipes.directIngredients')}</label>
+						<p className='form-hint'>{t('recipes.directIngredientsHint')}</p>
 						<IngredientsList ingredients={ingredients} onChange={setIngredients} />
 					</div>
 
 					<div className='form-section'>
-						<label className='form-label'>Recetas incluidas</label>
-						<p className='form-hint'>
-							Otras recetas que se usan en esta (ej: caldo casero, salsa base...)
-						</p>
+						<label className='form-label'>{t('recipes.includedRecipes')}</label>
+						<p className='form-hint'>{t('recipes.includedRecipesHint')}</p>
 						<IncludedRecipes recipes={includedRecipes} onChange={setIncludedRecipes} />
 					</div>
 
 					<div className='form-section'>
-						<label className='form-label'>Variantes opcionales</label>
-						<p className='form-hint'>
-							Partes de la receta que pueden tener diferentes opciones (ej: arroz basmati o redondo)
-						</p>
-						<ComponentsEditor components={components} onChange={setComponents} />
+						<label className='form-label'>{t('recipes.optionalVariants')}</label>
+						<p className='form-hint'>{t('recipes.optionalVariantsHint')}</p>
+						<ComponentsEditor
+							components={components}
+							onChange={setComponents}
+							currentRecipeId={initialData?.id}
+						/>
 					</div>
 
 					<div className='form-section'>
-						<label className='form-label'>Pasos</label>
+						<label className='form-label'>{t('recipes.stepsLabel')}</label>
 						<StepsList steps={steps} onChange={setSteps} />
 					</div>
 
 					{displayNutrition && (
 						<div className='form-section nutrition-summary'>
-							<label className='form-label'>Información nutricional (vista rápida)</label>
+							<label className='form-label'>{t('recipes.nutritionPreview')}</label>
 							<div className='nutrition-grid'>
 								<div className='nutrition-item calories'>
 									<span className='nutrition-value'>{displayNutrition.calories}</span>
-									<span className='nutrition-label'>kcal/ración</span>
+									<span className='nutrition-label'>{t('recipes.kcalPerRation')}</span>
 								</div>
 								<div className='nutrition-item protein'>
 									<span className='nutrition-value'>{displayNutrition.protein}g</span>
-									<span className='nutrition-label'>Proteína</span>
+									<span className='nutrition-label'>{t('weekPlan.protein')}</span>
 								</div>
 								<div className='nutrition-item carbs'>
 									<span className='nutrition-value'>{displayNutrition.carbs}g</span>
-									<span className='nutrition-label'>Carbos</span>
+									<span className='nutrition-label'>{t('weekPlan.carbs')}</span>
 								</div>
 								<div className='nutrition-item fat'>
 									<span className='nutrition-value'>{displayNutrition.fat}g</span>
-									<span className='nutrition-label'>Grasa</span>
+									<span className='nutrition-label'>{t('weekPlan.fat')}</span>
 								</div>
 								<div className='nutrition-item fiber'>
 									<span className='nutrition-value'>{displayNutrition.fiber}g</span>
-									<span className='nutrition-label'>Fibra</span>
+									<span className='nutrition-label'>{t('fiber')}</span>
 								</div>
 							</div>
 							{totalNutrition && servings > 1 && (
@@ -630,10 +645,14 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 
 			<div className='form-actions'>
 				<button type='button' className='btn btn-outline' onClick={onCancel}>
-					Cancelar
+					{t('cancel')}
 				</button>
 				<button type='submit' className='btn btn-primary' disabled={loading}>
-					{loading ? 'Guardando...' : initialData ? 'Guardar cambios' : 'Crear receta'}
+					{loading
+						? t('recipes.saving')
+						: initialData
+							? t('recipes.saveChanges')
+							: t('recipes.createRecipe')}
 				</button>
 			</div>
 		</form>

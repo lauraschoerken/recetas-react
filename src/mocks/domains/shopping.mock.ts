@@ -18,8 +18,12 @@ export const mockWeekPlan = (overrides: Partial<WeekPlan> = {}): WeekPlan => ({
 	consumed: false,
 	userId: 1,
 	recipeId: 1,
+	ingredientId: null,
+	ingredientQty: null,
+	ingredientUnit: null,
 	createdAt: '2026-04-04T00:00:00.000Z',
 	recipe: mockRecipe(),
+	ingredient: null,
 	selections: [{ optionId: 1 }],
 	...overrides,
 })

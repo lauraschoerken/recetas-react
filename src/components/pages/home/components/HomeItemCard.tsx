@@ -1,6 +1,7 @@
 import './HomeItemCard.scss'
 
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { CheckIcon, CloseIcon, CookIcon, DeleteIcon, EditIcon } from '@/components/shared/icons'
 import { HomeItem, HomeLocation, homeService } from '@/services/home'
@@ -17,9 +18,17 @@ interface HomeItemCardProps {
 	onUpdate: (id: number, data: { quantity?: number; location?: HomeLocation }) => void
 	onDelete: (id: number) => void
 	onCook?: (id: number, result: { success: boolean; message: string }) => void
+	showLocation?: boolean
 }
 
-export function HomeItemCard({ item, onUpdate, onDelete, onCook }: HomeItemCardProps) {
+export function HomeItemCard({
+	item,
+	onUpdate,
+	onDelete,
+	onCook,
+	showLocation,
+}: HomeItemCardProps) {
+	const { t } = useTranslation()
 	const [isEditing, setIsEditing] = useState(false)
 	const [quantity, setQuantity] = useState(item.quantity)
 	const [location, setLocation] = useState<HomeLocation>(item.location)
@@ -27,7 +36,7 @@ export function HomeItemCard({ item, onUpdate, onDelete, onCook }: HomeItemCardP
 	const [variants, setVariants] = useState<IngredientVariant[]>([])
 	const [loadingVariants, setLoadingVariants] = useState(false)
 
-	const rawName = item.recipe?.title || item.ingredient?.name || 'Item desconocido'
+	const rawName = item.recipe?.title || item.ingredient?.name || t('homePage.unknownItem')
 	const name = rawName.charAt(0).toUpperCase() + rawName.slice(1)
 	const isRecipe = !!item.recipe
 	const isIngredient = !!item.ingredient
@@ -81,7 +90,13 @@ export function HomeItemCard({ item, onUpdate, onDelete, onCook }: HomeItemCardP
 			<div className='home-item-main'>
 				<div className='home-item-info'>
 					<span className='home-item-name'>{name}</span>
-					{isRecipe && <span className='home-item-badge'>Receta</span>}
+					{showLocation && (
+						<span className='home-item-location-badge'>
+							{item.location === 'nevera' ? '❄️' : item.location === 'congelador' ? '🧊' : '🏠'}{' '}
+							{item.location}
+						</span>
+					)}
+					{isRecipe && <span className='home-item-badge'>{t('homePage.recipeBadge')}</span>}
 					{isIngredient && currentVariant && (
 						<span className='home-item-variant-badge'>{currentVariant.name}</span>
 					)}
@@ -102,16 +117,16 @@ export function HomeItemCard({ item, onUpdate, onDelete, onCook }: HomeItemCardP
 							value={location}
 							onChange={(e) => setLocation(e.target.value as HomeLocation)}
 							className='form-input home-item-location-select'>
-							<option value='nevera'>Nevera</option>
-							<option value='congelador'>Congelador</option>
-							<option value='despensa'>Despensa</option>
+							<option value='nevera'>{t('homePage.fridge')}</option>
+							<option value='congelador'>{t('homePage.freezer')}</option>
+							<option value='despensa'>{t('homePage.pantry')}</option>
 						</select>
 					</div>
 				) : (
 					<div className='home-item-quantity'>
 						<span className='home-item-qty'>{item.quantity}</span>
 						{((item.pendingPrepServings || 0) > 0 || (item.plannedMealServings || 0) > 0) && (
-							<span className='home-item-projected' title='Te quedarán'>
+							<span className='home-item-projected' title={t('homePage.projected')}>
 								({item.projectedTotal ?? item.quantity})
 							</span>
 						)}
@@ -119,12 +134,12 @@ export function HomeItemCard({ item, onUpdate, onDelete, onCook }: HomeItemCardP
 						{((item.pendingPrepServings || 0) > 0 || (item.plannedMealServings || 0) > 0) && (
 							<span className='home-item-changes'>
 								{(item.pendingPrepServings || 0) > 0 && (
-									<span className='change-add' title='A preparar'>
+									<span className='change-add' title={t('homePage.toPrep')}>
 										+{item.pendingPrepServings}
 									</span>
 								)}
 								{(item.plannedMealServings || 0) > 0 && (
-									<span className='change-sub' title='Vas a consumir'>
+									<span className='change-sub' title={t('homePage.willConsume')}>
 										−{item.plannedMealServings}
 									</span>
 								)}
@@ -135,19 +150,23 @@ export function HomeItemCard({ item, onUpdate, onDelete, onCook }: HomeItemCardP
 			</div>
 
 			<div className='home-item-meta'>
-				<span className='home-item-date'>Añadido {formatDate(item.addedAt)}</span>
+				<span className='home-item-date'>
+					{t('homePage.addedOn', { date: formatDate(item.addedAt) })}
+				</span>
 				{item.expiresAt && (
-					<span className='home-item-expires'>Caduca {formatDate(item.expiresAt)}</span>
+					<span className='home-item-expires'>
+						{t('homePage.expiresOn', { date: formatDate(item.expiresAt) })}
+					</span>
 				)}
 			</div>
 
 			<div className='home-item-actions'>
 				{isEditing ? (
 					<>
-						<button className='btn-icon btn-icon-success' onClick={handleSave} title='Guardar'>
+						<button className='btn-icon btn-icon-success' onClick={handleSave} title={t('save')}>
 							<CheckIcon size={16} aria-hidden='true' />
 						</button>
-						<button className='btn-icon' onClick={handleCancel} title='Cancelar'>
+						<button className='btn-icon' onClick={handleCancel} title={t('cancel')}>
 							<CloseIcon size={16} aria-hidden='true' />
 						</button>
 					</>
@@ -158,16 +177,16 @@ export function HomeItemCard({ item, onUpdate, onDelete, onCook }: HomeItemCardP
 								<button
 									className='btn-icon btn-icon-cook'
 									onClick={() => setShowCookMenu(!showCookMenu)}
-									title='Cocinar/Preparar'>
+									title={t('homePage.cookPrepare')}>
 									<CookIcon size={16} aria-hidden='true' />
 								</button>
 								{showCookMenu && (
 									<div className='cook-dropdown'>
-										<div className='cook-dropdown-header'>Transformar a:</div>
+										<div className='cook-dropdown-header'>{t('homePage.transformTo')}</div>
 										{loadingVariants ? (
-											<div className='cook-dropdown-loading'>Cargando...</div>
+											<div className='cook-dropdown-loading'>{t('loading')}</div>
 										) : availableTargetVariants.length === 0 ? (
-											<div className='cook-dropdown-empty'>No hay otros estados</div>
+											<div className='cook-dropdown-empty'>{t('homePage.noOtherStates')}</div>
 										) : (
 											availableTargetVariants.map((v) => (
 												<button
@@ -185,13 +204,13 @@ export function HomeItemCard({ item, onUpdate, onDelete, onCook }: HomeItemCardP
 								)}
 							</div>
 						)}
-						<button className='btn-icon' onClick={() => setIsEditing(true)} title='Editar'>
+						<button className='btn-icon' onClick={() => setIsEditing(true)} title={t('edit')}>
 							<EditIcon size={16} aria-hidden='true' />
 						</button>
 						<button
 							className='btn-icon btn-icon-danger'
 							onClick={() => onDelete(item.id)}
-							title='Eliminar'>
+							title={t('delete')}>
 							<DeleteIcon size={16} aria-hidden='true' />
 						</button>
 					</>

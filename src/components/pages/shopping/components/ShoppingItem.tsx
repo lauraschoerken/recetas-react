@@ -1,5 +1,7 @@
 import './ShoppingItem.scss'
 
+import { useTranslation } from 'react-i18next'
+
 import { CloseIcon } from '@/components/shared/icons'
 import { ShoppingItem } from '@/services/shopping'
 
@@ -11,6 +13,8 @@ interface ShoppingItemRowProps {
 }
 
 export function ShoppingItemRow({ item, checked, onToggle, onExclude }: ShoppingItemRowProps) {
+	const { t } = useTranslation()
+
 	const formatQuantity = (qty: number): string => {
 		if (Number.isInteger(qty)) return qty.toString()
 		return qty.toFixed(1)
@@ -39,12 +43,12 @@ export function ShoppingItemRow({ item, checked, onToggle, onExclude }: Shopping
 				<div className='shopping-item-info'>
 					<span className='shopping-item-name'>{item.name}</span>
 					<div className='shopping-item-breakdown'>
-						<span className='shopping-item-total' title='Total necesario'>
-							{formatQuantity(item.totalQuantity)} {item.unit} necesario
+						<span className='shopping-item-total' title={t('shopping.totalNeeded')}>
+							{formatQuantity(item.totalQuantity)} {item.unit} {t('shopping.needed')}
 						</span>
 						{hasAtHome && (
-							<span className='shopping-item-athome' title='En casa'>
-								-{formatQuantity(item.quantityAtHome)} {item.unit} en casa
+							<span className='shopping-item-athome' title={t('shopping.atHome')}>
+								-{formatQuantity(item.quantityAtHome)} {item.unit} {t('shopping.atHome')}
 							</span>
 						)}
 					</div>
@@ -56,18 +60,21 @@ export function ShoppingItemRow({ item, checked, onToggle, onExclude }: Shopping
 								{displayQuantity} {displayUnit}
 							</span>
 							{hasPreferred && (
-								<span className='shopping-item-base-qty' title='En gramos'>
+								<span className='shopping-item-base-qty' title={t('shopping.inGrams')}>
 									({formatQuantity(item.quantityToBuy)} {item.unit})
 								</span>
 							)}
 						</>
 					) : (
-						<span className='shopping-item-covered-text'>Cubierto</span>
+						<span className='shopping-item-covered-text'>{t('shopping.covered')}</span>
 					)}
 				</span>
 			</label>
 			{onExclude && !checked && needsToBuy && (
-				<button className='shopping-item-exclude' onClick={onExclude} title='Excluir de la lista'>
+				<button
+					className='shopping-item-exclude'
+					onClick={onExclude}
+					title={t('shopping.excludeItem')}>
 					<CloseIcon size={14} aria-hidden='true' />
 				</button>
 			)}

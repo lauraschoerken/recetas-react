@@ -7,6 +7,7 @@ export interface CreateIngredientData {
 	name: string
 	unit: 'g' | 'ml'
 	imageUrl?: string
+	defaultLocation?: string
 	variants?: CreateVariantData[]
 }
 
@@ -25,6 +26,7 @@ export interface UpdateIngredientData {
 	name?: string
 	preferredUnit?: string | null
 	imageUrl?: string | null
+	defaultLocation?: string | null
 }
 
 export interface UpdateVariantData {

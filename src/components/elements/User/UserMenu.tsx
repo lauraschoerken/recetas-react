@@ -2,17 +2,19 @@ import './UserMenu.scss'
 
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { authService } from '@/services/auth'
 
 export function UserMenu() {
+	const { t } = useTranslation()
 	const [open, setOpen] = useState(false)
 	const navigate = useNavigate()
 	const user = authService.getUser()
 	const ref = useRef<HTMLDivElement | null>(null)
 
 	const avatarUrl = (user && user.imageUrl) || null
-	const firstWord = (user?.name || 'Usuario').split(' ')[0]
+	const firstWord = (user?.name || t('nav.user')).split(' ')[0]
 
 	useEffect(() => {
 		function onDoc(e: MouseEvent) {
@@ -46,11 +48,14 @@ export function UserMenu() {
 
 			{open && (
 				<div className='user-dropdown'>
+					<Link to='/macros' className='user-dropdown-item'>
+						{t('nav.profile')}
+					</Link>
 					<Link to='/settings' className='user-dropdown-item'>
-						Configuración
+						{t('nav.settings')}
 					</Link>
 					<button className='user-dropdown-item danger' onClick={handleLogout}>
-						Cerrar sesión
+						{t('nav.logout')}
 					</button>
 				</div>
 			)}

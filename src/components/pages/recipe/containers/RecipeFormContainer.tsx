@@ -1,13 +1,17 @@
-import { useEffect,useState } from 'react'
-import { useNavigate,useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { CreateRecipeData, Recipe, recipeService } from '@/services/recipe'
+import { useDialog } from '@/utils/dialog/DialogContext'
 
 import { RecipeForm } from '../components/RecipeForm'
 
 export function RecipeFormContainer() {
+	const { t } = useTranslation()
 	const { id } = useParams<{ id: string }>()
 	const navigate = useNavigate()
+	const { toast } = useDialog()
 	const [recipe, setRecipe] = useState<Recipe | null>(null)
 	const [loading, setLoading] = useState(false)
 	const [initialLoading, setInitialLoading] = useState(!!id)
@@ -26,7 +30,7 @@ export function RecipeFormContainer() {
 			const data = await recipeService.getById(parseInt(id!))
 			setRecipe(data)
 		} catch {
-			setError('Receta no encontrada')
+			setError(t('recipes.notFound'))
 		} finally {
 			setInitialLoading(false)
 		}
@@ -39,12 +43,14 @@ export function RecipeFormContainer() {
 		try {
 			if (isEditing && id) {
 				await recipeService.update(parseInt(id), data)
+				toast.success(t('recipes.updated'))
 			} else {
 				await recipeService.create(data)
+				toast.success(t('recipes.created'))
 			}
 			navigate('/recipes')
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Error al guardar receta')
+			setError(err instanceof Error ? err.message : t('recipes.saveError'))
 		} finally {
 			setLoading(false)
 		}
@@ -55,13 +61,13 @@ export function RecipeFormContainer() {
 	}
 
 	if (initialLoading) {
-		return <div className='loading'>Cargando receta...</div>
+		return <div className='loading'>{t('recipes.loading')}</div>
 	}
 
 	return (
 		<>
 			<div className='page-header'>
-				<h1 className='page-title'>{isEditing ? 'Editar Receta' : 'Nueva Receta'}</h1>
+				<h1 className='page-title'>{isEditing ? t('recipes.editTitle') : t('recipes.newTitle')}</h1>
 			</div>
 
 			<div className='card'>

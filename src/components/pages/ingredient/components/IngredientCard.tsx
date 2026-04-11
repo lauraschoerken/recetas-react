@@ -1,6 +1,7 @@
 import './IngredientCard.scss'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { DeleteIcon, EditIcon, StarIcon } from '@/components/shared/icons'
 import {
@@ -10,12 +11,15 @@ import {
 	UnitConversion,
 	UpdateIngredientData,
 } from '@/services/ingredient'
+import { alertService } from '@/services/alert'
 
 interface IngredientCardProps {
 	ingredient: Ingredient
 	onUpdate: (id: number, data: UpdateIngredientData) => void
 	onDelete: (id: number) => void
 	onConversionChange?: () => void
+	onAddToShopping?: (ingredient: Ingredient) => void
+	onAddToWeekPlan?: (ingredient: Ingredient) => void
 }
 
 export function IngredientCard({
@@ -23,12 +27,22 @@ export function IngredientCard({
 	onUpdate,
 	onDelete,
 	onConversionChange,
+	onAddToShopping,
+	onAddToWeekPlan,
 }: IngredientCardProps) {
+	const { t } = useTranslation()
 	const [isEditing, setIsEditing] = useState(false)
 	const [showConversions, setShowConversions] = useState(false)
 	const [showVariants, setShowVariants] = useState(false)
 	const [name, setName] = useState(ingredient.name)
 	const [imageUrl, setImageUrl] = useState(ingredient.imageUrl ?? '')
+	const [defaultLocation, setDefaultLocation] = useState(ingredient.defaultLocation ?? '')
+
+	useEffect(() => {
+		setName(ingredient.name)
+		setImageUrl(ingredient.imageUrl ?? '')
+		setDefaultLocation(ingredient.defaultLocation ?? '')
+	}, [ingredient])
 
 	const [editingVariantId, setEditingVariantId] = useState<number | null>(null)
 	const [variantName, setVariantName] = useState('')
@@ -42,14 +56,38 @@ export function IngredientCard({
 	const [newUnitName, setNewUnitName] = useState('')
 	const [newGramsPerUnit, setNewGramsPerUnit] = useState('')
 
+	const [minQuantity, setMinQuantity] = useState('')
+	const [minUnit, setMinUnit] = useState(ingredient.unit || 'g')
+	const [hasThreshold, setHasThreshold] = useState(false)
+	const [showThreshold, setShowThreshold] = useState(false)
+
 	const variants = ingredient.variants || []
 	const defaultVariant = variants.find((v) => v.isDefault) || variants[0]
 	const conversions = ingredient.conversions || []
+
+	useEffect(() => {
+		alertService
+			.getIngredientThresholds()
+			.then((thresholds) => {
+				const match = thresholds.find((t) => t.ingredientId === ingredient.id)
+				if (match) {
+					setMinQuantity(match.minQuantity.toString())
+					setMinUnit(match.unit)
+					setHasThreshold(true)
+				} else {
+					setMinQuantity('')
+					setMinUnit(ingredient.unit || 'g')
+					setHasThreshold(false)
+				}
+			})
+			.catch(() => {})
+	}, [ingredient.id, ingredient.unit])
 
 	const handleSave = () => {
 		onUpdate(ingredient.id, {
 			name: name.charAt(0).toUpperCase() + name.slice(1),
 			imageUrl: imageUrl || null,
+			defaultLocation: defaultLocation || null,
 		})
 		setIsEditing(false)
 	}
@@ -57,6 +95,7 @@ export function IngredientCard({
 	const handleCancel = () => {
 		setName(ingredient.name)
 		setImageUrl(ingredient.imageUrl ?? '')
+		setDefaultLocation(ingredient.defaultLocation ?? '')
 		setIsEditing(false)
 	}
 
@@ -165,6 +204,32 @@ export function IngredientCard({
 		}
 	}
 
+	const handleSaveThreshold = async () => {
+		const min = Number(minQuantity)
+		if (!min || min <= 0) return
+		try {
+			await alertService.setIngredientThreshold({
+				ingredientId: ingredient.id,
+				minQuantity: min,
+				unit: minUnit,
+			})
+			setHasThreshold(true)
+		} catch (error) {
+			console.error('Error saving threshold:', error)
+		}
+	}
+
+	const handleDeleteThreshold = async () => {
+		try {
+			await alertService.deleteIngredientThreshold(ingredient.id)
+			setMinQuantity('')
+			setMinUnit(ingredient.unit || 'g')
+			setHasThreshold(false)
+		} catch (error) {
+			console.error('Error deleting threshold:', error)
+		}
+	}
+
 	const capitalizedName = ingredient.name.charAt(0).toUpperCase() + ingredient.name.slice(1)
 
 	if (isEditing) {
@@ -177,7 +242,7 @@ export function IngredientCard({
 							className='form-input'
 							value={name}
 							onChange={(e) => setName(e.target.value)}
-							placeholder='Nombre'
+							placeholder={t('ingredients.namePlaceholder')}
 						/>
 						<span className='unit-display'>{ingredient.unit}</span>
 					</div>
@@ -188,17 +253,30 @@ export function IngredientCard({
 							className='form-input'
 							value={imageUrl}
 							onChange={(e) => setImageUrl(e.target.value)}
-							placeholder='URL de imagen (opcional)'
+							placeholder={t('ingredients.imageUrlPlaceholder')}
 						/>
 						{imageUrl && <img src={imageUrl} alt='Preview' className='image-preview-small' />}
 					</div>
 
+					<div className='ingredient-edit-row'>
+						<label className='form-label'>{t('ingredients.defaultLocationLabel')}</label>
+						<select
+							className='form-input'
+							value={defaultLocation}
+							onChange={(e) => setDefaultLocation(e.target.value)}>
+							<option value=''>{t('recipes.noPreference')}</option>
+							<option value='nevera'>{t('homePage.fridge')}</option>
+							<option value='congelador'>{t('homePage.freezer')}</option>
+							<option value='despensa'>{t('homePage.pantry')}</option>
+						</select>
+					</div>
+
 					<div className='ingredient-edit-actions'>
 						<button className='btn btn-outline' onClick={handleCancel}>
-							Cancelar
+							{t('cancel')}
 						</button>
 						<button className='btn btn-primary' onClick={handleSave}>
-							Guardar
+							{t('save')}
 						</button>
 					</div>
 				</div>
@@ -219,36 +297,36 @@ export function IngredientCard({
 					{defaultVariant.calories != null && (
 						<div className='macro-item macro-calories'>
 							<span className='macro-value'>{defaultVariant.calories}</span>
-							<span className='macro-label'>kcal</span>
+							<span className='macro-label'>{t('weekPlan.kcal')}</span>
 						</div>
 					)}
 					{defaultVariant.protein != null && (
 						<div className='macro-item macro-protein'>
 							<span className='macro-value'>{defaultVariant.protein}g</span>
-							<span className='macro-label'>prot</span>
+							<span className='macro-label'>{t('weekPlan.prot')}</span>
 						</div>
 					)}
 					{defaultVariant.carbs != null && (
 						<div className='macro-item macro-carbs'>
 							<span className='macro-value'>{defaultVariant.carbs}g</span>
-							<span className='macro-label'>carbs</span>
+							<span className='macro-label'>{t('weekPlan.carbsShort')}</span>
 						</div>
 					)}
 					{defaultVariant.fat != null && (
 						<div className='macro-item macro-fat'>
 							<span className='macro-value'>{defaultVariant.fat}g</span>
-							<span className='macro-label'>grasa</span>
+							<span className='macro-label'>{t('weekPlan.fatShort')}</span>
 						</div>
 					)}
 					{defaultVariant.fiber != null && (
 						<div className='macro-item macro-fiber'>
 							<span className='macro-value'>{defaultVariant.fiber}g</span>
-							<span className='macro-label'>fibra</span>
+							<span className='macro-label'>{t('fiber')}</span>
 						</div>
 					)}
 				</div>
 			) : (
-				<p className='ingredient-no-macros'>Sin información nutricional</p>
+				<p className='ingredient-no-macros'>{t('ingredients.noNutrition')}</p>
 			)}
 
 			<button className='variants-toggle' onClick={() => setShowVariants(!showVariants)}>
@@ -269,7 +347,7 @@ export function IngredientCard({
 											className='form-input form-input-sm'
 											value={variantName}
 											onChange={(e) => setVariantName(e.target.value)}
-											placeholder='Nombre del estado'
+											placeholder={t('ingredients.variantsPlaceholder')}
 										/>
 										<div className='variant-macros-grid'>
 											<input
@@ -277,7 +355,7 @@ export function IngredientCard({
 												className='form-input form-input-sm'
 												value={variantCalories}
 												onChange={(e) => setVariantCalories(e.target.value)}
-												placeholder='kcal'
+												placeholder={t('weekPlan.kcal')}
 												min={0}
 											/>
 											<input
@@ -285,7 +363,7 @@ export function IngredientCard({
 												className='form-input form-input-sm'
 												value={variantProtein}
 												onChange={(e) => setVariantProtein(e.target.value)}
-												placeholder='prot'
+												placeholder={t('weekPlan.prot')}
 												min={0}
 												step={0.1}
 											/>
@@ -294,7 +372,7 @@ export function IngredientCard({
 												className='form-input form-input-sm'
 												value={variantCarbs}
 												onChange={(e) => setVariantCarbs(e.target.value)}
-												placeholder='carbs'
+												placeholder={t('weekPlan.carbsShort')}
 												min={0}
 												step={0.1}
 											/>
@@ -303,7 +381,7 @@ export function IngredientCard({
 												className='form-input form-input-sm'
 												value={variantFat}
 												onChange={(e) => setVariantFat(e.target.value)}
-												placeholder='grasa'
+												placeholder={t('weekPlan.fatShort')}
 												min={0}
 												step={0.1}
 											/>
@@ -312,7 +390,7 @@ export function IngredientCard({
 												className='form-input form-input-sm'
 												value={variantFiber}
 												onChange={(e) => setVariantFiber(e.target.value)}
-												placeholder='fibra'
+												placeholder={t('fiber')}
 												min={0}
 												step={0.1}
 											/>
@@ -321,17 +399,17 @@ export function IngredientCard({
 												className='form-input form-input-sm weight-factor-input'
 												value={variantWeightFactor}
 												onChange={(e) => setVariantWeightFactor(e.target.value)}
-												placeholder='×peso'
+												placeholder={t('ingredients.weightFactor')}
 												min={0.1}
 												step={0.1}
 											/>
 										</div>
 										<div className='variant-edit-actions'>
 											<button className='btn btn-sm btn-outline' onClick={cancelEditVariant}>
-												Cancelar
+												{t('cancel')}
 											</button>
 											<button className='btn btn-sm btn-primary' onClick={saveVariant}>
-												Guardar
+												{t('save')}
 											</button>
 										</div>
 									</div>
@@ -340,7 +418,7 @@ export function IngredientCard({
 										<div className='variant-info'>
 											<span className='variant-name'>
 												{variant.name}
-												{variant.isDefault && <span className='default-badge'>predeterminado</span>}
+												{variant.isDefault && <span className='default-badge'>{t('default')}</span>}
 											</span>
 											<span className='variant-macros-summary'>
 												{variant.calories != null && `${variant.calories}kcal`}
@@ -356,21 +434,21 @@ export function IngredientCard({
 												<button
 													className='btn-icon-small'
 													onClick={() => setAsDefault(variant.id)}
-													title='Establecer como predeterminado'>
+													title={t('recipes.defaultBadge')}>
 													<StarIcon size={14} aria-hidden='true' />
 												</button>
 											)}
 											<button
 												className='btn-icon-small'
 												onClick={() => startEditVariant(variant)}
-												title='Editar'>
+												title={t('edit')}>
 												<EditIcon size={14} aria-hidden='true' />
 											</button>
 											{variants.length > 1 && (
 												<button
 													className='btn-icon-small btn-danger'
 													onClick={() => deleteVariant(variant.id)}
-													title='Eliminar'>
+													title={t('delete')}>
 													<DeleteIcon size={14} aria-hidden='true' />
 												</button>
 											)}
@@ -388,7 +466,7 @@ export function IngredientCard({
 								className='form-input form-input-sm'
 								value={variantName}
 								onChange={(e) => setVariantName(e.target.value)}
-								placeholder='Nombre del estado (ej: Cocinado, Frito...)'
+								placeholder={t('ingredients.variantsPlaceholder')}
 							/>
 							<div className='variant-macros-grid'>
 								<input
@@ -396,7 +474,7 @@ export function IngredientCard({
 									className='form-input form-input-sm'
 									value={variantCalories}
 									onChange={(e) => setVariantCalories(e.target.value)}
-									placeholder='kcal'
+									placeholder={t('weekPlan.kcal')}
 									min={0}
 								/>
 								<input
@@ -404,7 +482,7 @@ export function IngredientCard({
 									className='form-input form-input-sm'
 									value={variantProtein}
 									onChange={(e) => setVariantProtein(e.target.value)}
-									placeholder='prot'
+									placeholder={t('weekPlan.prot')}
 									min={0}
 									step={0.1}
 								/>
@@ -413,7 +491,7 @@ export function IngredientCard({
 									className='form-input form-input-sm'
 									value={variantCarbs}
 									onChange={(e) => setVariantCarbs(e.target.value)}
-									placeholder='carbs'
+									placeholder={t('weekPlan.carbsShort')}
 									min={0}
 									step={0.1}
 								/>
@@ -422,7 +500,7 @@ export function IngredientCard({
 									className='form-input form-input-sm'
 									value={variantFat}
 									onChange={(e) => setVariantFat(e.target.value)}
-									placeholder='grasa'
+									placeholder={t('weekPlan.fatShort')}
 									min={0}
 									step={0.1}
 								/>
@@ -431,7 +509,7 @@ export function IngredientCard({
 									className='form-input form-input-sm'
 									value={variantFiber}
 									onChange={(e) => setVariantFiber(e.target.value)}
-									placeholder='fibra'
+									placeholder={t('fiber')}
 									min={0}
 									step={0.1}
 								/>
@@ -440,20 +518,20 @@ export function IngredientCard({
 									className='form-input form-input-sm weight-factor-input'
 									value={variantWeightFactor}
 									onChange={(e) => setVariantWeightFactor(e.target.value)}
-									placeholder='×peso'
+									placeholder={t('ingredients.weightFactor')}
 									min={0.1}
 									step={0.1}
 								/>
 							</div>
 							<div className='variant-edit-actions'>
 								<button className='btn btn-sm btn-outline' onClick={cancelEditVariant}>
-									Cancelar
+									{t('cancel')}
 								</button>
 								<button
 									className='btn btn-sm btn-primary'
 									onClick={addNewVariant}
 									disabled={!variantName.trim()}>
-									Añadir
+									{t('add')}
 								</button>
 							</div>
 						</div>
@@ -461,7 +539,7 @@ export function IngredientCard({
 						<button
 							className='btn btn-sm btn-outline add-variant-btn'
 							onClick={() => setEditingVariantId(-1)}>
-							+ Añadir estado
+							{t('ingredients.addState')}
 						</button>
 					)}
 				</div>
@@ -485,7 +563,7 @@ export function IngredientCard({
 										<button
 											className='btn-icon-small'
 											onClick={() => handleDeleteConversion(conv.id)}
-											title='Eliminar'>
+											title={t('delete')}>
 											<DeleteIcon size={14} aria-hidden='true' />
 										</button>
 									</div>
@@ -503,7 +581,9 @@ export function IngredientCard({
 												preferredUnit: e.target.value || null,
 											})
 										}}>
-										<option value=''>Por defecto ({ingredient.unit})</option>
+										<option value=''>
+											{t('ingredients.defaultUnit', { unit: ingredient.unit })}
+										</option>
 										{conversions.map((conv: UnitConversion) => (
 											<option key={conv.id} value={conv.unitName}>
 												{conv.unitName} ({conv.gramsPerUnit}
@@ -543,14 +623,77 @@ export function IngredientCard({
 				</div>
 			)}
 
+			<button className='threshold-toggle' onClick={() => setShowThreshold(!showThreshold)}>
+				{showThreshold ? '▼' : '▶'} {t('ingredients.minQuantity')}{' '}
+				{hasThreshold && <span className='threshold-active-badge'>✓</span>}
+			</button>
+
+			{showThreshold && (
+				<div className='threshold-panel'>
+					<p className='form-hint'>{t('ingredients.minQuantityHint')}</p>
+					<div className='threshold-form'>
+						<input
+							type='number'
+							className='form-input form-input-sm'
+							placeholder={t('ingredients.quantityPlaceholder')}
+							value={minQuantity}
+							onChange={(e) => setMinQuantity(e.target.value)}
+							min={0}
+							step={0.1}
+						/>
+						<select
+							className='form-select form-select-sm'
+							value={minUnit}
+							onChange={(e) => setMinUnit(e.target.value)}>
+							<option value={ingredient.unit}>{ingredient.unit}</option>
+							{conversions.map((conv: UnitConversion) => (
+								<option key={conv.id} value={conv.unitName}>
+									{conv.unitName}
+								</option>
+							))}
+						</select>
+						<button
+							className='btn btn-sm btn-primary'
+							onClick={handleSaveThreshold}
+							disabled={!minQuantity || Number(minQuantity) <= 0}>
+							{t('save')}
+						</button>
+						{hasThreshold && (
+							<button
+								className='btn-icon-small btn-danger'
+								onClick={handleDeleteThreshold}
+								title={t('ingredients.removeThreshold')}>
+								<DeleteIcon size={14} aria-hidden='true' />
+							</button>
+						)}
+					</div>
+				</div>
+			)}
+
 			<div className='ingredient-actions'>
-				<button className='btn-icon' onClick={() => setIsEditing(true)} title='Editar'>
+				{onAddToShopping && (
+					<button
+						className='btn-icon'
+						onClick={() => onAddToShopping(ingredient)}
+						title={t('ingredients.addToShopping')}>
+						🛒
+					</button>
+				)}
+				{onAddToWeekPlan && (
+					<button
+						className='btn-icon'
+						onClick={() => onAddToWeekPlan(ingredient)}
+						title={t('ingredients.addToWeekPlan')}>
+						📅
+					</button>
+				)}
+				<button className='btn-icon' onClick={() => setIsEditing(true)} title={t('edit')}>
 					<EditIcon size={16} aria-hidden='true' />
 				</button>
 				<button
 					className='btn-icon btn-icon-danger'
 					onClick={() => onDelete(ingredient.id)}
-					title='Eliminar'>
+					title={t('delete')}>
 					<DeleteIcon size={16} aria-hidden='true' />
 				</button>
 			</div>

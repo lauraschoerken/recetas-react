@@ -1,0 +1,58 @@
+.macros-container {
+	max-width: 900px;
+	margin: 0 auto;
+	padding: 2rem;
+}
+
+.macros-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+.macros-card {
+	background: var(--card-background);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-lg);
+	padding: 1.5rem;
+}
+
+.macros-card-title {
+	font-size: 1.125rem;
+	font-weight: 600;
+	margin: 0 0 0.5rem 0;
+	color: var(--text-primary);
+}
+
+.macros-card-description {
+	font-size: 0.875rem;
+	color: var(--text-secondary);
+	margin: 0 0 1.5rem 0;
+}
+
+.macros-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.macros-empty {
+	padding: 2rem;
+	text-align: center;
+	color: var(--text-secondary);
+	background: var(--background-color);
+	border-radius: var(--radius);
+}
+
+.macros-actions {
+	margin-top: 2rem;
+	display: flex;
+	justify-content: center;
+}
+
+@media (max-width: 768px) {
+	.macros-grid {
+		grid-template-columns: 1fr;
+	}
+}

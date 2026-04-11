@@ -1,6 +1,7 @@
 import './NutritionEditor.scss'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { IngredientVariant } from '@/services/recipe'
 
@@ -60,6 +61,7 @@ export function NutritionEditor({
 	servings,
 	onChange,
 }: NutritionEditorProps) {
+	const { t } = useTranslation()
 	const [useCustomMacros, setUseCustomMacros] = useState(customMacros.customCalories != null)
 	const [localCustomMacros, setLocalCustomMacros] = useState<CustomMacros>(customMacros)
 	const [cookedVariants, setCookedVariants] = useState<Record<number, number | null>>({})
@@ -217,20 +219,20 @@ export function NutritionEditor({
 	return (
 		<div className='nutrition-editor'>
 			<div className='nutrition-editor-section'>
-				<h4>Ingredientes y recetas incluidas</h4>
+				<h4>{t('recipes.nutritionEditorTitle')}</h4>
 				<p className='nutrition-editor-help'>
 					Selecciona el estado de cada ingrediente después de cocinar para calcular los macros
 					finales.
 				</p>
 
 				{ingredients.length === 0 ? (
-					<p className='nutrition-editor-empty'>No hay ingredientes en esta receta.</p>
+					<p className='nutrition-editor-empty'>{t('recipes.nutritionEditorEmpty')}</p>
 				) : (
 					<div className='nutrition-ingredients-list'>
 						{/* Ingredientes directos */}
 						{directIngredients.length > 0 && (
 							<>
-								<div className='nutrition-section-title'>Ingredientes directos</div>
+								<div className='nutrition-section-title'>{t('recipes.directIngredients')}</div>
 								{directIngredients.map((ing) => {
 									const idx = ingredients.indexOf(ing)
 									const selectedVariantId = cookedVariants[idx] || ing.variantId
@@ -259,7 +261,7 @@ export function NutritionEditor({
 												</span>
 											</div>
 											<div className='nutrition-ingredient-variant'>
-												<label>Estado consumo:</label>
+												<label>{t('recipes.consumptionState')}</label>
 												<select
 													value={cookedVariants[idx] || ing.variantId || ''}
 													onChange={(e) =>
@@ -285,7 +287,7 @@ export function NutritionEditor({
 						{/* Recetas incluidas */}
 						{recipeIngredients.length > 0 && (
 							<>
-								<div className='nutrition-section-title'>Recetas incluidas</div>
+								<div className='nutrition-section-title'>{t('recipes.includedRecipes')}</div>
 								{recipeIngredients.map((ing) => {
 									const idx = ingredients.indexOf(ing)
 									return (
@@ -298,9 +300,7 @@ export function NutritionEditor({
 												</span>
 											</div>
 											<div className='nutrition-ingredient-note'>
-												<span>
-													Los macros de esta receta se calculan según su propia configuración
-												</span>
+												<span>{t('recipes.recipeMacrosNote')}</span>
 											</div>
 										</div>
 									)
@@ -314,14 +314,14 @@ export function NutritionEditor({
 								// Agrupar por componentName
 								const groups: Record<string, typeof componentIngredients> = {}
 								componentIngredients.forEach((ing) => {
-									const key = ing.componentName || 'Otros'
+									const key = ing.componentName || t('recipes.others')
 									if (!groups[key]) groups[key] = []
 									groups[key].push(ing)
 								})
 
 								return (
 									<>
-										<div className='nutrition-section-title'>Ingredientes de variantes</div>
+										<div className='nutrition-section-title'>{t('recipes.variantIngredients')}</div>
 										{Object.entries(groups).map(([compName, options]) => (
 											<div key={compName} className='nutrition-component-group'>
 												<div className='nutrition-component-header'>{compName}</div>
@@ -367,7 +367,7 @@ export function NutritionEditor({
 																	</span>
 																</div>
 																<div className='nutrition-ingredient-variant'>
-																	<label>Estado consumo:</label>
+																	<label>{t('recipes.consumptionState')}</label>
 																	<select
 																		value={cookedVariants[idx] || ing.variantId || ''}
 																		onChange={(e) =>
@@ -399,32 +399,42 @@ export function NutritionEditor({
 			</div>
 
 			<div className='nutrition-editor-section'>
-				<h4>Macros calculados</h4>
+				<h4>{t('recipes.calculatedMacros')}</h4>
 				<div className='nutrition-summary-grid'>
 					<div className='nutrition-summary-item'>
-						<span className='nutrition-label'>Calorías</span>
+						<span className='nutrition-label'>{t('recipes.calories')}</span>
 						<span className='nutrition-value calories'>{displayNutrition.calories} kcal</span>
-						<span className='nutrition-per-serving'>{perServing.calories} kcal/ración</span>
+						<span className='nutrition-per-serving'>
+							{t('recipes.perRation', { value: `${perServing.calories} kcal` })}
+						</span>
 					</div>
 					<div className='nutrition-summary-item'>
-						<span className='nutrition-label'>Proteína</span>
+						<span className='nutrition-label'>{t('weekPlan.protein')}</span>
 						<span className='nutrition-value protein'>{displayNutrition.protein}g</span>
-						<span className='nutrition-per-serving'>{perServing.protein}g/ración</span>
+						<span className='nutrition-per-serving'>
+							{t('recipes.perRation', { value: `${perServing.protein}g` })}
+						</span>
 					</div>
 					<div className='nutrition-summary-item'>
-						<span className='nutrition-label'>Carbos</span>
+						<span className='nutrition-label'>{t('weekPlan.carbs')}</span>
 						<span className='nutrition-value carbs'>{displayNutrition.carbs}g</span>
-						<span className='nutrition-per-serving'>{perServing.carbs}g/ración</span>
+						<span className='nutrition-per-serving'>
+							{t('recipes.perRation', { value: `${perServing.carbs}g` })}
+						</span>
 					</div>
 					<div className='nutrition-summary-item'>
-						<span className='nutrition-label'>Grasa</span>
+						<span className='nutrition-label'>{t('weekPlan.fat')}</span>
 						<span className='nutrition-value fat'>{displayNutrition.fat}g</span>
-						<span className='nutrition-per-serving'>{perServing.fat}g/ración</span>
+						<span className='nutrition-per-serving'>
+							{t('recipes.perRation', { value: `${perServing.fat}g` })}
+						</span>
 					</div>
 					<div className='nutrition-summary-item'>
-						<span className='nutrition-label'>Fibra</span>
+						<span className='nutrition-label'>{t('fiber')}</span>
 						<span className='nutrition-value fiber'>{displayNutrition.fiber}g</span>
-						<span className='nutrition-per-serving'>{perServing.fiber}g/ración</span>
+						<span className='nutrition-per-serving'>
+							{t('recipes.perRation', { value: `${perServing.fiber}g` })}
+						</span>
 					</div>
 				</div>
 			</div>
@@ -436,22 +446,22 @@ export function NutritionEditor({
 						checked={useCustomMacros}
 						onChange={(e) => handleToggleCustomMacros(e.target.checked)}
 					/>
-					Configurar macros manualmente
+					{t('recipes.customMacrosToggle')}
 				</label>
 
 				{useCustomMacros && (
 					<div className='nutrition-custom-inputs'>
 						<div className='nutrition-input-group'>
-							<label>Calorías (total)</label>
+							<label>{t('recipes.caloriesTotal')}</label>
 							<input
 								type='number'
 								value={localCustomMacros.customCalories ?? ''}
 								onChange={(e) => handleCustomMacroChange('customCalories', e.target.value)}
-								placeholder='kcal'
+								placeholder={t('weekPlan.kcal')}
 							/>
 						</div>
 						<div className='nutrition-input-group'>
-							<label>Proteína (g)</label>
+							<label>{t('recipes.proteinGrams')}</label>
 							<input
 								type='number'
 								step='0.1'
@@ -461,7 +471,7 @@ export function NutritionEditor({
 							/>
 						</div>
 						<div className='nutrition-input-group'>
-							<label>Carbos (g)</label>
+							<label>{t('recipes.carbsGrams')}</label>
 							<input
 								type='number'
 								step='0.1'
@@ -471,7 +481,7 @@ export function NutritionEditor({
 							/>
 						</div>
 						<div className='nutrition-input-group'>
-							<label>Grasa (g)</label>
+							<label>{t('recipes.fatGrams')}</label>
 							<input
 								type='number'
 								step='0.1'
@@ -481,7 +491,7 @@ export function NutritionEditor({
 							/>
 						</div>
 						<div className='nutrition-input-group'>
-							<label>Fibra (g)</label>
+							<label>{t('recipes.fiberGrams')}</label>
 							<input
 								type='number'
 								step='0.1'

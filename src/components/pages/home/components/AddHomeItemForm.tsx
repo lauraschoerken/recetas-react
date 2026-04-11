@@ -1,6 +1,7 @@
 import './AddHomeItemForm.scss'
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { api } from '@/services/api'
 import { CreateHomeItemData, HomeLocation } from '@/services/home'
@@ -26,9 +27,10 @@ interface IngredientSuggestion {
 	name: string
 	unit: string
 	variants?: IngredientVariant[]
+	conversions?: { id: number; unitName: string; gramsPerUnit: number }[]
 }
 
-const UNITS = [
+const DEFAULT_UNITS = [
 	'unidad',
 	'g',
 	'kg',
@@ -49,6 +51,7 @@ function capitalizeFirst(str: string): string {
 }
 
 export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFormProps) {
+	const { t } = useTranslation()
 	const [itemType, setItemType] = useState<ItemType>('ingredient')
 	const [ingredientName, setIngredientName] = useState('')
 	const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null)
@@ -113,6 +116,28 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 		setShowSuggestions(false)
 	}
 
+	// Construir lista de unidades disponibles según el ingrediente seleccionado
+	const getAvailableUnits = (): string[] => {
+		if (!selectedIngredient) return DEFAULT_UNITS
+
+		const units = new Set<string>()
+		// Unidad base del ingrediente
+		units.add(selectedIngredient.unit)
+		// Unidades estándar derivadas
+		if (selectedIngredient.unit === 'g') {
+			units.add('kg')
+		} else if (selectedIngredient.unit === 'ml') {
+			units.add('l')
+		}
+		// Conversiones configuradas del ingrediente
+		if (selectedIngredient.conversions) {
+			for (const conv of selectedIngredient.conversions) {
+				units.add(conv.unitName)
+			}
+		}
+		return Array.from(units)
+	}
+
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
 
@@ -144,13 +169,13 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 						type='button'
 						className={`item-type-btn ${itemType === 'ingredient' ? 'active' : ''}`}
 						onClick={() => setItemType('ingredient')}>
-						Ingrediente
+						{t('homePage.ingredient')}
 					</button>
 					<button
 						type='button'
 						className={`item-type-btn ${itemType === 'recipe' ? 'active' : ''}`}
 						onClick={() => setItemType('recipe')}>
-						Receta preparada
+						{t('homePage.preparedRecipe')}
 					</button>
 				</div>
 			</div>
@@ -162,7 +187,7 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 							<input
 								type='text'
 								className='form-input'
-								placeholder='Nombre del ingrediente'
+								placeholder={t('ingredients.namePlaceholder')}
 								value={ingredientName}
 								onChange={(e) => handleIngredientChange(e.target.value)}
 								onFocus={() => setShowSuggestions(true)}
@@ -208,7 +233,7 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 						value={selectedRecipeId || ''}
 						onChange={(e) => setSelectedRecipeId(Number(e.target.value))}
 						required>
-						<option value=''>Selecciona una receta</option>
+						<option value=''>{t('homePage.selectRecipe')}</option>
 						{recipes.map((r) => (
 							<option key={r.id} value={r.id}>
 								{r.title}
@@ -232,7 +257,7 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 					className='form-input unit-select'
 					value={unit}
 					onChange={(e) => setUnit(e.target.value)}>
-					{UNITS.map((u) => (
+					{getAvailableUnits().map((u) => (
 						<option key={u} value={u}>
 							{u}
 						</option>
@@ -242,10 +267,10 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 
 			<div className='form-row form-actions'>
 				<button type='button' className='btn btn-outline' onClick={onCancel}>
-					Cancelar
+					{t('cancel')}
 				</button>
 				<button type='submit' className='btn btn-primary'>
-					Añadir
+					{t('add')}
 				</button>
 			</div>
 		</form>

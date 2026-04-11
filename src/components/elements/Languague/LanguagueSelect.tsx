@@ -10,7 +10,7 @@ type Props = {
 }
 
 const LanguageSelect = ({ big = false }: Props) => {
-	const { i18n } = useTranslation()
+	const { t, i18n } = useTranslation()
 	const initial = i18n.language?.split('-')[0] || 'es'
 	const [open, setOpen] = useState(false)
 	const [active, setActive] = useState(initial)
@@ -68,7 +68,7 @@ const LanguageSelect = ({ big = false }: Props) => {
 			<button
 				type='button'
 				className='cselect__button'
-				aria-label='Seleccionar idioma'
+				aria-label={t('ingredients.selectLanguage')}
 				aria-controls='lang-listbox'
 				aria-expanded={open}
 				onClick={() => setOpen((o) => !o)}>

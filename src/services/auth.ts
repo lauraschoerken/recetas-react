@@ -32,4 +32,21 @@ export const authService = {
 	isAuthenticated(): boolean {
 		return !!localStorage.getItem('token')
 	},
+
+	async updateAccount(data: { name?: string; email?: string; imageUrl?: string }): Promise<User> {
+		const user = await api.put<User>('/auth/account', data)
+		localStorage.setItem('user', JSON.stringify(user))
+		return user
+	},
+
+	async changePassword(
+		currentPassword: string,
+		newPassword: string
+	): Promise<{ success: boolean }> {
+		return api.post('/auth/change-password', { currentPassword, newPassword })
+	},
+
+	async getMe(): Promise<User> {
+		return api.get<User>('/auth/me')
+	},
 }

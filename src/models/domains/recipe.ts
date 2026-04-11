@@ -49,6 +49,7 @@ export interface Recipe {
 	isPublic: boolean
 	userId: number
 	authorName?: string
+	defaultLocation?: string | null
 	createdAt: string
 	updatedAt: string
 	ingredients: Ingredient[]
@@ -93,6 +94,7 @@ export interface CreateRecipeData {
 	imageUrl?: string
 	servings?: number
 	isPublic?: boolean
+	defaultLocation?: string
 	ingredients?: {
 		name: string
 		quantity: number

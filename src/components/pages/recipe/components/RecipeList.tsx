@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { Recipe } from '@/services/recipe'
 
 import { RecipeCard } from './RecipeCard'
@@ -10,11 +12,13 @@ interface RecipeListProps {
 }
 
 export function RecipeList({ recipes, currentUserId, onDelete, onAddToWeek }: RecipeListProps) {
+	const { t } = useTranslation()
+
 	if (recipes.length === 0) {
 		return (
 			<div className='empty-state'>
-				<p>No tienes recetas todavía.</p>
-				<p className='text-secondary text-sm mt-1'>Crea tu primera receta para empezar.</p>
+				<p>{t('recipes.emptyTitle')}</p>
+				<p className='text-secondary text-sm mt-1'>{t('recipes.emptyHint')}</p>
 			</div>
 		)
 	}

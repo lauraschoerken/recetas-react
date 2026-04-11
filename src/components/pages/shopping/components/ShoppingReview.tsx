@@ -1,6 +1,7 @@
 import './ShoppingReview.scss'
 
-import { useEffect,useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export interface ReviewIngredient {
 	id: number
@@ -18,6 +19,7 @@ interface ShoppingReviewProps {
 }
 
 export function ShoppingReview({ ingredients, onConfirm, onCancel }: ShoppingReviewProps) {
+	const { t } = useTranslation()
 	const [items, setItems] = useState<ReviewIngredient[]>(ingredients)
 
 	useEffect(() => {
@@ -61,14 +63,14 @@ export function ShoppingReview({ ingredients, onConfirm, onCancel }: ShoppingRev
 	return (
 		<div className='shopping-review'>
 			<div className='shopping-review-header'>
-				<h3>Revisar ingredientes</h3>
-				<p className='shopping-review-subtitle'>Desmarca los ingredientes que ya tienes en casa</p>
+				<h3>{t('shopping.reviewTitle')}</h3>
+				<p className='shopping-review-subtitle'>{t('shopping.reviewSubtitle')}</p>
 				<div className='shopping-review-actions-top'>
 					<button className='btn btn-outline btn-sm' onClick={selectAll}>
-						Seleccionar todos
+						{t('selectAll')}
 					</button>
 					<button className='btn btn-outline btn-sm' onClick={deselectAll}>
-						Deseleccionar todos
+						{t('deselectAll')}
 					</button>
 				</div>
 			</div>
@@ -100,14 +102,14 @@ export function ShoppingReview({ ingredients, onConfirm, onCancel }: ShoppingRev
 
 			<div className='shopping-review-footer'>
 				<span className='shopping-review-count'>
-					{selectedCount} de {items.length} seleccionados
+					{selectedCount} {t('of')} {items.length} {t('selected')}
 				</span>
 				<div className='shopping-review-actions'>
 					<button className='btn btn-outline' onClick={onCancel}>
-						Cancelar
+						{t('cancel')}
 					</button>
 					<button className='btn btn-primary' onClick={handleConfirm}>
-						Añadir a la lista ({selectedCount})
+						{t('shopping.addToList')} ({selectedCount})
 					</button>
 				</div>
 			</div>

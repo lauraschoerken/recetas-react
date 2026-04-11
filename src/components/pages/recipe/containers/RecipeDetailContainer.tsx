@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
 import { Recipe, recipeService } from '@/services/recipe'
@@ -8,6 +9,7 @@ import { useDialog } from '@/utils/dialog/DialogContext'
 import { RecipeDetail } from '../components/RecipeDetail'
 
 export function RecipeDetailContainer() {
+	const { t } = useTranslation()
 	const { confirm, toast } = useDialog()
 	const { id } = useParams<{ id: string }>()
 	const navigate = useNavigate()
@@ -27,7 +29,7 @@ export function RecipeDetailContainer() {
 			const data = await recipeService.getById(parseInt(id))
 			setRecipe(data)
 		} catch {
-			setError('Receta no encontrada')
+			setError(t('recipes.notFound'))
 		} finally {
 			setLoading(false)
 		}
@@ -36,19 +38,19 @@ export function RecipeDetailContainer() {
 	const handleDelete = async () => {
 		if (!recipe) return
 		const confirmed = await confirm({
-			title: 'Eliminar receta',
-			message: '¿Estás seguro de que quieres eliminar esta receta?',
-			confirmText: 'Eliminar',
+			title: t('recipes.deleteTitle'),
+			message: t('recipes.deleteConfirm'),
+			confirmText: t('delete'),
 			type: 'danger',
 		})
 		if (!confirmed) return
 
 		try {
 			await recipeService.delete(recipe.id)
-			toast.success('Receta eliminada correctamente')
+			toast.success(t('recipes.deleted'))
 			navigate('/recipes')
 		} catch {
-			toast.error('Error al eliminar la receta')
+			toast.error(t('recipes.deleteError'))
 		}
 	}
 
@@ -56,8 +58,8 @@ export function RecipeDetailContainer() {
 		setModalOpen(true)
 	}
 
-	if (loading) return <div className='loading'>Cargando receta...</div>
-	if (error || !recipe) return <div className='error-message'>{error || 'Error'}</div>
+	if (loading) return <div className='loading'>{t('recipes.loading')}</div>
+	if (error || !recipe) return <div className='error-message'>{error || t('error')}</div>
 
 	return (
 		<>

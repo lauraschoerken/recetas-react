@@ -1,6 +1,7 @@
 import './IncludedRecipes.scss'
 
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { CloseIcon } from '@/components/shared/icons'
 import { Recipe, recipeService } from '@/services/recipe'
@@ -18,6 +19,7 @@ interface IncludedRecipesProps {
 }
 
 export function IncludedRecipes({ recipes, onChange }: IncludedRecipesProps) {
+	const { t } = useTranslation()
 	const [availableRecipes, setAvailableRecipes] = useState<Recipe[]>([])
 
 	useEffect(() => {
@@ -63,8 +65,8 @@ export function IncludedRecipes({ recipes, onChange }: IncludedRecipesProps) {
 		<div className='included-recipes-component'>
 			<div className='included-recipes-table'>
 				<div className='included-recipes-header'>
-					<span>RECETA</span>
-					<span>RACIONES</span>
+					<span>{t('recipes.recipeLabel')}</span>
+					<span>{t('recipes.rationsLabel')}</span>
 					<span></span>
 				</div>
 				<div className='included-recipes-body'>
@@ -76,7 +78,7 @@ export function IncludedRecipes({ recipes, onChange }: IncludedRecipesProps) {
 								onChange={(e) =>
 									updateRecipe(index, e.target.value ? parseInt(e.target.value) : null)
 								}>
-								<option value=''>Selecciona receta...</option>
+								<option value=''>{t('recipes.selectRecipe')}</option>
 								{availableRecipes.map((r) => (
 									<option key={r.id} value={r.id}>
 										{r.title}
@@ -97,7 +99,7 @@ export function IncludedRecipes({ recipes, onChange }: IncludedRecipesProps) {
 								type='button'
 								className='included-recipes-remove-btn'
 								onClick={() => removeRecipe(index)}
-								title='Eliminar'>
+								title={t('delete')}>
 								<CloseIcon size={14} aria-hidden='true' />
 							</button>
 						</div>
@@ -120,7 +122,7 @@ export function IncludedRecipes({ recipes, onChange }: IncludedRecipesProps) {
 										])
 									}
 								}}>
-								<option value=''>Selecciona receta...</option>
+								<option value=''>{t('recipes.selectRecipe')}</option>
 								{availableRecipes.map((r) => (
 									<option key={r.id} value={r.id}>
 										{r.title}
@@ -142,7 +144,7 @@ export function IncludedRecipes({ recipes, onChange }: IncludedRecipesProps) {
 			</div>
 
 			<button type='button' className='included-recipes-add-btn' onClick={addRecipe}>
-				+ Añadir receta
+				{t('recipes.addRecipeBtn')}
 			</button>
 		</div>
 	)

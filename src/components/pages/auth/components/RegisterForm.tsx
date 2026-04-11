@@ -2,6 +2,7 @@ import './AuthForm.scss'
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 interface RegisterFormProps {
 	onSubmit: (name: string, email: string, password: string) => void
@@ -10,6 +11,7 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ onSubmit, error, loading }: RegisterFormProps) {
+	const { t } = useTranslation()
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
@@ -21,12 +23,12 @@ export function RegisterForm({ onSubmit, error, loading }: RegisterFormProps) {
 		setValidationError(null)
 
 		if (password !== confirmPassword) {
-			setValidationError('Las contraseñas no coinciden')
+			setValidationError(t('auth.passwordsDontMatch'))
 			return
 		}
 
 		if (password.length < 6) {
-			setValidationError('La contraseña debe tener al menos 6 caracteres')
+			setValidationError(t('auth.passwordMinLength'))
 			return
 		}
 
@@ -38,26 +40,26 @@ export function RegisterForm({ onSubmit, error, loading }: RegisterFormProps) {
 	return (
 		<div className='auth-container'>
 			<div className='auth-card'>
-				<h1 className='auth-title'>Crear Cuenta</h1>
-				<p className='auth-subtitle'>Empieza a gestionar tus recetas</p>
+				<h1 className='auth-title'>{t('auth.createAccount')}</h1>
+				<p className='auth-subtitle'>{t('auth.registerSubtitle')}</p>
 
 				<form onSubmit={handleSubmit} className='auth-form'>
 					{displayError && <div className='auth-error'>{displayError}</div>}
 
 					<div className='form-group'>
-						<label className='form-label'>Nombre</label>
+						<label className='form-label'>{t('auth.name')}</label>
 						<input
 							type='text'
 							className='form-input'
 							value={name}
 							onChange={(e) => setName(e.target.value)}
-							placeholder='Tu nombre'
+							placeholder={t('auth.yourName')}
 							required
 						/>
 					</div>
 
 					<div className='form-group'>
-						<label className='form-label'>Email</label>
+						<label className='form-label'>{t('auth.email')}</label>
 						<input
 							type='email'
 							className='form-input'
@@ -69,7 +71,7 @@ export function RegisterForm({ onSubmit, error, loading }: RegisterFormProps) {
 					</div>
 
 					<div className='form-group'>
-						<label className='form-label'>Contraseña</label>
+						<label className='form-label'>{t('auth.password')}</label>
 						<input
 							type='password'
 							className='form-input'
@@ -81,7 +83,7 @@ export function RegisterForm({ onSubmit, error, loading }: RegisterFormProps) {
 					</div>
 
 					<div className='form-group'>
-						<label className='form-label'>Confirmar Contraseña</label>
+						<label className='form-label'>{t('auth.confirmPassword')}</label>
 						<input
 							type='password'
 							className='form-input'
@@ -93,12 +95,12 @@ export function RegisterForm({ onSubmit, error, loading }: RegisterFormProps) {
 					</div>
 
 					<button type='submit' className='btn btn-primary auth-submit' disabled={loading}>
-						{loading ? 'Creando cuenta...' : 'Crear cuenta'}
+						{loading ? t('auth.creatingAccount') : t('auth.createAccountBtn')}
 					</button>
 				</form>
 
 				<p className='auth-footer'>
-					¿Ya tienes cuenta? <Link to='/login'>Inicia sesión</Link>
+					{t('auth.hasAccount')} <Link to='/login'>{t('auth.loginLink')}</Link>
 				</p>
 			</div>
 		</div>

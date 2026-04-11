@@ -1,5 +1,7 @@
 import './ShoppingList.scss'
 
+import { useTranslation } from 'react-i18next'
+
 import { ShoppingItem } from '@/services/shopping'
 
 import { ShoppingItemRow } from './ShoppingItem'
@@ -12,13 +14,13 @@ interface ShoppingListProps {
 }
 
 export function ShoppingList({ items, checkedItems, onToggle, onExclude }: ShoppingListProps) {
+	const { t } = useTranslation()
+
 	if (items.length === 0) {
 		return (
 			<div className='empty-state'>
-				<p>No hay ingredientes en tu lista de la compra.</p>
-				<p className='text-secondary text-sm mt-1'>
-					Añade recetas a tu plan semanal para generar la lista.
-				</p>
+				<p>{t('shopping.emptyList')}</p>
+				<p className='text-secondary text-sm mt-1'>{t('shopping.emptyHint')}</p>
 			</div>
 		)
 	}
@@ -30,7 +32,9 @@ export function ShoppingList({ items, checkedItems, onToggle, onExclude }: Shopp
 		<div className='shopping-list'>
 			{uncheckedItems.length > 0 && (
 				<div className='shopping-list-section'>
-					<h3 className='shopping-list-title'>Por comprar ({uncheckedItems.length})</h3>
+					<h3 className='shopping-list-title'>
+						{t('shopping.toBuy')} ({uncheckedItems.length})
+					</h3>
 					<ul className='shopping-list-items'>
 						{uncheckedItems.map((item) => (
 							<ShoppingItemRow
@@ -47,7 +51,9 @@ export function ShoppingList({ items, checkedItems, onToggle, onExclude }: Shopp
 
 			{checked.length > 0 && (
 				<div className='shopping-list-section'>
-					<h3 className='shopping-list-title text-secondary'>Comprados ({checked.length})</h3>
+					<h3 className='shopping-list-title text-secondary'>
+						{t('shopping.purchased')} ({checked.length})
+					</h3>
 					<ul className='shopping-list-items shopping-list-checked'>
 						{checked.map((item) => (
 							<ShoppingItemRow

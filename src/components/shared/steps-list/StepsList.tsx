@@ -1,6 +1,7 @@
 import './StepsList.scss'
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { CloseIcon } from '@/components/shared/icons'
 
@@ -21,6 +22,7 @@ const autoResize = (el: HTMLTextAreaElement | null) => {
 }
 
 export function StepsList({ steps, onChange }: StepsListProps) {
+	const { t } = useTranslation()
 	const [newStep, setNewStep] = useState('')
 	const [dragIndex, setDragIndex] = useState<number | null>(null)
 	const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
@@ -104,7 +106,7 @@ export function StepsList({ steps, onChange }: StepsListProps) {
 							onDragStart={() => handleDragStart(index)}
 							onDragOver={(e) => handleDragOver(e, index)}
 							onDragEnd={handleDragEnd}>
-							<span className='step-drag-handle' title='Arrastrar para reordenar'>
+							<span className='step-drag-handle' title={t('recipes.dragToReorder')}>
 								⋮⋮
 							</span>
 							<span className='step-number'>{index + 1}</span>
@@ -122,7 +124,7 @@ export function StepsList({ steps, onChange }: StepsListProps) {
 								type='button'
 								className='step-btn step-btn-remove'
 								onClick={() => removeStep(index)}
-								title='Eliminar'>
+								title={t('delete')}>
 								<CloseIcon size={14} aria-hidden='true' />
 							</button>
 						</div>
@@ -141,7 +143,7 @@ export function StepsList({ steps, onChange }: StepsListProps) {
 						autoResize(e.target)
 					}}
 					onKeyDown={handleNewStepKeyDown}
-					placeholder='Escribe un paso y pulsa Enter...'
+					placeholder={t('recipes.stepPlaceholder')}
 					rows={1}
 				/>
 				<button

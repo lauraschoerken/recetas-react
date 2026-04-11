@@ -3,6 +3,41 @@
 	margin: 0 auto;
 }
 
+.home-search {
+	margin-bottom: 1rem;
+}
+
+.home-search-results {
+	background: var(--surface-2);
+	border-radius: var(--radius-sm);
+	padding: 1rem;
+	margin-bottom: 1rem;
+	border-left: 3px solid var(--primary-color);
+}
+
+.search-results-title {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--text-secondary);
+	margin: 0 0 0.75rem;
+}
+
+.search-results-more {
+	font-size: 0.8rem;
+	color: var(--text-secondary);
+	margin: 0.5rem 0 0;
+	text-align: center;
+}
+
+.home-item-location-badge {
+	font-size: 0.7rem;
+	background: var(--surface-3, var(--surface-2));
+	padding: 0.125rem 0.5rem;
+	border-radius: 10px;
+	color: var(--text-secondary);
+	text-transform: capitalize;
+}
+
 .home-tabs {
 	display: flex;
 	gap: 0.5rem;

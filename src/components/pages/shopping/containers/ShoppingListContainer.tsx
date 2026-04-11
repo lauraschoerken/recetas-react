@@ -1,7 +1,11 @@
-import { useEffect,useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { ShoppingItem, shoppingService } from '@/services/shopping'
+import { ingredientService, Ingredient } from '@/services/ingredient'
+import { api } from '@/services/api'
+import { useDialog } from '@/utils/dialog/DialogContext'
 
 import { ShoppingList } from '../components/ShoppingList'
 
@@ -26,6 +30,8 @@ function getStorageKey(weekStart: Date): string {
 }
 
 export function ShoppingListContainer() {
+	const { t } = useTranslation()
+	const { toast } = useDialog()
 	const [allItems, setAllItems] = useState<ShoppingItem[]>([])
 	const [filteredItems, setFilteredItems] = useState<ShoppingItem[]>([])
 	const [excludedItems, setExcludedItems] = useState<Set<number>>(new Set())
@@ -33,6 +39,14 @@ export function ShoppingListContainer() {
 	const [loading, setLoading] = useState(true)
 	const [showReview, setShowReview] = useState(false)
 	const [currentWeekStart, setCurrentWeekStart] = useState(() => getWeekStart(new Date()))
+
+	// Add item form
+	const [showAddItem, setShowAddItem] = useState(false)
+	const [allIngredients, setAllIngredients] = useState<Ingredient[]>([])
+	const [addSearch, setAddSearch] = useState('')
+	const [addSelectedIngredient, setAddSelectedIngredient] = useState<Ingredient | null>(null)
+	const [addQty, setAddQty] = useState<number>(1)
+	const [addUnit, setAddUnit] = useState<string>('g')
 
 	useEffect(() => {
 		loadShoppingList()
@@ -134,6 +148,54 @@ export function ShoppingListContainer() {
 		setCurrentWeekStart(getWeekStart(new Date()))
 	}
 
+	const handleOpenAddItem = async () => {
+		setShowAddItem(true)
+		if (allIngredients.length === 0) {
+			try {
+				const ingredients = await ingredientService.getAll()
+				setAllIngredients(ingredients)
+			} catch {
+				console.error('Error loading ingredients')
+			}
+		}
+	}
+
+	const handleSelectAddIngredient = (ing: Ingredient) => {
+		setAddSelectedIngredient(ing)
+		setAddUnit(ing.unit)
+		setAddSearch(ing.name)
+	}
+
+	const handleAddItem = async () => {
+		if (!addSelectedIngredient || addQty <= 0) return
+		try {
+			await shoppingService.addManualItems([
+				{
+					ingredientId: addSelectedIngredient.id,
+					quantity: addQty,
+					unit: addUnit,
+				},
+			])
+			toast.success(t('shopping.itemAdded'))
+			setShowAddItem(false)
+			setAddSelectedIngredient(null)
+			setAddSearch('')
+			setAddQty(1)
+			loadShoppingList()
+		} catch {
+			toast.error(t('shopping.addItemError'))
+		}
+	}
+
+	const addFilteredIngredients =
+		addSearch.length >= 2
+			? allIngredients.filter(
+					(i) =>
+						i.name.toLowerCase().includes(addSearch.toLowerCase()) &&
+						i.id !== addSelectedIngredient?.id
+				)
+			: []
+
 	const weekEndDate = getWeekEnd(currentWeekStart)
 	const weekLabel = `${currentWeekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${weekEndDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`
 
@@ -142,15 +204,20 @@ export function ShoppingListContainer() {
 	return (
 		<>
 			<div className='page-header'>
-				<h1 className='page-title'>Lista de la Compra</h1>
+				<h1 className='page-title'>{t('shopping.title')}</h1>
 				<div className='page-header-actions'>
+					<button className='btn btn-outline' onClick={handleOpenAddItem}>
+						{t('shopping.addItem')}
+					</button>
 					{excludedItems.size > 0 && (
 						<button className='btn btn-outline btn-sm' onClick={() => setShowReview(!showReview)}>
-							{showReview ? 'Ocultar excluidos' : `Ver excluidos (${excludedItems.size})`}
+							{showReview
+								? t('shopping.hideExcluded')
+								: `${t('shopping.showExcluded')} (${excludedItems.size})`}
 						</button>
 					)}
 					<Link to='/week-plan' className='btn btn-outline'>
-						Ver Plan Semanal
+						{t('shopping.viewWeekPlan')}
 					</Link>
 				</div>
 			</div>
@@ -158,7 +225,7 @@ export function ShoppingListContainer() {
 			<div className='card mb-2'>
 				<div className='flex flex-between flex-center'>
 					<button className='btn btn-outline btn-sm' onClick={goToPreviousWeek}>
-						&larr; Anterior
+						&larr; {t('shopping.prev')}
 					</button>
 					<div className='text-center'>
 						<strong>{weekLabel}</strong>
@@ -166,19 +233,19 @@ export function ShoppingListContainer() {
 							className='btn btn-outline btn-sm'
 							onClick={goToCurrentWeek}
 							style={{ marginLeft: '1rem' }}>
-							Hoy
+							{t('shopping.today')}
 						</button>
 					</div>
 					<button className='btn btn-outline btn-sm' onClick={goToNextWeek}>
-						Siguiente &rarr;
+						{t('shopping.next')} &rarr;
 					</button>
 				</div>
 			</div>
 
 			{showReview && excludedItemsList.length > 0 && (
 				<div className='card mb-2 excluded-items-card'>
-					<h3 className='text-secondary mb-1'>Ingredientes excluidos</h3>
-					<p className='text-sm text-secondary mb-1'>Haz clic para restaurar a la lista</p>
+					<h3 className='text-secondary mb-1'>{t('shopping.excludedTitle')}</h3>
+					<p className='text-sm text-secondary mb-1'>{t('shopping.excludedHint')}</p>
 					<div className='excluded-items-list'>
 						{excludedItemsList.map((item) => (
 							<button
@@ -194,7 +261,7 @@ export function ShoppingListContainer() {
 			)}
 
 			{loading ? (
-				<div className='loading'>Cargando lista...</div>
+				<div className='loading'>{t('shopping.loading')}</div>
 			) : (
 				<>
 					<ShoppingList
@@ -207,18 +274,116 @@ export function ShoppingListContainer() {
 					{(checkedItems.size > 0 || excludedItems.size > 0) && (
 						<div className='shopping-actions mt-2'>
 							{checkedItems.size > 0 && (
+								<button
+									className='btn btn-primary btn-sm'
+									onClick={async () => {
+										const itemsToMark = filteredItems.filter((i) =>
+											checkedItems.has(i.ingredientId)
+										)
+										try {
+											await api.post('/shopping-list/mark-purchased', {
+												items: itemsToMark.map((i) => ({
+													ingredientId: i.ingredientId,
+													quantity: i.quantityToBuy,
+													unit: i.unit,
+												})),
+											})
+											toast.success(`${itemsToMark.length} ${t('shopping.addedToHome')}`)
+											clearChecked()
+											loadShoppingList()
+										} catch {
+											toast.error(t('shopping.purchaseError'))
+										}
+									}}>
+									{t('shopping.markPurchased')} ({checkedItems.size})
+								</button>
+							)}
+							{checkedItems.size > 0 && (
 								<button className='btn btn-outline btn-sm' onClick={clearChecked}>
-									Desmarcar comprados
+									{t('shopping.unmarkPurchased')}
 								</button>
 							)}
 							{(checkedItems.size > 0 || excludedItems.size > 0) && (
 								<button className='btn btn-outline btn-sm' onClick={resetAll}>
-									Reiniciar todo
+									{t('shopping.resetAll')}
 								</button>
 							)}
 						</div>
 					)}
 				</>
+			)}
+
+			{showAddItem && (
+				<div className='modal-overlay' onClick={() => setShowAddItem(false)}>
+					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
+						<h3>{t('shopping.addItemTitle')}</h3>
+
+						<div className='form-group'>
+							<label>{t('ingredients.ingredientLabel')}</label>
+							<input
+								type='text'
+								value={addSearch}
+								onChange={(e) => {
+									setAddSearch(e.target.value)
+									if (addSelectedIngredient && e.target.value !== addSelectedIngredient.name) {
+										setAddSelectedIngredient(null)
+									}
+								}}
+								placeholder={t('ingredients.searchPlaceholder')}
+								autoFocus
+							/>
+							{addFilteredIngredients.length > 0 && !addSelectedIngredient && (
+								<ul className='suggestions-list'>
+									{addFilteredIngredients.slice(0, 8).map((ing) => (
+										<li key={ing.id} onClick={() => handleSelectAddIngredient(ing)}>
+											{ing.name} <span className='text-secondary'>({ing.unit})</span>
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
+
+						{addSelectedIngredient && (
+							<div className='form-row'>
+								<div className='form-group'>
+									<label>{t('ingredients.quantityPlaceholder')}</label>
+									<input
+										type='number'
+										min='0'
+										step='any'
+										value={addQty}
+										onChange={(e) => setAddQty(parseFloat(e.target.value) || 0)}
+									/>
+								</div>
+								<div className='form-group'>
+									<label>{t('ingredients.unitHeader')}</label>
+									<select value={addUnit} onChange={(e) => setAddUnit(e.target.value)}>
+										<option value={addSelectedIngredient.unit}>{addSelectedIngredient.unit}</option>
+										{addSelectedIngredient.unit === 'g' && <option value='kg'>kg</option>}
+										{addSelectedIngredient.unit === 'ml' && <option value='l'>l</option>}
+										{(addSelectedIngredient.conversions || []).map((c) => (
+											<option key={c.id} value={c.unitName}>
+												{c.unitName}
+											</option>
+										))}
+									</select>
+								</div>
+							</div>
+						)}
+
+						<div className='modal-actions'>
+							<button className='btn btn-outline' onClick={() => setShowAddItem(false)}>
+								{t('cancel')}
+							</button>
+							<button
+								className='btn btn-primary'
+								disabled={!addSelectedIngredient || addQty <= 0}
+								onClick={handleAddItem}>
+								{t('shopping.addToList')}
+							</button>
+						</div>
+					</div>
+				</div>
 			)}
 		</>
 	)

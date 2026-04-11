@@ -1,5 +1,6 @@
 import { ItemCard, ItemCardData } from '@/components/shared/item-card'
 import { Recipe } from '@/services/recipe'
+import { pdfService } from '@/services/pdf'
 
 interface RecipeCardProps {
 	recipe: Recipe
@@ -24,12 +25,22 @@ export function RecipeCard({ recipe, currentUserId, onDelete, onAddToWeek }: Rec
 		type: 'recipe',
 	}
 
+	const handleDownloadPdf = async () => {
+		try {
+			const { html } = await pdfService.exportRecipeHtml(recipe.id)
+			pdfService.downloadHtml(html, `${recipe.title}.html`)
+		} catch {
+			console.error('Error downloading PDF')
+		}
+	}
+
 	return (
 		<ItemCard
 			item={itemData}
 			currentUserId={currentUserId}
 			onDelete={onDelete}
 			onAddToWeek={() => onAddToWeek(recipe)}
+			onDownloadPdf={handleDownloadPdf}
 			editPath={`/recipes/${recipe.id}/edit`}
 			detailPath={`/recipes/${recipe.id}`}
 		/>

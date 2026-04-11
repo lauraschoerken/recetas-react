@@ -1,5 +1,7 @@
 import './WeekCalendar.scss'
 
+import { useTranslation } from 'react-i18next'
+
 import { WeekPlan } from '@/services/shopping'
 
 import { DayCardRow } from './DayCardRow'
@@ -11,6 +13,7 @@ interface WeekCalendarProps {
 	onMovePlan?: (planId: number, newDate: string) => void
 	onCook?: (planId: number, leftoverServings: number, leftoverLocation: string) => void
 	onConsume?: (planId: number) => void
+	onDayClick?: (dateStr: string) => void
 }
 
 function formatLocalDate(date: Date): string {
@@ -27,9 +30,11 @@ export function WeekCalendar({
 	onMovePlan,
 	onCook,
 	onConsume,
+	onDayClick,
 }: WeekCalendarProps) {
+	const { t } = useTranslation()
 	const days = []
-	const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+	const dayNames = t('weekPlan.dayNames', { returnObjects: true }) as string[]
 
 	for (let i = 0; i < 7; i++) {
 		const date = new Date(startDate)
@@ -62,7 +67,11 @@ export function WeekCalendar({
 						month: 'short',
 					})
 					return (
-						<div key={index} className={`week-calendar-day-header ${isToday ? 'is-today' : ''}`}>
+						<div
+							key={index}
+							className={`week-calendar-day-header ${isToday ? 'is-today' : ''}`}
+							onClick={() => onDayClick?.(day.dateStr)}
+							style={{ cursor: onDayClick ? 'pointer' : undefined }}>
 							<span className='day-name'>{day.dayName}</span>
 							<span className='day-date'>{displayDate}</span>
 						</div>
@@ -72,7 +81,7 @@ export function WeekCalendar({
 
 			{/* Fila de Comidas */}
 			<DayCardRow
-				title='Comidas'
+				title={t('weekPlan.meals')}
 				type='meal'
 				days={days}
 				onRemove={onRemove}
@@ -82,7 +91,7 @@ export function WeekCalendar({
 
 			{/* Fila de A Preparar */}
 			<DayCardRow
-				title='A Preparar'
+				title={t('weekPlan.toPrep')}
 				type='prep'
 				days={days}
 				onRemove={onRemove}

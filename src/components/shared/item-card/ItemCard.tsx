@@ -1,8 +1,10 @@
 import './ItemCard.scss'
 
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { CalendarAddIcon, DeleteIcon, EditIcon } from '@/components/shared/icons'
+import { HiOutlineArrowDownTray } from 'react-icons/hi2'
 
 export interface ItemCardData {
 	id: number
@@ -22,6 +24,7 @@ interface ItemCardProps {
 	currentUserId: number
 	onDelete: (id: number) => void
 	onAddToWeek: () => void
+	onDownloadPdf?: () => void
 	editPath: string
 	detailPath?: string
 }
@@ -31,9 +34,11 @@ export function ItemCard({
 	currentUserId,
 	onDelete,
 	onAddToWeek,
+	onDownloadPdf,
 	editPath,
 	detailPath,
 }: ItemCardProps) {
+	const { t } = useTranslation()
 	const isOwner = item.userId === currentUserId
 	const linkPath = detailPath || editPath
 
@@ -44,9 +49,11 @@ export function ItemCard({
 					<Link to={linkPath}>{item.title}</Link>
 				</h3>
 				<div className='item-card-badges'>
-					{item.hasVariants && <span className='badge badge-variants'>Opciones</span>}
+					{item.hasVariants && (
+						<span className='badge badge-variants'>{t('recipes.optionsBadge')}</span>
+					)}
 					<span className={`badge ${item.isPublic ? 'badge-public' : 'badge-private'}`}>
-						{item.isPublic ? 'Pública' : 'Privada'}
+						{item.isPublic ? t('public') : t('private')}
 					</span>
 				</div>
 			</div>
@@ -57,14 +64,18 @@ export function ItemCard({
 				</div>
 			) : (
 				<>
-					{!isOwner && item.authorName && <p className='item-card-author'>Por {item.authorName}</p>}
+					{!isOwner && item.authorName && (
+						<p className='item-card-author'>{t('recipes.byAuthor', { author: item.authorName })}</p>
+					)}
 					{item.description && <p className='item-card-description'>{item.description}</p>}
 				</>
 			)}
 
 			<div className='item-card-footer'>
 				{item.caloriesPerServing != null && (
-					<span className='item-card-calories'>{item.caloriesPerServing} kcal/porción</span>
+					<span className='item-card-calories'>
+						{t('recipes.kcalPerServing', { kcal: item.caloriesPerServing })}
+					</span>
 				)}
 
 				<div className='item-card-actions'>
@@ -72,20 +83,28 @@ export function ItemCard({
 						<button
 							className='btn-icon btn-icon-primary'
 							onClick={onAddToWeek}
-							title='Añadir a la semana'>
+							title={t('recipes.addToWeekBtn')}>
 							<CalendarAddIcon size={16} aria-hidden='true' />
 						</button>
+						{onDownloadPdf && (
+							<button
+								className='btn-icon btn-icon-outline'
+								onClick={onDownloadPdf}
+								title={t('recipes.downloadPdf')}>
+								<HiOutlineArrowDownTray size={16} aria-hidden='true' />
+							</button>
+						)}
 					</div>
 					<div className='item-card-actions-right'>
 						{isOwner && (
 							<>
-								<Link to={editPath} className='btn-icon btn-icon-outline' title='Editar'>
+								<Link to={editPath} className='btn-icon btn-icon-outline' title={t('edit')}>
 									<EditIcon size={16} aria-hidden='true' />
 								</Link>
 								<button
 									className='btn-icon btn-icon-danger'
 									onClick={() => onDelete(item.id)}
-									title='Eliminar'>
+									title={t('delete')}>
 									<DeleteIcon size={16} aria-hidden='true' />
 								</button>
 							</>

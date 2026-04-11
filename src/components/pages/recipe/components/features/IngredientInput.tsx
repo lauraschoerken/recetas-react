@@ -1,5 +1,7 @@
 import './IngredientInput.scss'
 
+import { useTranslation } from 'react-i18next'
+
 import { CloseIcon } from '@/components/shared/icons'
 
 interface IngredientForm {
@@ -36,6 +38,8 @@ export function IngredientInput({
 	onRemove,
 	canRemove,
 }: IngredientInputProps) {
+	const { t } = useTranslation()
+
 	return (
 		<div className='ingredient-input'>
 			<input
@@ -43,7 +47,7 @@ export function IngredientInput({
 				className='form-input ingredient-name'
 				value={ingredient.name}
 				onChange={(e) => onChange('name', e.target.value)}
-				placeholder='Nombre del ingrediente'
+				placeholder={t('ingredients.namePlaceholder')}
 			/>
 			<input
 				type='number'
@@ -69,7 +73,7 @@ export function IngredientInput({
 					type='button'
 					className='ingredient-remove'
 					onClick={onRemove}
-					title='Eliminar ingrediente'>
+					title={t('recipes.deleteIngredient')}>
 					<CloseIcon size={14} aria-hidden='true' />
 				</button>
 			) : (

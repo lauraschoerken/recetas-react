@@ -1,6 +1,7 @@
 import './ComponentsEditor.scss'
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { ChartIcon, CloseIcon, ScaleIcon } from '@/components/shared/icons'
 import {
@@ -40,6 +41,7 @@ interface OptionIngredientData {
 interface ComponentsEditorProps {
 	components: CreateComponentData[]
 	onChange: (components: CreateComponentData[]) => void
+	currentRecipeId?: number
 }
 
 type OptionType = 'recipe' | 'ingredient'
@@ -61,7 +63,8 @@ function capitalizeFirst(str: string): string {
 	return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-export function ComponentsEditor({ components, onChange }: ComponentsEditorProps) {
+export function ComponentsEditor({ components, onChange, currentRecipeId }: ComponentsEditorProps) {
+	const { t } = useTranslation()
 	const [availableRecipes, setAvailableRecipes] = useState<Recipe[]>([])
 	const [suggestions, setSuggestions] = useState<Record<string, IngredientSuggestion[]>>({})
 	const [activeInput, setActiveInput] = useState<string | null>(null)
@@ -71,8 +74,15 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 	const debounceRef = useRef<Record<string, NodeJS.Timeout>>({})
 
 	useEffect(() => {
-		recipeService.getAll().then(setAvailableRecipes).catch(console.error)
-	}, [])
+		recipeService
+			.getAll()
+			.then((recipes) => {
+				setAvailableRecipes(
+					currentRecipeId ? recipes.filter((r) => r.id !== currentRecipeId) : recipes
+				)
+			})
+			.catch(console.error)
+	}, [currentRecipeId])
 
 	// Inicializar ingredientData con los datos que vienen en las opciones
 	useEffect(() => {
@@ -359,7 +369,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 	return (
 		<div className='components-editor'>
 			{components.length === 0 ? (
-				<div className='components-empty'>Sin variantes configuradas</div>
+				<div className='components-empty'>{t('recipes.noVariants')}</div>
 			) : (
 				<div className='components-list'>
 					{components.map((comp, compIndex) => (
@@ -384,7 +394,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 												}
 											}}
 										/>
-										<span>Opcional</span>
+										<span>{t('recipes.optionalBadge')}</span>
 									</label>
 									{comp.isOptional && (
 										<label className='variant-flag included-flag'>
@@ -395,7 +405,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 													updateComponent(compIndex, 'defaultEnabled', e.target.checked)
 												}
 											/>
-											<span>Incluido por defecto</span>
+											<span>{t('recipes.includedByDefault')}</span>
 										</label>
 									)}
 								</div>
@@ -403,16 +413,16 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 									type='button'
 									className='variant-remove-btn'
 									onClick={() => removeComponent(compIndex)}
-									title='Eliminar variante'>
+									title={t('recipes.deleteVariant')}>
 									<CloseIcon size={14} aria-hidden='true' />
 								</button>
 							</div>
 
 							<div className='variant-options'>
 								<div className='options-header'>
-									<span>OPCIÓN</span>
-									<span>CANTIDAD</span>
-									<span>UNIDAD</span>
+									<span>{t('recipes.option')}</span>
+									<span>{t('recipes.quantityLabel')}</span>
+									<span>{t('recipes.unitLabel')}</span>
 									<span></span>
 								</div>
 								{comp.options.map((opt, optIndex) => {
@@ -431,7 +441,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 														name={`default-${compIndex}`}
 														checked={opt.isDefault}
 														onChange={() => setOptionDefault(compIndex, optIndex)}
-														title='Por defecto'
+														title={t('recipes.defaultBadge')}
 													/>
 													<button
 														type='button'
@@ -445,8 +455,8 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 														}
 														title={
 															optionType === 'ingredient'
-																? 'Cambiar a receta'
-																: 'Cambiar a ingrediente'
+																? t('recipes.switchToRecipe')
+																: t('recipes.switchToIngredient')
 														}>
 														{optionType === 'ingredient' ? '🥬' : '📖'}
 													</button>
@@ -461,7 +471,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 																	e.target.value ? parseInt(e.target.value) : undefined
 																)
 															}>
-															<option value=''>Selecciona receta...</option>
+															<option value=''>{t('recipes.selectRecipe')}</option>
 															{availableRecipes.map((r) => (
 																<option key={r.id} value={r.id}>
 																	{r.title}
@@ -471,7 +481,9 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 													) : (
 														<div className='ingredient-input-wrapper'>
 															{opt.ingredientName && !ingredientData[inputId]?.databaseId && (
-																<span className='new-ingredient-badge' title='Ingrediente nuevo'>
+																<span
+																	className='new-ingredient-badge'
+																	title={t('recipes.newIngredient')}>
 																	✨
 																</span>
 															)}
@@ -492,7 +504,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 																onKeyDown={(e) => {
 																	if (e.key === 'Enter') e.preventDefault()
 																}}
-																placeholder='Nombre del ingrediente'
+																placeholder={t('ingredients.namePlaceholder')}
 																autoComplete='off'
 															/>
 															{activeInput === inputId && hasSuggestions && (
@@ -536,7 +548,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 															}
 															min={0.1}
 															step={0.1}
-															title='Raciones'
+															title={t('recipes.rationsTitle')}
 														/>
 													) : (
 														<input
@@ -558,7 +570,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 												</div>
 												<div className='option-unit'>
 													{optionType === 'recipe' ? (
-														<span className='unit-label'>raciones</span>
+														<span className='unit-label'>{t('recipes.rationsUnit')}</span>
 													) : (
 														<select
 															className='form-input'
@@ -585,7 +597,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 																		showConversionsId === inputId ? null : inputId
 																	)
 																}
-																title='Ver conversiones'>
+																title={t('recipes.viewConversions')}>
 																<ScaleIcon size={14} aria-hidden='true' />
 															</button>
 															<button
@@ -596,8 +608,8 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 																}
 																title={
 																	ingredientData[inputId]?.databaseId
-																		? 'Ver macros'
-																		: 'Crear ingrediente y añadir macros'
+																		? t('recipes.viewMacros')
+																		: t('recipes.createAndAddMacros')
 																}>
 																<ChartIcon size={14} aria-hidden='true' />
 															</button>
@@ -607,14 +619,14 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 														type='button'
 														className='option-remove-btn'
 														onClick={() => removeOption(compIndex, optIndex)}
-														title='Eliminar'>
+														title={t('delete')}>
 														<CloseIcon size={14} aria-hidden='true' />
 													</button>
 												</div>
 											</div>
 											{showConversionsId === inputId && ingredientData[inputId]?.conversions && (
 												<div className='option-info-panel'>
-													<div className='info-panel-header'>Conversiones de unidad</div>
+													<div className='info-panel-header'>{t('recipes.unitConversions')}</div>
 													{ingredientData[inputId].conversions!.length > 0 ? (
 														<ul className='conversions-list'>
 															{ingredientData[inputId].conversions!.map((c) => (
@@ -624,7 +636,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 															))}
 														</ul>
 													) : (
-														<p className='no-data'>No hay conversiones configuradas</p>
+														<p className='no-data'>{t('recipes.noConversions')}</p>
 													)}
 												</div>
 											)}
@@ -645,10 +657,12 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 												) : (
 													<div className='option-info-panel new-ingredient-panel'>
 														<div className='info-panel-header'>
-															Ingrediente nuevo: {capitalizeFirst(opt.ingredientName || '')}
+															{t('ingredients.newIngredientName', {
+																name: capitalizeFirst(opt.ingredientName || ''),
+															})}
 														</div>
 														<p className='new-ingredient-hint'>
-															Este ingrediente no existe. Se creará al añadir estados/macros.
+															{t('recipes.newIngredientNoExist')}
 														</p>
 														<button
 															type='button'
@@ -660,7 +674,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 																	opt.unit || 'g'
 																)
 															}>
-															Crear ingrediente y configurar macros
+															{t('recipes.createAndConfigMacros')}
 														</button>
 													</div>
 												))}
@@ -671,7 +685,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 									type='button'
 									className='add-option-btn'
 									onClick={() => addOption(compIndex)}>
-									+ Añadir opción
+									{t('recipes.addOption')}
 								</button>
 							</div>
 						</div>
@@ -680,7 +694,7 @@ export function ComponentsEditor({ components, onChange }: ComponentsEditorProps
 			)}
 
 			<button type='button' className='add-variant-btn' onClick={addComponent}>
-				+ Añadir variante
+				{t('recipes.addVariant')}
 			</button>
 		</div>
 	)

@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
 import { authService } from '@/services/auth'
 import { Recipe, recipeService } from '@/services/recipe'
+import { pdfService } from '@/services/pdf'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
 import { RecipeList } from '../components/RecipeList'
 
 export function RecipeListContainer() {
+	const { t } = useTranslation()
 	const { confirm, toast } = useDialog()
 	const [recipes, setRecipes] = useState<Recipe[]>([])
 	const [loading, setLoading] = useState(true)
@@ -26,7 +29,7 @@ export function RecipeListContainer() {
 			const data = await recipeService.getAll()
 			setRecipes(data)
 		} catch (err) {
-			setError('Error al cargar recetas')
+			setError(t('recipes.loadError'))
 		} finally {
 			setLoading(false)
 		}
@@ -34,9 +37,9 @@ export function RecipeListContainer() {
 
 	const handleDelete = async (id: number) => {
 		const confirmed = await confirm({
-			title: 'Eliminar receta',
-			message: '¿Estás seguro de que quieres eliminar esta receta?',
-			confirmText: 'Eliminar',
+			title: t('recipes.deleteTitle'),
+			message: t('recipes.deleteConfirm'),
+			confirmText: t('delete'),
 			type: 'danger',
 		})
 		if (!confirmed) return
@@ -44,9 +47,9 @@ export function RecipeListContainer() {
 		try {
 			await recipeService.delete(id)
 			setRecipes(recipes.filter((r) => r.id !== id))
-			toast.success('Receta eliminada correctamente')
+			toast.success(t('recipes.deleted'))
 		} catch {
-			toast.error('Error al eliminar la receta')
+			toast.error(t('recipes.deleteError'))
 		}
 	}
 
@@ -55,16 +58,44 @@ export function RecipeListContainer() {
 		setModalOpen(true)
 	}
 
-	if (loading) return <div className='loading'>Cargando recetas...</div>
+	const importFileRef = useRef<HTMLInputElement>(null)
+
+	const handleImportPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (!file) return
+		try {
+			const html = await file.text()
+			await pdfService.importRecipeFromHtml(html)
+			toast.success(t('recipes.imported'))
+			loadRecipes()
+		} catch (err: unknown) {
+			toast.error(err instanceof Error ? err.message : t('recipes.importError'))
+		}
+		e.target.value = ''
+	}
+
+	if (loading) return <div className='loading'>{t('recipes.loading')}</div>
 	if (error) return <div className='error-message'>{error}</div>
 
 	return (
 		<>
 			<div className='page-header'>
-				<h1 className='page-title'>Mis Recetas</h1>
-				<Link to='/recipes/new' className='btn btn-primary'>
-					+ Nueva Receta
-				</Link>
+				<h1 className='page-title'>{t('recipes.title')}</h1>
+				<div className='page-header-actions'>
+					<label className='btn btn-outline' style={{ cursor: 'pointer' }}>
+						{t('recipes.import')}
+						<input
+							type='file'
+							accept='.html'
+							ref={importFileRef}
+							onChange={handleImportPdf}
+							style={{ display: 'none' }}
+						/>
+					</label>
+					<Link to='/recipes/new' className='btn btn-primary'>
+						{t('recipes.new')}
+					</Link>
+				</div>
 			</div>
 
 			<RecipeList

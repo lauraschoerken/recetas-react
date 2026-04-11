@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { authService } from '@/services/auth'
 
@@ -10,6 +11,7 @@ interface LoginContainerProps {
 }
 
 export function LoginContainer({ onLogin }: LoginContainerProps) {
+	const { t } = useTranslation()
 	const [error, setError] = useState<string | null>(null)
 	const [loading, setLoading] = useState(false)
 	const navigate = useNavigate()
@@ -23,7 +25,7 @@ export function LoginContainer({ onLogin }: LoginContainerProps) {
 			onLogin?.()
 			navigate('/recipes')
 		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Error al iniciar sesión')
+			setError(err instanceof Error ? err.message : t('auth.loginError'))
 		} finally {
 			setLoading(false)
 		}

@@ -4,6 +4,59 @@
 	padding: 2rem;
 }
 
+.settings-layout {
+	display: flex;
+	gap: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+.settings-nav {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	min-width: 200px;
+	flex-shrink: 0;
+}
+
+.settings-nav-item {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.75rem 1rem;
+	border: none;
+	background: transparent;
+	border-radius: var(--radius-sm);
+	font-size: 0.9rem;
+	color: var(--text-secondary);
+	cursor: pointer;
+	text-align: left;
+	transition: all 0.15s ease;
+}
+
+.settings-nav-item:hover {
+	background: var(--surface-1);
+	color: var(--text-primary);
+}
+
+.settings-nav-item.active {
+	background: var(--primary-light, rgba(99, 102, 241, 0.1));
+	color: var(--primary-color);
+	font-weight: 600;
+}
+
+.settings-nav-icon {
+	font-size: 1.1rem;
+}
+
+.settings-nav-label {
+	white-space: nowrap;
+}
+
+.settings-content {
+	flex: 1;
+	min-width: 0;
+}
+
 .settings-grid {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
@@ -231,6 +284,22 @@
 }
 
 @media (max-width: 768px) {
+	.settings-layout {
+		flex-direction: column;
+	}
+
+	.settings-nav {
+		flex-direction: row;
+		overflow-x: auto;
+		min-width: unset;
+	}
+
+	.settings-nav-item {
+		white-space: nowrap;
+		padding: 0.5rem 0.75rem;
+		font-size: 0.8rem;
+	}
+
 	.settings-grid {
 		grid-template-columns: 1fr;
 	}
@@ -238,4 +307,102 @@
 	.goal-options {
 		grid-template-columns: 1fr;
 	}
+}
+
+// ── Household ──
+
+.household-create,
+.household-info {
+	margin-top: 1rem;
+}
+
+.household-header {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+
+	h3 {
+		margin: 0;
+		font-size: 1.1rem;
+	}
+}
+
+.household-role {
+	padding: 0.15rem 0.5rem;
+	border-radius: 4px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	background: var(--primary-color);
+	color: white;
+	text-transform: uppercase;
+}
+
+.household-toggles {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-bottom: 1rem;
+}
+
+.household-members {
+	margin-top: 1rem;
+
+	h4 {
+		margin: 0 0 0.5rem;
+		font-size: 0.9rem;
+	}
+}
+
+.household-member {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--border-color);
+	font-size: 0.9rem;
+}
+
+.household-invites {
+	margin-top: 1rem;
+
+	h4 {
+		margin: 0 0 0.5rem;
+		font-size: 0.9rem;
+	}
+}
+
+.household-invite {
+	font-size: 0.85rem;
+	color: var(--text-secondary);
+	padding: 0.25rem 0;
+}
+
+// ── Thresholds ──
+
+.threshold-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid var(--border-color);
+	font-size: 0.9rem;
+}
+
+// ── Backup ──
+
+.backup-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.backup-import {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-end;
+}
+
+.home-search {
+	margin-bottom: 1rem;
 }

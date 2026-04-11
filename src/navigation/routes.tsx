@@ -2,9 +2,12 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
 
 import { LoginContainer } from '@/components/pages/auth/containers/LoginContainer'
 import { RegisterContainer } from '@/components/pages/auth/containers/RegisterContainer'
+import { AlertsContainer } from '@/components/pages/alerts/containers/AlertsContainer'
+import { AcceptInviteContainer } from '@/components/pages/auth/containers/AcceptInviteContainer'
 import { HomeContainer } from '@/components/pages/home/containers/HomeContainer'
 import { IngredientListContainer } from '@/components/pages/ingredient/containers/IngredientListContainer'
 import { SettingsContainer } from '@/components/pages/profile/containers/SettingsContainer'
+import { MacrosContainer } from '@/components/pages/profile/containers/MacrosContainer'
 import { RecipeDetailContainer } from '@/components/pages/recipe/containers/RecipeDetailContainer'
 import { RecipeFormContainer } from '@/components/pages/recipe/containers/RecipeFormContainer'
 import { RecipeListContainer } from '@/components/pages/recipe/containers/RecipeListContainer'
@@ -61,6 +64,9 @@ export const router = createBrowserRouter([
 					{ path: 'week-plan', element: <WeekPlanContainer /> },
 					{ path: 'shopping-list', element: <ShoppingListContainer /> },
 					{ path: 'settings', element: <SettingsContainer /> },
+					{ path: 'macros', element: <MacrosContainer /> },
+					{ path: 'alerts', element: <AlertsContainer /> },
+					{ path: 'accept-invite', element: <AcceptInviteContainer /> },
 				],
 			},
 		],

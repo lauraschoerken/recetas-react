@@ -24,6 +24,7 @@ export interface Ingredient {
 	unit: string
 	quantity?: number
 	preferredUnit?: string | null
+	defaultLocation?: string | null
 	imageUrl?: string | null
 	calories?: number | null
 	protein?: number | null

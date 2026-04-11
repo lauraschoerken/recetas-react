@@ -1,6 +1,7 @@
 import './AddToWeekModal.scss'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Modal } from '@/components/shared/modal'
 import { Recipe, recipeService } from '@/services/recipe'
@@ -36,6 +37,7 @@ interface AddToWeekModalProps {
 
 export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeekModalProps) {
 	const { toast } = useDialog()
+	const { t } = useTranslation()
 	const [, setFullRecipe] = useState<Recipe | null>(null)
 	const [plannedDate, setPlannedDate] = useState('')
 	const [servings, setServings] = useState(4)
@@ -213,16 +215,15 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 
 			if (result.autoPrepsCreated && result.autoPrepsCreated.length > 0) {
 				const prepNames = result.autoPrepsCreated.map((p) => p.title).join(', ')
-				toast.info(`Receta añadida. También se ha añadido a preparar: ${prepNames}`)
+				toast.info(t('weekPlan.addedWithPrep', { names: prepNames }))
 			} else {
-				const typeLabel = planType === 'meal' ? 'comida' : 'preparación'
-				toast.success(`Receta añadida como ${typeLabel} al plan semanal`)
+				toast.success(planType === 'meal' ? t('weekPlan.addedAsMeal') : t('weekPlan.addedAsPrep'))
 			}
 
 			onSuccess?.()
 		} catch (error) {
 			console.error('Error:', error)
-			toast.error('Error al añadir al plan semanal')
+			toast.error(t('weekPlan.addError'))
 		} finally {
 			setSubmitting(false)
 		}
@@ -231,14 +232,14 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 	if (!recipe) return null
 
 	return (
-		<Modal isOpen={isOpen} onClose={onClose} title='Añadir al plan semanal'>
+		<Modal isOpen={isOpen} onClose={onClose} title={t('weekPlan.addToWeekTitle')}>
 			<div className='awm-root'>
 				<p className='mb-2'>
 					<strong>{recipe.title}</strong>
 				</p>
 
 				<div className='form-group'>
-					<label className='form-label'>Fecha</label>
+					<label className='form-label'>{t('weekPlan.dateLabel')}</label>
 					<input
 						type='date'
 						className='form-input'
@@ -248,7 +249,7 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 				</div>
 
 				<div className='form-group'>
-					<label className='form-label'>Porciones</label>
+					<label className='form-label'>{t('weekPlan.portionsLabel')}</label>
 					<input
 						type='number'
 						className='form-input'
@@ -260,31 +261,29 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 				</div>
 
 				<div className='form-group'>
-					<label className='form-label'>Tipo</label>
+					<label className='form-label'>{t('weekPlan.typeLabel')}</label>
 					<div className='plan-type-selector'>
 						<button
 							type='button'
 							className={`plan-type-btn ${planType === 'meal' ? 'active' : ''}`}
 							onClick={() => setPlanType('meal')}>
-							Comida
+							{t('weekPlan.mealType')}
 						</button>
 						<button
 							type='button'
 							className={`plan-type-btn ${planType === 'prep' ? 'active' : ''}`}
 							onClick={() => setPlanType('prep')}>
-							A preparar
+							{t('weekPlan.prepType')}
 						</button>
 					</div>
 					<small className='form-help'>
-						{planType === 'meal'
-							? 'Se descontara de casa cuando la consumas'
-							: 'Al cocinarla, se guardaran las raciones en casa'}
+						{planType === 'meal' ? t('weekPlan.mealTypeHint') : t('weekPlan.prepTypeHint')}
 					</small>
 				</div>
 
 				{componentSelections.length > 0 && (
 					<div className='form-group' style={{ marginTop: '1rem' }}>
-						<label className='form-label'>Variantes</label>
+						<label className='form-label'>{t('weekPlan.variantsLabel')}</label>
 						<div className='awm-variants-list'>
 							{(() => {
 								// Agrupar por receta padre
@@ -327,7 +326,7 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 													)}
 													{sc.componentName}
 												</span>
-												{sc.isOptional && <span className='awm-badge xs'>opcional</span>}
+												{sc.isOptional && <span className='awm-badge xs'>{t('optional')}</span>}
 											</div>
 											{sc.enabled && sc.options.length > 1 && (
 												<select
@@ -387,9 +386,11 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 													)}
 													{cs.componentName}
 												</span>
-												{cs.isOptional && <span className='awm-badge'>opcional</span>}
+												{cs.isOptional && <span className='awm-badge'>{t('optional')}</span>}
 												{hasSubVariants && cs.enabled && (
-													<span className='awm-badge awm-has-variants'>tiene variantes</span>
+													<span className='awm-badge awm-has-variants'>
+														{t('weekPlan.hasVariants')}
+													</span>
 												)}
 											</div>
 											{cs.enabled && cs.options.length > 1 && (
@@ -435,19 +436,19 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 							color: '#64748b',
 							fontSize: '0.85rem',
 						}}>
-						Cargando variantes...
+						{t('weekPlan.loadingVariants')}
 					</div>
 				)}
 
 				<div className='flex gap-1 mt-2'>
 					<button className='btn btn-outline' onClick={onClose}>
-						Cancelar
+						{t('cancel')}
 					</button>
 					<button
 						className='btn btn-primary'
 						onClick={handleSubmit}
 						disabled={loadingRecipe || submitting}>
-						{submitting ? 'Añadiendo...' : 'Añadir'}
+						{submitting ? t('weekPlan.adding') : t('weekPlan.addBtn')}
 					</button>
 				</div>
 			</div>

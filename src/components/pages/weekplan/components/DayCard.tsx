@@ -1,6 +1,7 @@
 import './DayCard.scss'
 
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { CheckIcon, CookIcon, DeleteIcon } from '@/components/shared/icons'
@@ -27,6 +28,7 @@ export function DayCard({
 	onCook,
 	onConsume,
 }: DayCardProps) {
+	const { t } = useTranslation()
 	const [isDragOver, setIsDragOver] = useState(false)
 	const [cookingPlan, setCookingPlan] = useState<WeekPlan | null>(null)
 	const [leftoverServings, setLeftoverServings] = useState(0)
@@ -38,7 +40,7 @@ export function DayCard({
 	const preps = plans.filter((p) => p.type === 'prep')
 
 	const getItemTitle = (plan: WeekPlan) => {
-		return plan.recipe?.title || 'Sin titulo'
+		return plan.recipe?.title || t('noTitle')
 	}
 
 	const getItemLink = (plan: WeekPlan) => {
@@ -104,28 +106,32 @@ export function DayCard({
 				onDragStart={(e) => handleDragStart(e, plan)}>
 				<div className='day-card-item-header'>
 					{!isCompleted && (
-						<span className='drag-handle' title='Arrastrar para mover'>
+						<span className='drag-handle' title={t('weekPlan.dragToMove')}>
 							⋮⋮
 						</span>
 					)}
 					{isCompleted && (
-						<span className='done-icon' title={isPrep ? 'Cocinado' : 'Consumido'}>
+						<span
+							className='done-icon'
+							title={isPrep ? t('weekPlan.cookedLabel') : t('weekPlan.consumedLabel')}>
 							<CheckIcon size={14} aria-hidden='true' />
 						</span>
 					)}
-					{hasComponents(plan) && <span className='day-card-badge'>Variantes</span>}
+					{hasComponents(plan) && <span className='day-card-badge'>{t('recipes.variants')}</span>}
 					<Link to={getItemLink(plan)} className='day-card-recipe'>
 						{getItemTitle(plan)}
 					</Link>
 				</div>
 				<div className='day-card-item-footer'>
-					<span className='day-card-servings'>{plan.servings} porc.</span>
+					<span className='day-card-servings'>
+						{plan.servings} {t('weekPlan.portions')}
+					</span>
 					<div className='day-card-actions'>
 						{isPrep && !plan.cooked && (
 							<button
 								className='day-card-cook'
 								onClick={() => handleOpenCookModal(plan)}
-								title='Marcar como cocinado'>
+								title={t('weekPlan.cookTitle')}>
 								<CookIcon size={14} aria-hidden='true' />
 							</button>
 						)}
@@ -133,11 +139,14 @@ export function DayCard({
 							<button
 								className='day-card-consume'
 								onClick={() => onConsume(plan.id)}
-								title='Marcar como consumido'>
+								title={t('weekPlan.markConsumed')}>
 								<CheckIcon size={14} aria-hidden='true' />
 							</button>
 						)}
-						<button className='day-card-remove' onClick={() => onRemove(plan.id)} title='Eliminar'>
+						<button
+							className='day-card-remove'
+							onClick={() => onRemove(plan.id)}
+							title={t('delete')}>
 							<DeleteIcon size={14} aria-hidden='true' />
 						</button>
 					</div>
@@ -159,12 +168,12 @@ export function DayCard({
 
 			<div className='day-card-content'>
 				{plans.length === 0 ? (
-					<p className='day-card-empty'>Sin planes</p>
+					<p className='day-card-empty'>{t('weekPlan.noPlans')}</p>
 				) : (
 					<>
 						{meals.length > 0 && (
 							<div className='day-card-section'>
-								<h4 className='day-card-section-title section-meals'>Comidas</h4>
+								<h4 className='day-card-section-title section-meals'>{t('weekPlan.meals')}</h4>
 								<ul className='day-card-list'>
 									{meals.map((plan) => renderPlanItem(plan, false))}
 								</ul>
@@ -173,7 +182,7 @@ export function DayCard({
 
 						{preps.length > 0 && (
 							<div className='day-card-section'>
-								<h4 className='day-card-section-title section-preps'>A preparar</h4>
+								<h4 className='day-card-section-title section-preps'>{t('weekPlan.toPrep')}</h4>
 								<ul className='day-card-list'>{preps.map((plan) => renderPlanItem(plan, true))}</ul>
 							</div>
 						)}
@@ -184,12 +193,14 @@ export function DayCard({
 			{cookingPlan && (
 				<div className='cook-modal-overlay' onClick={handleCancelCook}>
 					<div className='cook-modal' onClick={(e) => e.stopPropagation()}>
-						<h3>Marcar como cocinado</h3>
+						<h3>{t('weekPlan.cookTitle')}</h3>
 						<p className='cook-modal-recipe'>{getItemTitle(cookingPlan)}</p>
-						<p className='cook-modal-servings'>Raciones preparadas: {cookingPlan.servings}</p>
+						<p className='cook-modal-servings'>
+							{t('weekPlan.preparedServings')} {cookingPlan.servings}
+						</p>
 
 						<div className='cook-modal-field'>
-							<label htmlFor='leftovers'>Raciones a guardar:</label>
+							<label htmlFor='leftovers'>{t('weekPlan.storeServingsShort')}</label>
 							<input
 								type='number'
 								id='leftovers'
@@ -201,19 +212,19 @@ export function DayCard({
 
 						{leftoverServings > 0 && (
 							<div className='cook-modal-field'>
-								<label>Guardar en:</label>
+								<label>{t('weekPlan.storeIn')}</label>
 								<div className='cook-modal-location-options'>
 									<button
 										type='button'
 										className={`cook-modal-location-btn ${leftoverLocation === 'nevera' ? 'active' : ''}`}
 										onClick={() => setLeftoverLocation('nevera')}>
-										Nevera
+										{t('weekPlan.fridgeLocation')}
 									</button>
 									<button
 										type='button'
 										className={`cook-modal-location-btn ${leftoverLocation === 'congelador' ? 'active' : ''}`}
 										onClick={() => setLeftoverLocation('congelador')}>
-										Congelador
+										{t('weekPlan.freezerLocation')}
 									</button>
 								</div>
 							</div>
@@ -221,10 +232,10 @@ export function DayCard({
 
 						<div className='cook-modal-actions'>
 							<button className='cook-modal-cancel' onClick={handleCancelCook}>
-								Cancelar
+								{t('cancel')}
 							</button>
 							<button className='cook-modal-confirm' onClick={handleConfirmCook}>
-								Confirmar
+								{t('confirm')}
 							</button>
 						</div>
 					</div>

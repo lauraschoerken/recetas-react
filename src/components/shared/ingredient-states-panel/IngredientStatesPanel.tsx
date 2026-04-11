@@ -1,6 +1,7 @@
 import './IngredientStatesPanel.scss'
 
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { DeleteIcon, EditIcon, StarIcon } from '@/components/shared/icons'
 import { api } from '@/services/api'
@@ -41,6 +42,7 @@ export function IngredientStatesPanel({
 	onVariantsChange,
 	onClose,
 }: IngredientStatesPanelProps) {
+	const { t } = useTranslation()
 	const [showNewVariant, setShowNewVariant] = useState(false)
 	const [editingVariantId, setEditingVariantId] = useState<number | null>(null)
 	const [editVariantData, setEditVariantData] = useState({
@@ -178,12 +180,12 @@ export function IngredientStatesPanel({
 	return (
 		<div className='ingredient-states-panel'>
 			<div className='states-panel-header'>
-				<span>Estados de {capitalizeFirst(data.name)}</span>
+				<span>{t('ingredients.statesOf', { name: capitalizeFirst(data.name) })}</span>
 				<button
 					type='button'
 					className='add-state-btn'
 					onClick={() => setShowNewVariant(!showNewVariant)}>
-					+ Estado
+					{t('ingredients.addStateBtn')}
 				</button>
 			</div>
 
@@ -205,7 +207,7 @@ export function IngredientStatesPanel({
 												name: capitalizeFirst(e.target.value),
 											}))
 										}
-										placeholder='Nombre'
+										placeholder={t('ingredients.namePlaceholderShort')}
 									/>
 									<div className='state-macros-edit'>
 										<div className='macro-input'>
@@ -219,7 +221,7 @@ export function IngredientStatesPanel({
 												min={0}
 												step={0.1}
 											/>
-											<span>kcal</span>
+											<span>{t('ingredients.kcalUnit')}</span>
 										</div>
 										<div className='macro-input'>
 											<input
@@ -232,7 +234,7 @@ export function IngredientStatesPanel({
 												min={0}
 												step={0.1}
 											/>
-											<span>prot</span>
+											<span>{t('ingredients.protUnit')}</span>
 										</div>
 										<div className='macro-input'>
 											<input
@@ -245,7 +247,7 @@ export function IngredientStatesPanel({
 												min={0}
 												step={0.1}
 											/>
-											<span>carbs</span>
+											<span>{t('ingredients.carbsUnit')}</span>
 										</div>
 										<div className='macro-input'>
 											<input
@@ -258,7 +260,7 @@ export function IngredientStatesPanel({
 												min={0}
 												step={0.1}
 											/>
-											<span>grasa</span>
+											<span>{t('ingredients.fatUnit')}</span>
 										</div>
 										<div className='macro-input'>
 											<input
@@ -271,7 +273,7 @@ export function IngredientStatesPanel({
 												min={0}
 												step={0.1}
 											/>
-											<span>fibra</span>
+											<span>{t('ingredients.fiberUnit')}</span>
 										</div>
 										<div className='macro-input weight-factor'>
 											<input
@@ -284,7 +286,7 @@ export function IngredientStatesPanel({
 												min={0.1}
 												step={0.1}
 											/>
-											<span>×peso</span>
+											<span>{t('ingredients.weightFactor')}</span>
 										</div>
 									</div>
 									<div className='state-edit-actions'>
@@ -292,13 +294,13 @@ export function IngredientStatesPanel({
 											type='button'
 											className='btn btn-primary btn-sm'
 											onClick={() => handleUpdateVariant(variant.id)}>
-											Guardar
+											{t('save')}
 										</button>
 										<button
 											type='button'
 											className='btn btn-outline btn-sm'
 											onClick={() => setEditingVariantId(null)}>
-											Cancelar
+											{t('cancel')}
 										</button>
 									</div>
 								</div>
@@ -307,16 +309,20 @@ export function IngredientStatesPanel({
 									<div className='state-info'>
 										<span className='state-name'>
 											{variant.name}
-											{variant.isDefault && <span className='default-badge'>Por defecto</span>}
+											{variant.isDefault && <span className='default-badge'>{t('default')}</span>}
 											{variant.id === data.selectedVariantId && (
-												<span className='selected-badge'>Seleccionado</span>
+												<span className='selected-badge'>{t('ingredients.selected')}</span>
 											)}
 										</span>
 										<span className='state-macros-summary'>
-											{variant.calories || 0} kcal | {variant.protein || 0}g prot |{' '}
-											{variant.carbs || 0}g carbs | {variant.fat || 0}g grasa
+											{variant.calories || 0} {t('ingredients.kcalUnit')} | {variant.protein || 0}g{' '}
+											{t('ingredients.protUnit')} | {variant.carbs || 0}g{' '}
+											{t('ingredients.carbsUnit')} | {variant.fat || 0}g {t('ingredients.fatUnit')}
 											{variant.weightFactor && variant.weightFactor !== 1 && (
-												<span className='weight-factor-badge'> | ×{variant.weightFactor} peso</span>
+												<span className='weight-factor-badge'>
+													{' '}
+													| ×{variant.weightFactor} {t('ingredients.weightLabel')}
+												</span>
 											)}
 										</span>
 									</div>
@@ -325,7 +331,7 @@ export function IngredientStatesPanel({
 											type='button'
 											className='state-action-btn'
 											onClick={() => startEditVariant(variant)}
-											title='Editar'>
+											title={t('ingredients.editTitle')}>
 											<EditIcon size={14} aria-hidden='true' />
 										</button>
 										{!variant.isDefault && (
@@ -333,7 +339,7 @@ export function IngredientStatesPanel({
 												type='button'
 												className='state-action-btn'
 												onClick={() => handleSetDefaultVariant(variant.id)}
-												title='Marcar como por defecto'>
+												title={t('ingredients.setDefaultTitle')}>
 												<StarIcon size={14} aria-hidden='true' />
 											</button>
 										)}
@@ -342,7 +348,7 @@ export function IngredientStatesPanel({
 												type='button'
 												className='state-action-btn delete'
 												onClick={() => handleDeleteVariant(variant.id)}
-												title='Eliminar'>
+												title={t('ingredients.deleteTitle')}>
 												<DeleteIcon size={14} aria-hidden='true' />
 											</button>
 										)}
@@ -352,7 +358,7 @@ export function IngredientStatesPanel({
 						</div>
 					))
 				) : (
-					<p className='no-data'>Sin estados configurados</p>
+					<p className='no-data'>{t('ingredients.noStates')}</p>
 				)}
 			</div>
 
@@ -363,7 +369,7 @@ export function IngredientStatesPanel({
 						className='form-input'
 						value={newVariantName}
 						onChange={(e) => setNewVariantName(capitalizeFirst(e.target.value))}
-						placeholder='Nombre del estado (ej: Frito, Hervido...)'
+						placeholder={t('ingredients.stateNamePlaceholder')}
 					/>
 					<div className='new-state-macros'>
 						<div className='macro-input'>
@@ -377,7 +383,7 @@ export function IngredientStatesPanel({
 								min={0}
 								step={0.1}
 							/>
-							<span>kcal</span>
+							<span>{t('ingredients.kcalUnit')}</span>
 						</div>
 						<div className='macro-input'>
 							<input
@@ -390,7 +396,7 @@ export function IngredientStatesPanel({
 								min={0}
 								step={0.1}
 							/>
-							<span>prot</span>
+							<span>{t('ingredients.protUnit')}</span>
 						</div>
 						<div className='macro-input'>
 							<input
@@ -403,7 +409,7 @@ export function IngredientStatesPanel({
 								min={0}
 								step={0.1}
 							/>
-							<span>carbs</span>
+							<span>{t('ingredients.carbsUnit')}</span>
 						</div>
 						<div className='macro-input'>
 							<input
@@ -414,7 +420,7 @@ export function IngredientStatesPanel({
 								min={0}
 								step={0.1}
 							/>
-							<span>grasa</span>
+							<span>{t('ingredients.fatUnit')}</span>
 						</div>
 						<div className='macro-input'>
 							<input
@@ -427,7 +433,7 @@ export function IngredientStatesPanel({
 								min={0}
 								step={0.1}
 							/>
-							<span>fibra</span>
+							<span>{t('ingredients.fiberUnit')}</span>
 						</div>
 						<div className='macro-input weight-factor'>
 							<input
@@ -440,7 +446,7 @@ export function IngredientStatesPanel({
 								min={0.1}
 								step={0.1}
 							/>
-							<span>×peso</span>
+							<span>{t('ingredients.weightFactor')}</span>
 						</div>
 					</div>
 					<button
@@ -448,7 +454,7 @@ export function IngredientStatesPanel({
 						className='btn btn-primary btn-sm'
 						onClick={handleAddNewVariant}
 						disabled={!newVariantName.trim()}>
-						Crear estado
+						{t('ingredients.createState')}
 					</button>
 				</div>
 			)}
