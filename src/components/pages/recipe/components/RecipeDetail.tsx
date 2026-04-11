@@ -51,7 +51,6 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 				}
 			})
 			.catch(() => {})
-
 	}, [recipe.id])
 
 	const selectionKey = (recipeId: number, componentId: number) => `${recipeId}:${componentId}`
@@ -122,7 +121,11 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 		return selected
 	}
 
-	const downloadRecipeTree = async (recipeId: number, cache: Record<number, any>, visited: Set<number>) => {
+	const downloadRecipeTree = async (
+		recipeId: number,
+		cache: Record<number, any>,
+		visited: Set<number>
+	) => {
 		if (visited.has(recipeId)) return
 		visited.add(recipeId)
 
@@ -441,9 +444,7 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 								className='pdf-option-group'
 								style={{ marginLeft: `${q.depth * 14}px` }}>
 								<label className='form-label'>
-									{q.depth > 0 && (
-										<span className='pdf-nested-prefix'>{q.recipeTitle} - </span>
-									)}
+									{q.depth > 0 && <span className='pdf-nested-prefix'>{q.recipeTitle} - </span>}
 									{q.componentName}
 								</label>
 								<select
@@ -465,7 +466,10 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 							<button className='btn btn-outline' onClick={() => setShowPdfOptions(false)}>
 								{t('cancel')}
 							</button>
-							<button className='btn btn-primary' onClick={handleDownloadPdf} disabled={loadingPdfOptions}>
+							<button
+								className='btn btn-primary'
+								onClick={handleDownloadPdf}
+								disabled={loadingPdfOptions}>
 								{t('recipes.downloadPdf')}
 							</button>
 						</div>
