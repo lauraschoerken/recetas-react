@@ -3,7 +3,14 @@ import './HomeItemCard.scss'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { CheckIcon, CloseIcon, CookIcon, DeleteIcon, EditIcon } from '@/components/shared/icons'
+import {
+	CalendarAddIcon,
+	CheckIcon,
+	CloseIcon,
+	CookIcon,
+	DeleteIcon,
+	EditIcon,
+} from '@/components/shared/icons'
 import { HomeItem, HomeLocation, homeService } from '@/services/home'
 import { ingredientService } from '@/services/ingredient'
 
@@ -18,6 +25,7 @@ interface HomeItemCardProps {
 	onUpdate: (id: number, data: { quantity?: number; location?: HomeLocation }) => void
 	onDelete: (id: number) => void
 	onCook?: (id: number, result: { success: boolean; message: string }) => void
+	onAddToWeekPlan?: (item: HomeItem) => void
 	showLocation?: boolean
 }
 
@@ -26,6 +34,7 @@ export function HomeItemCard({
 	onUpdate,
 	onDelete,
 	onCook,
+	onAddToWeekPlan,
 	showLocation,
 }: HomeItemCardProps) {
 	const { t } = useTranslation()
@@ -207,6 +216,14 @@ export function HomeItemCard({
 						<button className='btn-icon' onClick={() => setIsEditing(true)} title={t('edit')}>
 							<EditIcon size={16} aria-hidden='true' />
 						</button>
+						{onAddToWeekPlan && (
+							<button
+								className='btn-icon btn-icon-plan'
+								onClick={() => onAddToWeekPlan(item)}
+								title={t('homePage.addToWeekPlan')}>
+								<CalendarAddIcon size={16} aria-hidden='true' />
+							</button>
+						)}
 						<button
 							className='btn-icon btn-icon-danger'
 							onClick={() => onDelete(item.id)}

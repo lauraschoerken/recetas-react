@@ -48,6 +48,7 @@ class HouseholdService {
 		{
 			id: number
 			email: string
+			token: string
 			household: { id: number; name: string }
 			sender: { name: string }
 		}[]

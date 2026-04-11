@@ -20,6 +20,7 @@
 	},
 	"dependencies": {
 		"i18next": "^25.3.6",
+		"jszip": "^3.10.1",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
 		"react-i18next": "^15.6.1",

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { CloseIcon } from '@/components/shared/icons'
+import { alertService } from '@/services/alert'
 import { Ingredient, ingredientService, UpdateIngredientData } from '@/services/ingredient'
 import { shoppingService } from '@/services/shopping'
 import { useDialog } from '@/utils/dialog/DialogContext'
@@ -62,6 +63,8 @@ export function IngredientListContainer() {
 	])
 	const [newConversions, setNewConversions] = useState<NewConversion[]>([])
 	const [showConversions, setShowConversions] = useState(false)
+	const [newMinQuantity, setNewMinQuantity] = useState<string>('')
+	const [newMinUnit, setNewMinUnit] = useState<string>('g')
 
 	// Estado para modo múltiple
 	const [bulkIngredients, setBulkIngredients] = useState<BulkIngredient[]>([
@@ -103,6 +106,7 @@ export function IngredientListContainer() {
 
 	const handleUnitChange = (unit: 'g' | 'ml') => {
 		setNewUnit(unit)
+		setNewMinUnit(unit)
 		if (showConversions) {
 			setNewConversions(getDefaultConversions(unit))
 		}
@@ -240,6 +244,15 @@ export function IngredientListContainer() {
 				})
 			}
 
+			// Crear umbral mínimo si se proporcionó
+			if (newMinQuantity && Number(newMinQuantity) > 0) {
+				await alertService.setIngredientThreshold({
+					ingredientId: created.id,
+					minQuantity: Number(newMinQuantity),
+					unit: newMinUnit,
+				})
+			}
+
 			await loadIngredients()
 			resetForm()
 			toast.success(t('ingredients.created'))
@@ -336,6 +349,8 @@ export function IngredientListContainer() {
 		])
 		setNewConversions([])
 		setShowConversions(false)
+		setNewMinQuantity('')
+		setNewMinUnit('g')
 		setShowAddForm(false)
 		setAddMode('single')
 		setBulkIngredients([{ id: `bulk-${Date.now()}`, name: '', unit: 'g' }])
@@ -489,6 +504,22 @@ export function IngredientListContainer() {
 									<option value='congelador'>{t('homePage.freezer')}</option>
 									<option value='despensa'>{t('homePage.pantry')}</option>
 								</select>
+							</div>
+							<div className='form-row threshold-row'>
+								<label className='form-label'>{t('ingredients.minQuantity')}</label>
+								<div className='form-row-inline'>
+									<input
+										type='number'
+										className='form-input'
+										placeholder={t('ingredients.quantityPlaceholder')}
+										value={newMinQuantity}
+										onChange={(e) => setNewMinQuantity(e.target.value)}
+										min={0}
+										step={1}
+									/>
+									<span className='form-unit'>{newUnit}</span>
+								</div>
+								<p className='form-hint'>{t('ingredients.minQuantityHint')}</p>
 							</div>
 							<div className='variants-section'>
 								<p className='form-hint'>{t('ingredients.statesHint', { unit: newUnit })}</p>

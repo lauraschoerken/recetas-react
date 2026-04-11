@@ -311,7 +311,13 @@
 		"expiresOn": "Expires {{date}}",
 		"cookPrepare": "Cook/Prepare",
 		"transformTo": "Transform to:",
-		"noOtherStates": "No other states"
+		"noOtherStates": "No other states",
+		"addToWeekPlan": "Add to week plan",
+		"addedToWeekPlan": "Added to week plan",
+		"addToWeekPlanError": "Error adding to week plan",
+		"date": "Date",
+		"quantity": "Quantity",
+		"servings": "Servings"
 	},
 
 	"weekPlan": {
@@ -448,7 +454,7 @@
 		"snoozed": "Alert snoozed",
 		"viewed": "Alert marked as viewed",
 		"resolved": "Alert resolved",
-		"resolve": "Resolve",
+		"resolve": "Resolve / Ignore",
 		"loadError": "Error loading alerts",
 		"updateError": "Error updating alert",
 		"bell": "Alerts",
@@ -574,6 +580,8 @@
 		"pdfShowAuthor": "Show author name in PDF",
 		"pdfShowVisibility": "Show public/private status in PDF",
 		"exportBackup": "Export backup",
+		"exportBackupCsvZip": "Export CSV backup (ZIP)",
+		"exportBackupJson": "Export JSON backup",
 		"backupDownloaded": "Backup downloaded",
 		"errorExporting": "Error exporting",
 		"importMode": "Import mode",
@@ -588,6 +596,7 @@
 		"joinHouseholdMsg": "By joining this household, your current home and shopping list items will be deleted and you will use the household's. Do you wish to continue?",
 		"joinBtn": "Join",
 		"joinedSuccess": "You have joined the household successfully",
+		"pendingInvitesToast": "You have {{count}} pending invitation(s). Go to Settings > Household to review them.",
 		"joinError": "Error accepting invitation",
 		"invalidInvite": "Invalid invitation",
 		"processingInvite": "Processing invitation...",

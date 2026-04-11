@@ -33,14 +33,13 @@ export function AlertsContainer() {
 		try {
 			await alertService.updateAlert(alert.id, {
 				status: action,
-				addToShopping: action === 'RESOLVED',
 				...(action === 'SNOOZED'
 					? { snoozedUntil: new Date(Date.now() + 86400000).toISOString() }
 					: {}),
 			})
 			toast.success(
 				action === 'RESOLVED'
-					? t('alerts.addedToCart')
+					? t('alerts.resolved')
 					: action === 'SNOOZED'
 						? t('alerts.snoozed')
 						: t('alerts.viewed')

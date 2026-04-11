@@ -311,7 +311,13 @@
 		"expiresOn": "Caduca {{date}}",
 		"cookPrepare": "Cocinar/Preparar",
 		"transformTo": "Transformar a:",
-		"noOtherStates": "No hay otros estados"
+		"noOtherStates": "No hay otros estados",
+		"addToWeekPlan": "Añadir al plan semanal",
+		"addedToWeekPlan": "Añadido al plan semanal",
+		"addToWeekPlanError": "Error al añadir al plan semanal",
+		"date": "Fecha",
+		"quantity": "Cantidad",
+		"servings": "Raciones"
 	},
 
 	"weekPlan": {
@@ -448,7 +454,7 @@
 		"snoozed": "Alerta pospuesta",
 		"viewed": "Alerta marcada como vista",
 		"resolved": "Alerta resuelta",
-		"resolve": "Resolver",
+		"resolve": "Resolver / Ignorar",
 		"loadError": "Error al cargar alertas",
 		"updateError": "Error al actualizar alerta",
 		"bell": "Alertas",
@@ -574,6 +580,8 @@
 		"pdfShowAuthor": "Mostrar nombre del autor en el PDF",
 		"pdfShowVisibility": "Mostrar si la receta es pública/privada en el PDF",
 		"exportBackup": "Exportar backup",
+		"exportBackupCsvZip": "Exportar backup CSV (ZIP)",
+		"exportBackupJson": "Exportar backup JSON",
 		"backupDownloaded": "Backup descargado",
 		"errorExporting": "Error al exportar",
 		"importMode": "Modo de importación",
@@ -588,6 +596,7 @@
 		"joinHouseholdMsg": "Al unirte a este hogar, tus items actuales de casa y lista de compra se eliminarán y pasarás a usar los del hogar. ¿Deseas continuar?",
 		"joinBtn": "Unirme",
 		"joinedSuccess": "Te has unido al hogar correctamente",
+		"pendingInvitesToast": "Tienes {{count}} invitación(es) pendiente(s). Ve a Configuración > Hogar para revisarlas.",
 		"joinError": "Error al aceptar invitación",
 		"invalidInvite": "Invitación no válida",
 		"processingInvite": "Procesando invitación...",

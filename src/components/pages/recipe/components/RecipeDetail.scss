@@ -212,6 +212,11 @@
 	margin-top: 2rem;
 }
 
+.pdf-nested-prefix {
+	color: var(--text-secondary);
+	font-weight: 500;
+}
+
 /* Nutrition Card */
 .recipe-nutrition-card {
 	background: linear-gradient(135deg, var(--primary-light) 0%, var(--success-bg) 100%);

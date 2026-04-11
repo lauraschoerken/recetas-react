@@ -16,13 +16,26 @@ interface RecipeDetailProps {
 	onAddToWeek: () => void
 }
 
+interface PdfQuestion {
+	key: string
+	recipeId: number
+	recipeTitle: string
+	componentId: number
+	componentName: string
+	depth: number
+	options: any[]
+}
+
 export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProps) {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
 	const [minServings, setMinServings] = useState('')
 	const [hasThreshold, setHasThreshold] = useState(false)
 	const [showPdfOptions, setShowPdfOptions] = useState(false)
-	const [pdfComponentSelections, setPdfComponentSelections] = useState<Record<number, number>>({})
+	const [pdfComponentSelections, setPdfComponentSelections] = useState<Record<string, number>>({})
+	const [pdfQuestions, setPdfQuestions] = useState<PdfQuestion[]>([])
+	const [pdfRecipeCache, setPdfRecipeCache] = useState<Record<number, any>>({})
+	const [loadingPdfOptions, setLoadingPdfOptions] = useState(false)
 
 	useEffect(() => {
 		alertService
@@ -39,16 +52,97 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 			})
 			.catch(() => {})
 
-		// Initialize PDF component selections with defaults
-		if (recipe.components) {
-			const defaults: Record<number, number> = {}
-			for (const comp of recipe.components) {
-				const defaultOpt = comp.options.find((o) => o.isDefault) || comp.options[0]
-				if (defaultOpt) defaults[comp.id] = defaultOpt.id
-			}
-			setPdfComponentSelections(defaults)
-		}
 	}, [recipe.id])
+
+	const selectionKey = (recipeId: number, componentId: number) => `${recipeId}:${componentId}`
+
+	const getDefaultOptionId = (comp: any) =>
+		(comp.options.find((o: any) => o.isDefault) || comp.options[0])?.id
+
+	const ensureRecipeInCache = async (recipeId: number, cache: Record<number, any>) => {
+		if (!cache[recipeId]) {
+			cache[recipeId] = await pdfService.getRecipeData(recipeId)
+		}
+		return cache[recipeId]
+	}
+
+	const buildPdfQuestions = async (
+		rootRecipeId: number,
+		baseSelections: Record<string, number>,
+		baseCache: Record<number, any>
+	) => {
+		const cache = { ...baseCache }
+		const selections = { ...baseSelections }
+		const questions: PdfQuestion[] = []
+
+		const walk = async (currentRecipeId: number, depth: number, visited: Set<number>) => {
+			if (visited.has(currentRecipeId)) return
+			visited.add(currentRecipeId)
+
+			const data = await ensureRecipeInCache(currentRecipeId, cache)
+			for (const comp of data.components || []) {
+				const key = selectionKey(currentRecipeId, comp.id)
+				const defaultOptId = getDefaultOptionId(comp)
+				if (!selections[key] && defaultOptId) {
+					selections[key] = defaultOptId
+				}
+
+				questions.push({
+					key,
+					recipeId: currentRecipeId,
+					recipeTitle: data.title,
+					componentId: comp.id,
+					componentName: comp.name,
+					depth,
+					options: comp.options,
+				})
+
+				const selectedOptId = selections[key] || defaultOptId
+				const selectedOpt = comp.options.find((o: any) => o.id === selectedOptId)
+				const childRecipeId = selectedOpt?.recipe?.id
+				if (childRecipeId) {
+					await walk(childRecipeId, depth + 1, visited)
+				}
+			}
+		}
+
+		await walk(rootRecipeId, 0, new Set<number>())
+		return { questions, selections, cache }
+	}
+
+	const getSelectedOptionsForRecipe = (recipeId: number, cache: Record<number, any>) => {
+		const selected: Record<number, number> = {}
+		const data = cache[recipeId]
+		for (const comp of data?.components || []) {
+			const key = selectionKey(recipeId, comp.id)
+			const defaultOptId = getDefaultOptionId(comp)
+			const value = pdfComponentSelections[key] || defaultOptId
+			if (value) selected[comp.id] = value
+		}
+		return selected
+	}
+
+	const downloadRecipeTree = async (recipeId: number, cache: Record<number, any>, visited: Set<number>) => {
+		if (visited.has(recipeId)) return
+		visited.add(recipeId)
+
+		const selectedOptions = getSelectedOptionsForRecipe(recipeId, cache)
+		const pdfOptions = {
+			selectedOptions,
+			showAuthor: localStorage.getItem('pdfShowAuthor') === 'true',
+			showVisibility: localStorage.getItem('pdfShowVisibility') === 'true',
+		}
+		await pdfService.downloadRecipePdf(recipeId, pdfOptions)
+
+		const data = cache[recipeId]
+		for (const comp of data?.components || []) {
+			const selectedOpt = comp.options.find((o: any) => o.id === selectedOptions[comp.id])
+			const childRecipeId = selectedOpt?.recipe?.id
+			if (childRecipeId && cache[childRecipeId]) {
+				await downloadRecipeTree(childRecipeId, cache, visited)
+			}
+		}
+	}
 
 	const handleSaveThreshold = async () => {
 		const min = Number(minServings)
@@ -81,49 +175,49 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 			recipe.nutritionPerServing.fat > 0)
 
 	const handleExportPdf = async () => {
-		if (hasComponents) {
-			setShowPdfOptions(true)
-			return
-		}
 		try {
-			await pdfService.downloadRecipePdf(recipe.id, {
-				showAuthor: localStorage.getItem('pdfShowAuthor') === 'true',
-				showVisibility: localStorage.getItem('pdfShowVisibility') === 'true',
-			})
-			toast.success(t('recipes.pdfDownloaded'))
+			setLoadingPdfOptions(true)
+			const rootData = await pdfService.getRecipeData(recipe.id)
+			const initialCache: Record<number, any> = { [recipe.id]: rootData }
+			if (!rootData.components || rootData.components.length === 0) {
+				await pdfService.downloadRecipePdf(recipe.id, {
+					showAuthor: localStorage.getItem('pdfShowAuthor') === 'true',
+					showVisibility: localStorage.getItem('pdfShowVisibility') === 'true',
+				})
+				toast.success(t('recipes.pdfDownloaded'))
+				return
+			}
+
+			const built = await buildPdfQuestions(recipe.id, {}, initialCache)
+			setPdfRecipeCache(built.cache)
+			setPdfComponentSelections(built.selections)
+			setPdfQuestions(built.questions)
+			setShowPdfOptions(true)
 		} catch {
 			toast.error(t('recipes.pdfError'))
+		} finally {
+			setLoadingPdfOptions(false)
+		}
+	}
+
+	const handlePdfSelectionChange = async (question: PdfQuestion, value: number) => {
+		try {
+			setLoadingPdfOptions(true)
+			const nextSelections = { ...pdfComponentSelections, [question.key]: value }
+			const built = await buildPdfQuestions(recipe.id, nextSelections, pdfRecipeCache)
+			setPdfRecipeCache(built.cache)
+			setPdfComponentSelections(built.selections)
+			setPdfQuestions(built.questions)
+		} catch {
+			toast.error(t('recipes.pdfError'))
+		} finally {
+			setLoadingPdfOptions(false)
 		}
 	}
 
 	const handleDownloadPdf = async () => {
 		try {
-			const pdfOptions = {
-				selectedOptions: pdfComponentSelections,
-				showAuthor: localStorage.getItem('pdfShowAuthor') === 'true',
-				showVisibility: localStorage.getItem('pdfShowVisibility') === 'true',
-			}
-			await pdfService.downloadRecipePdf(recipe.id, pdfOptions)
-
-			// Descargar PDFs de sub-recetas referenciadas
-			if (recipe.components) {
-				const subRecipeIds = new Set<number>()
-				for (const comp of recipe.components) {
-					const selectedOptId = pdfComponentSelections[comp.id]
-					const opt = selectedOptId
-						? comp.options.find((o) => o.id === selectedOptId)
-						: comp.options.find((o) => o.isDefault) || comp.options[0]
-					if (opt?.recipe?.id) {
-						subRecipeIds.add(opt.recipe.id)
-					}
-				}
-				for (const subId of subRecipeIds) {
-					await pdfService.downloadRecipePdf(subId, {
-						showAuthor: pdfOptions.showAuthor,
-						showVisibility: pdfOptions.showVisibility,
-					})
-				}
-			}
+			await downloadRecipeTree(recipe.id, pdfRecipeCache, new Set<number>())
 
 			setShowPdfOptions(false)
 			toast.success(t('recipes.pdfDownloaded'))
@@ -340,24 +434,24 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 					<div className='pdf-options-modal'>
 						<h3>{t('recipes.pdfSelectVariants')}</h3>
 						<p className='form-hint'>{t('recipes.pdfSelectVariantsHint')}</p>
-						{recipe.components!.map((comp) => (
-							<div key={comp.id} className='pdf-option-group'>
+						{loadingPdfOptions && <p className='form-hint'>{t('loading')}</p>}
+						{pdfQuestions.map((q) => (
+							<div
+								key={q.key}
+								className='pdf-option-group'
+								style={{ marginLeft: `${q.depth * 14}px` }}>
 								<label className='form-label'>
-									{comp.name}
-									{comp.isOptional && (
-										<span className='optional-badge'>{t('recipes.optionalBadge')}</span>
+									{q.depth > 0 && (
+										<span className='pdf-nested-prefix'>{q.recipeTitle} - </span>
 									)}
+									{q.componentName}
 								</label>
 								<select
 									className='form-input'
-									value={pdfComponentSelections[comp.id] || ''}
-									onChange={(e) =>
-										setPdfComponentSelections({
-											...pdfComponentSelections,
-											[comp.id]: parseInt(e.target.value),
-										})
-									}>
-									{comp.options.map((opt) => (
+									value={pdfComponentSelections[q.key] || ''}
+									onChange={(e) => handlePdfSelectionChange(q, parseInt(e.target.value))}
+									disabled={loadingPdfOptions}>
+									{q.options.map((opt) => (
 										<option key={opt.id} value={opt.id}>
 											{opt.recipeId || opt.recipe ? '📖' : '🥬'}{' '}
 											{opt.name || opt.recipe?.title || opt.ingredient?.name}
@@ -371,7 +465,7 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 							<button className='btn btn-outline' onClick={() => setShowPdfOptions(false)}>
 								{t('cancel')}
 							</button>
-							<button className='btn btn-primary' onClick={handleDownloadPdf}>
+							<button className='btn btn-primary' onClick={handleDownloadPdf} disabled={loadingPdfOptions}>
 								{t('recipes.downloadPdf')}
 							</button>
 						</div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { CreateHomeItemData, HomeItem, HomeLocation, homeService } from '@/services/home'
+import { shoppingService } from '@/services/shopping'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
 import { AddHomeItemForm } from '../components/AddHomeItemForm'
@@ -95,6 +96,52 @@ export function HomeContainer() {
 		}
 	}
 
+	// ── Weekplan modal ──
+	const [weekPlanItem, setWeekPlanItem] = useState<HomeItem | null>(null)
+	const [wpDate, setWpDate] = useState(() => new Date().toISOString().slice(0, 10))
+	const [wpQty, setWpQty] = useState(1)
+	const [wpUnit, setWpUnit] = useState('g')
+	const [wpServings, setWpServings] = useState(1)
+	const [wpAdding, setWpAdding] = useState(false)
+
+	const handleOpenWeekPlan = (item: HomeItem) => {
+		setWeekPlanItem(item)
+		setWpDate(new Date().toISOString().slice(0, 10))
+		if (item.ingredient) {
+			setWpQty(item.quantity)
+			setWpUnit(item.unit)
+		} else {
+			setWpServings(item.quantity)
+		}
+	}
+
+	const handleAddToWeekPlan = async () => {
+		if (!weekPlanItem) return
+		setWpAdding(true)
+		try {
+			if (weekPlanItem.ingredient) {
+				await shoppingService.addToWeekPlan({
+					ingredientId: weekPlanItem.ingredientId!,
+					ingredientQty: wpQty,
+					ingredientUnit: wpUnit,
+					plannedDate: wpDate,
+				})
+			} else if (weekPlanItem.recipe) {
+				await shoppingService.addToWeekPlan({
+					recipeId: weekPlanItem.recipe.id,
+					plannedDate: wpDate,
+					servings: wpServings,
+				})
+			}
+			toast.success(t('homePage.addedToWeekPlan'))
+			setWeekPlanItem(null)
+		} catch {
+			toast.error(t('homePage.addToWeekPlanError'))
+		} finally {
+			setWpAdding(false)
+		}
+	}
+
 	const filteredItems = items
 		.filter((item) => item.location === activeTab)
 		.filter((item) => {
@@ -158,6 +205,7 @@ export function HomeContainer() {
 								onUpdate={handleUpdate}
 								onDelete={handleDelete}
 								onCook={handleCook}
+								onAddToWeekPlan={handleOpenWeekPlan}
 								showLocation
 							/>
 						))}
@@ -218,11 +266,66 @@ export function HomeContainer() {
 								onUpdate={handleUpdate}
 								onDelete={handleDelete}
 								onCook={handleCook}
+								onAddToWeekPlan={handleOpenWeekPlan}
 							/>
 						))}
 					</div>
 				)}
 			</div>
+
+			{weekPlanItem && (
+				<div className='modal-overlay' onClick={() => setWeekPlanItem(null)}>
+					<div className='modal-content' onClick={(e) => e.stopPropagation()}>
+						<h3>
+							{t('homePage.addToWeekPlan')}:{' '}
+							{weekPlanItem.recipe?.title || weekPlanItem.ingredient?.name}
+						</h3>
+						<div className='form-row'>
+							<label className='form-label'>{t('homePage.date')}</label>
+							<input
+								type='date'
+								className='form-input'
+								value={wpDate}
+								onChange={(e) => setWpDate(e.target.value)}
+							/>
+						</div>
+						{weekPlanItem.ingredient ? (
+							<div className='form-row'>
+								<label className='form-label'>{t('homePage.quantity')}</label>
+								<div className='form-row-inline'>
+									<input
+										type='number'
+										className='form-input'
+										value={wpQty}
+										onChange={(e) => setWpQty(Number(e.target.value))}
+										min={1}
+									/>
+									<span className='form-unit'>{wpUnit}</span>
+								</div>
+							</div>
+						) : (
+							<div className='form-row'>
+								<label className='form-label'>{t('homePage.servings')}</label>
+								<input
+									type='number'
+									className='form-input'
+									value={wpServings}
+									onChange={(e) => setWpServings(Number(e.target.value))}
+									min={1}
+								/>
+							</div>
+						)}
+						<div className='modal-actions'>
+							<button className='btn btn-outline' onClick={() => setWeekPlanItem(null)}>
+								{t('cancel')}
+							</button>
+							<button className='btn btn-primary' onClick={handleAddToWeekPlan} disabled={wpAdding}>
+								{wpAdding ? t('loading') : t('add')}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }

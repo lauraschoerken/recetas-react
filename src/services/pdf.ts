@@ -1,6 +1,11 @@
 import type { Recipe } from '@/models'
 import { api } from '@/services/api'
 
+const API_MODE = (import.meta.env.VITE_API_MODE as 'mock' | 'api' | 'real' | undefined) ?? 'api'
+const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') ?? ''
+const API_PREFIX = (import.meta.env.VITE_API_PREFIX as string | undefined) ?? '/api'
+const API_URL = API_MODE === 'mock' ? '' : `${API_BASE}${API_PREFIX}`
+
 class PdfService {
 	async exportRecipeHtml(
 		recipeId: number
@@ -21,8 +26,7 @@ class PdfService {
 		} = {}
 	): Promise<void> {
 		const token = localStorage.getItem('token')
-		const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-		const response = await fetch(`${baseUrl}/pdf/recipe/${recipeId}/pdf`, {
+		const response = await fetch(`${API_URL}/pdf/recipe/${recipeId}/pdf`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -31,7 +35,14 @@ class PdfService {
 			body: JSON.stringify(options),
 		})
 
-		if (!response.ok) throw new Error('Error generating PDF')
+		if (!response.ok) {
+			const errText = await response.text().catch(() => '')
+			throw new Error(errText || 'Error generating PDF')
+		}
+		const contentType = response.headers.get('Content-Type') || ''
+		if (!contentType.includes('application/pdf')) {
+			throw new Error('El servidor no devolvió un PDF válido')
+		}
 
 		const blob = await response.blob()
 		const url = URL.createObjectURL(blob)
@@ -40,7 +51,10 @@ class PdfService {
 		const disposition = response.headers.get('Content-Disposition')
 		const filenameMatch = disposition?.match(/filename="?([^"]+)"?/)
 		a.download = filenameMatch?.[1] || 'receta.pdf'
+		a.style.display = 'none'
+		document.body.appendChild(a)
 		a.click()
+		a.remove()
 		URL.revokeObjectURL(url)
 	}
 

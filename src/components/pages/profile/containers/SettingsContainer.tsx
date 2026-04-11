@@ -32,6 +32,7 @@ export function SettingsContainer() {
 		{
 			id: number
 			email: string
+			token: string
 			household: { id: number; name: string }
 			sender: { name: string }
 		}[]
@@ -202,6 +203,15 @@ export function SettingsContainer() {
 
 	const handleExport = async () => {
 		try {
+			await backupService.downloadBackupCsv()
+			toast.success(t('settings.backupDownloaded'))
+		} catch {
+			toast.error(t('settings.errorExporting'))
+		}
+	}
+
+	const handleExportJson = async () => {
+		try {
 			await backupService.downloadBackupJson()
 			toast.success(t('settings.backupDownloaded'))
 		} catch {
@@ -214,9 +224,7 @@ export function SettingsContainer() {
 		if (!file) return
 		setImporting(true)
 		try {
-			const text = await file.text()
-			const json = JSON.parse(text)
-			const result = await backupService.importData(json, importMode)
+			const result = await backupService.importBackupFile(file, importMode)
 			const summary = Object.entries(result.results)
 				.map(([key, val]) => `${key}: +${val.created}`)
 				.join(', ')
@@ -272,7 +280,7 @@ export function SettingsContainer() {
 													</span>
 													<button
 														className='btn btn-primary btn-sm'
-														onClick={() => handleAcceptPendingInvite(inv.email)}>
+														onClick={() => handleAcceptPendingInvite(inv.token)}>
 														{t('settings.joinBtn')}
 													</button>
 												</div>
@@ -487,7 +495,10 @@ export function SettingsContainer() {
 
 							<div className='backup-actions'>
 								<button className='btn btn-primary' onClick={handleExport}>
-									{t('settings.exportBackup')}
+									{t('settings.exportBackupCsvZip')}
+								</button>
+								<button className='btn btn-outline' onClick={handleExportJson}>
+									{t('settings.exportBackupJson')}
 								</button>
 
 								<div className='backup-import'>
@@ -506,7 +517,7 @@ export function SettingsContainer() {
 										{importing ? t('settings.importing') : t('settings.importBackup')}
 										<input
 											type='file'
-											accept='.json'
+											accept='.json,.csv,.zip'
 											onChange={handleImport}
 											style={{ display: 'none' }}
 											disabled={importing}
