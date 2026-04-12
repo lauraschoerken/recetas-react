@@ -64,6 +64,7 @@
 		"import": "Import recipe",
 		"importError": "Error importing recipe",
 		"new": "+ New Recipe",
+		"importedNone": "No new recipes were imported (they already exist)",
 		"loading": "Loading recipes...",
 		"loadError": "Error loading recipes",
 		"deleteTitle": "Delete recipe",

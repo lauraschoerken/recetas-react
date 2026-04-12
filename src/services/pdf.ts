@@ -88,6 +88,29 @@ class PdfService {
 		return api.post<Recipe>('/pdf/recipe/import', { html })
 	}
 
+	async importRecipesFromPdf(
+		file: File
+	): Promise<{
+		importedCount: number
+		skippedCount: number
+		skipped: { title: string; id: number }[]
+	}> {
+		const bytes = new Uint8Array(await file.arrayBuffer())
+		let binary = ''
+		for (let i = 0; i < bytes.length; i += 0x8000) {
+			binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+		}
+		const fileBase64 = btoa(binary)
+		return api.post<{
+			importedCount: number
+			skippedCount: number
+			skipped: { title: string; id: number }[]
+		}>('/pdf/recipe/import-pdf', {
+			fileBase64,
+			filename: file.name,
+		})
+	}
+
 	printHtml(html: string, title: string) {
 		const printWindow = window.open('', '_blank')
 		if (!printWindow) return

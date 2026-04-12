@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
@@ -12,6 +12,7 @@ import { RecipeList } from '../components/RecipeList'
 
 export function RecipeListContainer() {
 	const { t } = useTranslation()
+	const navigate = useNavigate()
 	const { confirm, toast } = useDialog()
 	const [recipes, setRecipes] = useState<Recipe[]>([])
 	const [loading, setLoading] = useState(true)
@@ -64,14 +65,35 @@ export function RecipeListContainer() {
 		const file = e.target.files?.[0]
 		if (!file) return
 		try {
-			const html = await file.text()
-			await pdfService.importRecipeFromHtml(html)
-			toast.success(t('recipes.imported'))
-			loadRecipes()
+			const result = await pdfService.importRecipesFromPdf(file)
+			if (result.importedCount > 0) {
+				toast.success(t('recipes.imported'))
+			}
+			if (result.skipped.length === 1) {
+				const s = result.skipped[0]
+				const goEdit = await confirm({
+					title: t('recipes.duplicateTitle'),
+					message: t('recipes.duplicateMessage', { title: s.title }),
+					confirmText: t('recipes.duplicateGoEdit'),
+					type: 'info',
+				})
+				if (goEdit) navigate(`/recipes/${s.id}/edit`)
+			} else if (result.skipped.length > 1) {
+				toast.info(
+					t('recipes.skippedMany', {
+						count: result.skipped.length,
+						titles: result.skipped.map((s) => s.title).join(', '),
+					})
+				)
+			} else if (result.importedCount === 0) {
+				toast.info(t('recipes.importedNone'))
+			}
 		} catch (err: unknown) {
 			toast.error(err instanceof Error ? err.message : t('recipes.importError'))
+		} finally {
+			loadRecipes()
+			e.target.value = ''
 		}
-		e.target.value = ''
 	}
 
 	if (loading) return <div className='loading'>{t('recipes.loading')}</div>
@@ -86,7 +108,7 @@ export function RecipeListContainer() {
 						{t('recipes.import')}
 						<input
 							type='file'
-							accept='.html'
+							accept='.pdf,application/pdf'
 							ref={importFileRef}
 							onChange={handleImportPdf}
 							style={{ display: 'none' }}
