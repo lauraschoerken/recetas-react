@@ -33,9 +33,16 @@ interface AddToWeekModalProps {
 	isOpen: boolean
 	onClose: () => void
 	onSuccess?: () => void
+	initialDate?: string
 }
 
-export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeekModalProps) {
+export function AddToWeekModal({
+	recipe,
+	isOpen,
+	onClose,
+	onSuccess,
+	initialDate,
+}: AddToWeekModalProps) {
 	const { toast } = useDialog()
 	const { t } = useTranslation()
 	const [, setFullRecipe] = useState<Recipe | null>(null)
@@ -109,13 +116,13 @@ export function AddToWeekModal({ recipe, isOpen, onClose, onSuccess }: AddToWeek
 
 	useEffect(() => {
 		if (isOpen && recipe) {
-			setPlannedDate(new Date().toISOString().split('T')[0])
+			setPlannedDate(initialDate || new Date().toISOString().split('T')[0])
 			setServings(recipe.servings)
 			setPlanType('meal')
 			setComponentSelections([])
 			loadFullRecipe(recipe.id)
 		}
-	}, [isOpen, recipe])
+	}, [isOpen, recipe, initialDate])
 
 	const loadFullRecipe = async (recipeId: number) => {
 		setLoadingRecipe(true)

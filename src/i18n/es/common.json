@@ -409,8 +409,11 @@
 		"addIngredient": "+ Añadir ingrediente",
 		"addIngredientTitle": "Añadir ingrediente al plan",
 		"ingredientAdded": "Ingrediente añadido al plan semanal",
-		"quickAdd": "Añadir rápido",
-		"searchRecipe": "Buscar receta..."
+		"quickAdd": "¿Qué receta quieres añadir?",
+		"quickAddHint": "Elige si quieres añadir una receta o un ingrediente",
+		"quickModeRecipe": "Receta",
+		"quickModeIngredient": "Ingrediente",
+		"searchRecipe": "Escribe el nombre de la receta..."
 	},
 
 	"shopping": {

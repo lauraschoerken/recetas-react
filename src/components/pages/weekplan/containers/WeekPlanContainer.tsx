@@ -65,12 +65,20 @@ export function WeekPlanContainer() {
 		formatDateStr(new Date())
 	)
 	const [addingIngredient, setAddingIngredient] = useState(false)
+	const [ingredientModalOriginDate, setIngredientModalOriginDate] = useState<string | null>(null)
 
 	// Day detail modal
 	const [dayModalDate, setDayModalDate] = useState<string | null>(null)
+	const [dayModalMode, setDayModalMode] = useState<'recipe' | 'ingredient'>('recipe')
 	const [allRecipes, setAllRecipes] = useState<Recipe[]>([])
 	const [recipeSearch, setRecipeSearch] = useState('')
+	const [dayIngredientSearch, setDayIngredientSearch] = useState('')
+	const [selectedIngredientForDay, setSelectedIngredientForDay] = useState<Ingredient | null>(null)
+	const [dayIngredientQty, setDayIngredientQty] = useState<number>(100)
+	const [dayIngredientUnit, setDayIngredientUnit] = useState<string>('g')
+	const [addingIngredientFromDay, setAddingIngredientFromDay] = useState(false)
 	const [selectedRecipeForWeek, setSelectedRecipeForWeek] = useState<Recipe | null>(null)
+	const [selectedRecipeDate, setSelectedRecipeDate] = useState<string | null>(null)
 
 	useEffect(() => {
 		loadWeekPlan()
@@ -220,6 +228,7 @@ export function WeekPlanContainer() {
 	const handleOpenAddIngredient = async () => {
 		setShowAddIngredient(true)
 		setAddIngredientDate(selectedDay)
+		setIngredientModalOriginDate(null)
 		if (allIngredients.length === 0) {
 			try {
 				const ingredients = await ingredientService.getAll()
@@ -249,14 +258,22 @@ export function WeekPlanContainer() {
 			setWeekPlans([...weekPlans, result])
 			loadWeeklyNutrition()
 			toast.success(t('weekPlan.ingredientAdded'))
-			setShowAddIngredient(false)
-			setSelectedIngredient(null)
-			setIngredientSearch('')
-			setIngredientQty(100)
+			handleCloseAddIngredient()
 		} catch {
 			toast.error(t('weekPlan.addError'))
 		} finally {
 			setAddingIngredient(false)
+		}
+	}
+
+	const handleCloseAddIngredient = () => {
+		setShowAddIngredient(false)
+		setSelectedIngredient(null)
+		setIngredientSearch('')
+		setIngredientQty(100)
+		if (ingredientModalOriginDate) {
+			setDayModalDate(ingredientModalOriginDate)
+			setIngredientModalOriginDate(null)
 		}
 	}
 
@@ -271,7 +288,12 @@ export function WeekPlanContainer() {
 
 	const handleDayClick = async (dateStr: string) => {
 		setDayModalDate(dateStr)
+		setDayModalMode('recipe')
 		setRecipeSearch('')
+		setDayIngredientSearch('')
+		setSelectedIngredientForDay(null)
+		setDayIngredientQty(100)
+		setDayIngredientUnit('g')
 		if (allRecipes.length === 0) {
 			try {
 				const recipes = await recipeService.getAll()
@@ -299,22 +321,78 @@ export function WeekPlanContainer() {
 			? allRecipes.filter((r) => r.title.toLowerCase().includes(recipeSearch.toLowerCase()))
 			: []
 
+	const filteredIngredientsForDay =
+		dayIngredientSearch.length >= 2
+			? allIngredients.filter(
+					(i) =>
+						i.name.toLowerCase().includes(dayIngredientSearch.toLowerCase()) &&
+						i.id !== selectedIngredientForDay?.id
+				)
+			: []
+
 	const handlePickRecipeForDay = (recipe: Recipe) => {
+		setSelectedRecipeDate(dayModalDate)
 		setSelectedRecipeForWeek(recipe)
+	}
+
+	const handleSelectIngredientForDay = (ingredient: Ingredient) => {
+		setSelectedIngredientForDay(ingredient)
+		setDayIngredientUnit(ingredient.unit)
+		setDayIngredientSearch(ingredient.name)
 	}
 
 	const handleAddToWeekSuccess = () => {
 		setSelectedRecipeForWeek(null)
+		setSelectedRecipeDate(null)
 		setDayModalDate(null)
 		loadWeekPlan()
 		loadWeeklyNutrition()
 	}
 
-	const handleAddIngredientFromDay = () => {
+	const handleAddIngredientFromDay = async () => {
+		if (!dayModalDate || !selectedIngredientForDay || dayIngredientQty <= 0) return
+		setAddingIngredientFromDay(true)
+		try {
+			const result = await shoppingService.addToWeekPlan({
+				ingredientId: selectedIngredientForDay.id,
+				ingredientQty: dayIngredientQty,
+				ingredientUnit: dayIngredientUnit,
+				plannedDate: dayModalDate,
+			})
+			setWeekPlans((prev) => [...prev, result])
+			loadWeeklyNutrition()
+			toast.success(t('weekPlan.ingredientAdded'))
+			setSelectedIngredientForDay(null)
+			setDayIngredientSearch('')
+			setDayIngredientQty(100)
+			setDayIngredientUnit('g')
+		} catch {
+			toast.error(t('weekPlan.addError'))
+		} finally {
+			setAddingIngredientFromDay(false)
+		}
+	}
+
+	const canGoToPreviousDay = !!dayModalDate && dayModalDate > formatDateStr(currentWeekStart)
+	const canGoToNextDay =
+		!!dayModalDate && dayModalDate < formatDateStr(getWeekEnd(currentWeekStart))
+
+	const shiftDayModal = (offset: number) => {
 		if (!dayModalDate) return
-		setAddIngredientDate(dayModalDate)
-		setDayModalDate(null)
-		setShowAddIngredient(true)
+		const current = new Date(`${dayModalDate}T12:00:00`)
+		current.setDate(current.getDate() + offset)
+		const candidate = formatDateStr(current)
+		if (
+			candidate < formatDateStr(currentWeekStart) ||
+			candidate > formatDateStr(getWeekEnd(currentWeekStart))
+		) {
+			return
+		}
+		setDayModalDate(candidate)
+		setDayModalMode('recipe')
+		setRecipeSearch('')
+		setDayIngredientSearch('')
+		setSelectedIngredientForDay(null)
 	}
 
 	const getWeekDays = () => {
@@ -528,7 +606,7 @@ export function WeekPlanContainer() {
 						) : !recommendedMacros ? (
 							<div className='nutrition-empty'>
 								<p>{t('weekPlan.configureProfile')}</p>
-								<Link to='/settings' className='btn btn-outline btn-sm'>
+								<Link to='/macros' className='btn btn-outline btn-sm'>
 									{t('weekPlan.goToSettings')}
 								</Link>
 							</div>
@@ -701,7 +779,7 @@ export function WeekPlanContainer() {
 			)}
 
 			{showAddIngredient && (
-				<div className='modal-overlay' onClick={() => setShowAddIngredient(false)}>
+				<div className='modal-overlay' onClick={handleCloseAddIngredient}>
 					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
 						<h3>{t('weekPlan.addIngredientTitle')}</h3>
 
@@ -770,7 +848,7 @@ export function WeekPlanContainer() {
 						)}
 
 						<div className='modal-actions'>
-							<button className='btn btn-outline' onClick={() => setShowAddIngredient(false)}>
+							<button className='btn btn-outline' onClick={handleCloseAddIngredient}>
 								{t('cancel')}
 							</button>
 							<button
@@ -786,6 +864,18 @@ export function WeekPlanContainer() {
 
 			{dayModalDate && !selectedRecipeForWeek && (
 				<div className='modal-overlay' onClick={() => setDayModalDate(null)}>
+					<button
+						type='button'
+						className='day-modal-nav day-modal-nav-left'
+						disabled={!canGoToPreviousDay}
+						onClick={(e) => {
+							e.stopPropagation()
+							shiftDayModal(-1)
+						}}
+						aria-label={t('weekPlan.prev')}>
+						‹
+					</button>
+
 					<div className='modal-card modal-card-lg' onClick={(e) => e.stopPropagation()}>
 						<h3>
 							{new Date(dayModalDate + 'T12:00:00').toLocaleDateString('es-ES', {
@@ -818,45 +908,148 @@ export function WeekPlanContainer() {
 						)}
 
 						<div className='day-modal-search'>
-							<h4>{t('weekPlan.quickAdd')}</h4>
-							<input
-								type='text'
-								value={recipeSearch}
-								onChange={(e) => setRecipeSearch(e.target.value)}
-								placeholder={t('weekPlan.searchRecipe')}
-								autoFocus
-							/>
-							{filteredRecipesForDay.length > 0 && (
-								<ul className='suggestions-list'>
-									{filteredRecipesForDay.slice(0, 6).map((r) => (
-										<li key={r.id} onClick={() => handlePickRecipeForDay(r)}>
-											📖 {r.title}{' '}
-											<span className='text-secondary'>
-												({r.servings} {t('weekPlan.portions')})
-											</span>
-										</li>
-									))}
-								</ul>
+							<h4 className='day-modal-search-title'>{t('weekPlan.quickAdd')}</h4>
+							<p className='day-modal-search-subtitle'>{t('weekPlan.quickAddHint')}</p>
+							<div className='day-modal-segment'>
+								<button
+									type='button'
+									className={`day-modal-tab ${dayModalMode === 'recipe' ? 'active' : ''}`}
+									onClick={() => setDayModalMode('recipe')}>
+									{t('weekPlan.quickModeRecipe')}
+								</button>
+								<button
+									type='button'
+									className={`day-modal-tab ${dayModalMode === 'ingredient' ? 'active' : ''}`}
+									onClick={() => setDayModalMode('ingredient')}>
+									{t('weekPlan.quickModeIngredient')}
+								</button>
+							</div>
+
+							{dayModalMode === 'recipe' ? (
+								<>
+									<input
+										className='day-modal-input'
+										type='text'
+										value={recipeSearch}
+										onChange={(e) => setRecipeSearch(e.target.value)}
+										placeholder={t('weekPlan.searchRecipe')}
+										autoFocus
+									/>
+									{filteredRecipesForDay.length > 0 && (
+										<ul className='suggestions-list'>
+											{filteredRecipesForDay.slice(0, 6).map((r) => (
+												<li key={r.id} onClick={() => handlePickRecipeForDay(r)}>
+													📖 {r.title}{' '}
+													<span className='text-secondary'>
+														({r.servings} {t('weekPlan.portions')})
+													</span>
+												</li>
+											))}
+										</ul>
+									)}
+								</>
+							) : (
+								<>
+									<input
+										className='day-modal-input'
+										type='text'
+										value={dayIngredientSearch}
+										onChange={(e) => {
+											setDayIngredientSearch(e.target.value)
+											if (
+												selectedIngredientForDay &&
+												e.target.value !== selectedIngredientForDay.name
+											) {
+												setSelectedIngredientForDay(null)
+											}
+										}}
+										placeholder={t('ingredients.searchPlaceholder')}
+										autoFocus
+									/>
+									{filteredIngredientsForDay.length > 0 && !selectedIngredientForDay && (
+										<ul className='suggestions-list'>
+											{filteredIngredientsForDay.slice(0, 8).map((ing) => (
+												<li key={ing.id} onClick={() => handleSelectIngredientForDay(ing)}>
+													🥬 {ing.name} <span className='text-secondary'>({ing.unit})</span>
+												</li>
+											))}
+										</ul>
+									)}
+									{selectedIngredientForDay && (
+										<div className='form-row day-modal-inline-fields'>
+											<div className='form-group'>
+												<label>{t('ingredients.quantityPlaceholder')}</label>
+												<input
+													type='number'
+													min='0'
+													step='any'
+													value={dayIngredientQty}
+													onChange={(e) => setDayIngredientQty(parseFloat(e.target.value) || 0)}
+												/>
+											</div>
+											<div className='form-group'>
+												<label>{t('ingredients.unitHeader')}</label>
+												<select
+													value={dayIngredientUnit}
+													onChange={(e) => setDayIngredientUnit(e.target.value)}>
+													<option value={selectedIngredientForDay.unit}>
+														{selectedIngredientForDay.unit}
+													</option>
+													{selectedIngredientForDay.unit === 'g' && <option value='kg'>kg</option>}
+													{selectedIngredientForDay.unit === 'ml' && <option value='l'>l</option>}
+													{(selectedIngredientForDay.conversions || []).map((c) => (
+														<option key={c.id} value={c.unitName}>
+															{c.unitName}
+														</option>
+													))}
+												</select>
+											</div>
+										</div>
+									)}
+								</>
 							)}
 						</div>
 
 						<div className='modal-actions'>
-							<button className='btn btn-outline' onClick={handleAddIngredientFromDay}>
-								{t('weekPlan.addIngredient')}
-							</button>
+							{dayModalMode === 'ingredient' && (
+								<button
+									className='btn btn-primary'
+									disabled={
+										!selectedIngredientForDay || dayIngredientQty <= 0 || addingIngredientFromDay
+									}
+									onClick={handleAddIngredientFromDay}>
+									{addingIngredientFromDay ? t('weekPlan.adding') : t('weekPlan.addBtn')}
+								</button>
+							)}
 							<button className='btn btn-outline' onClick={() => setDayModalDate(null)}>
 								{t('cancel')}
 							</button>
 						</div>
 					</div>
+
+					<button
+						type='button'
+						className='day-modal-nav day-modal-nav-right'
+						disabled={!canGoToNextDay}
+						onClick={(e) => {
+							e.stopPropagation()
+							shiftDayModal(1)
+						}}
+						aria-label={t('weekPlan.next')}>
+						›
+					</button>
 				</div>
 			)}
 
 			<AddToWeekModal
 				recipe={selectedRecipeForWeek}
 				isOpen={!!selectedRecipeForWeek}
-				onClose={() => setSelectedRecipeForWeek(null)}
+				onClose={() => {
+					setSelectedRecipeForWeek(null)
+					setSelectedRecipeDate(null)
+				}}
 				onSuccess={handleAddToWeekSuccess}
+				initialDate={selectedRecipeDate || undefined}
 			/>
 		</>
 	)

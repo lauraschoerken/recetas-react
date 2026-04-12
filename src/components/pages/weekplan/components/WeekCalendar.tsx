@@ -87,6 +87,7 @@ export function WeekCalendar({
 				onRemove={onRemove}
 				onMovePlan={onMovePlan}
 				onConsume={onConsume}
+				onDayClick={onDayClick}
 			/>
 
 			{/* Fila de A Preparar */}
@@ -97,6 +98,7 @@ export function WeekCalendar({
 				onRemove={onRemove}
 				onMovePlan={onMovePlan}
 				onCook={onCook}
+				onDayClick={onDayClick}
 			/>
 		</div>
 	)

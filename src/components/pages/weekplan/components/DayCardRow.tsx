@@ -23,6 +23,7 @@ interface DayCardRowProps {
 	onMovePlan?: (planId: number, newDate: string) => void
 	onCook?: (planId: number, leftoverServings: number, leftoverLocation: string) => void
 	onConsume?: (planId: number) => void
+	onDayClick?: (dateStr: string) => void
 }
 
 export function DayCardRow({
@@ -33,6 +34,7 @@ export function DayCardRow({
 	onMovePlan,
 	onCook,
 	onConsume,
+	onDayClick,
 }: DayCardRowProps) {
 	const { t } = useTranslation()
 	const [cookingPlan, setCookingPlan] = useState<WeekPlan | null>(null)
@@ -108,6 +110,7 @@ export function DayCardRow({
 				key={plan.id}
 				className={`row-plan-item ${hasComponents(plan) ? 'has-components' : ''} ${isCompleted ? 'is-done' : ''}`}
 				draggable={canDrag}
+				onClick={(e) => e.stopPropagation()}
 				onDragStart={(e) => handleDragStart(e, plan)}>
 				<div className='row-plan-header'>
 					{!isCompleted && <span className='drag-handle'>⋮⋮</span>}
@@ -130,7 +133,10 @@ export function DayCardRow({
 						{!isIngredientPlan(plan) && type === 'prep' && !plan.cooked && (
 							<button
 								className='action-cook'
-								onClick={() => handleOpenCookModal(plan)}
+								onClick={(e) => {
+									e.stopPropagation()
+									handleOpenCookModal(plan)
+								}}
 								title={t('weekPlan.cookTitle')}>
 								<CookIcon size={14} aria-hidden='true' />
 							</button>
@@ -138,12 +144,21 @@ export function DayCardRow({
 						{!isIngredientPlan(plan) && type === 'meal' && !plan.consumed && onConsume && (
 							<button
 								className='action-consume'
-								onClick={() => onConsume(plan.id)}
+								onClick={(e) => {
+									e.stopPropagation()
+									onConsume(plan.id)
+								}}
 								title={t('weekPlan.markConsumed')}>
 								<CheckIcon size={14} aria-hidden='true' />
 							</button>
 						)}
-						<button className='action-remove' onClick={() => onRemove(plan.id)} title={t('delete')}>
+						<button
+							className='action-remove'
+							onClick={(e) => {
+								e.stopPropagation()
+								onRemove(plan.id)
+							}}
+							title={t('delete')}>
 							<DeleteIcon size={14} aria-hidden='true' />
 						</button>
 					</div>
@@ -166,6 +181,7 @@ export function DayCardRow({
 					<div
 						key={index}
 						className={`row-day-cell ${isToday ? 'is-today' : ''} ${isDragOver ? 'is-dragover' : ''}`}
+						onClick={() => onDayClick?.(day.dateStr)}
 						onDragOver={(e) => handleDragOver(e, day.dateStr)}
 						onDragLeave={handleDragLeave}
 						onDrop={(e) => handleDrop(e, day.dateStr)}>
