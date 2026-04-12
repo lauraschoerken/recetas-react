@@ -195,6 +195,8 @@ class BackupService {
 				description: row.description || null,
 				instructions: row.instructions || null,
 				imageUrl: row.imageUrl || null,
+				cookTimeMinutes: this.parseNumber(row.cookTimeMinutes),
+				difficulty: row.difficulty || null,
 				servings: this.parseNumber(row.servings) ?? 4,
 				isPublic: this.parseBoolean(row.isPublic),
 				customCalories: this.parseNumber(row.customCalories),

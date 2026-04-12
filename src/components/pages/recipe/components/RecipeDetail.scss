@@ -21,6 +21,25 @@
 	color: var(--text-secondary);
 }
 
+.recipe-detail-meta {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 0.4rem;
+}
+
+.recipe-detail-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.2rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--primary-700, #163b75);
+	background: var(--primary-50, #e8f0ff);
+	border: 1px solid var(--primary-200, #bfd0f8);
+}
+
 .recipe-detail-actions {
 	display: flex;
 	gap: 0.5rem;

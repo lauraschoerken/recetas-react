@@ -206,6 +206,22 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 			recipe.nutritionPerServing.carbs > 0 ||
 			recipe.nutritionPerServing.fat > 0)
 
+	const formatCookTime = (minutes?: number | null) => {
+		if (!minutes || minutes <= 0) return null
+		if (minutes < 60) return `${minutes}${t('recipes.minuteShort')}`
+		const hours = Math.round((minutes / 60) * 10) / 10
+		return `${hours}${t('recipes.timeShort')}`
+	}
+
+	const difficultyText =
+		recipe.difficulty === 'easy'
+			? t('recipes.difficultyEasy')
+			: recipe.difficulty === 'medium'
+				? t('recipes.difficultyMedium')
+				: recipe.difficulty === 'hard'
+					? t('recipes.difficultyHard')
+					: null
+
 	const handleExportPdf = async () => {
 		try {
 			setLoadingPdfOptions(true)
@@ -291,9 +307,15 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 			<div className='recipe-detail-header'>
 				<div>
 					<h1 className='recipe-detail-title'>{recipe.title}</h1>
-					<p className='recipe-detail-servings'>
-						{recipe.servings} {t('recipes.portionsUnit')}
-					</p>
+					<div className='recipe-detail-meta'>
+						<span className='recipe-detail-chip'>
+							{recipe.servings} {t('recipes.portionsUnit')}
+						</span>
+						{formatCookTime(recipe.cookTimeMinutes) && (
+							<span className='recipe-detail-chip'>{formatCookTime(recipe.cookTimeMinutes)}</span>
+						)}
+						{difficultyText && <span className='recipe-detail-chip'>{difficultyText}</span>}
+					</div>
 				</div>
 				<div className='recipe-detail-actions'>
 					<button className='btn btn-primary' onClick={onAddToWeek}>

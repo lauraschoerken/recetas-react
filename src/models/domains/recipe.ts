@@ -45,6 +45,8 @@ export interface Recipe {
 	description: string | null
 	instructions: string | null
 	imageUrl: string | null
+	cookTimeMinutes?: number | null
+	difficulty?: string | null
 	servings: number
 	isPublic: boolean
 	userId: number
@@ -92,6 +94,8 @@ export interface CreateRecipeData {
 	description?: string
 	instructions?: string
 	imageUrl?: string
+	cookTimeMinutes?: number
+	difficulty?: string
 	servings?: number
 	isPublic?: boolean
 	defaultLocation?: string

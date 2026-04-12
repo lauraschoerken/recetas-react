@@ -60,6 +60,8 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 	const [title, setTitle] = useState(initialData?.title || '')
 	const [description, setDescription] = useState(initialData?.description || '')
 	const [imageUrl, setImageUrl] = useState(initialData?.imageUrl || '')
+	const [cookTimeMinutes, setCookTimeMinutes] = useState(initialData?.cookTimeMinutes || 0)
+	const [difficulty, setDifficulty] = useState(initialData?.difficulty || '')
 	const [steps, setSteps] = useState<string[]>(
 		initialData?.instructions ? initialData.instructions.split('\n').filter((s) => s.trim()) : []
 	)
@@ -246,6 +248,8 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 			description: description || undefined,
 			instructions: steps.length > 0 ? steps.join('\n') : undefined,
 			imageUrl: imageUrl || undefined,
+			cookTimeMinutes: cookTimeMinutes > 0 ? cookTimeMinutes : undefined,
+			difficulty: difficulty || undefined,
 			servings,
 			isPublic,
 			defaultLocation: defaultLocation || undefined,
@@ -520,6 +524,31 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 					</div>
 
 					<div className='form-group'>
+						<label className='form-label'>{t('recipes.timeLabel')}</label>
+						<input
+							type='number'
+							className='form-input'
+							value={cookTimeMinutes || ''}
+							onChange={(e) => setCookTimeMinutes(parseInt(e.target.value) || 0)}
+							min={0}
+							placeholder={t('recipes.timePlaceholder')}
+						/>
+					</div>
+
+					<div className='form-group'>
+						<label className='form-label'>{t('recipes.difficultyLabel')}</label>
+						<select
+							className='form-input'
+							value={difficulty}
+							onChange={(e) => setDifficulty(e.target.value)}>
+							<option value=''>{t('recipes.difficultySelect')}</option>
+							<option value='easy'>{t('recipes.difficultyEasy')}</option>
+							<option value='medium'>{t('recipes.difficultyMedium')}</option>
+							<option value='hard'>{t('recipes.difficultyHard')}</option>
+						</select>
+					</div>
+
+					<div className='form-group'>
 						<label className='form-label'>{t('recipes.visibilityLabel')}</label>
 						<div className={`visibility-box ${isPublic ? 'is-public' : 'is-private'}`}>
 							<label className='toggle-container'>
@@ -624,7 +653,10 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 								<div
 									className='nutrition-per-serving'
 									style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#64748b' }}>
-									Total ({servings} porciones): {totalNutrition.calories} kcal
+									{t('recipes.totalCalories', {
+										servings,
+										calories: totalNutrition.calories,
+									})}
 								</div>
 							)}
 						</div>
