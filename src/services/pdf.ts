@@ -1,10 +1,38 @@
 import type { Recipe } from '@/models'
 import { api } from '@/services/api'
+import i18n from '@/i18n/i18n'
 
 const API_MODE = (import.meta.env.VITE_API_MODE as 'mock' | 'api' | 'real' | undefined) ?? 'api'
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') ?? ''
 const API_PREFIX = (import.meta.env.VITE_API_PREFIX as string | undefined) ?? '/api'
 const API_URL = API_MODE === 'mock' ? '' : `${API_BASE}${API_PREFIX}`
+
+function currentLang(): string {
+	return i18n.language?.split('-')[0] ?? 'es'
+}
+
+async function triggerDownload(response: Response, fallbackName: string): Promise<void> {
+	if (!response.ok) {
+		const errText = await response.text().catch(() => '')
+		throw new Error(errText || 'Error generating PDF')
+	}
+	const contentType = response.headers.get('Content-Type') || ''
+	if (!contentType.includes('application/pdf')) {
+		throw new Error('El servidor no devolvió un PDF válido')
+	}
+	const blob = await response.blob()
+	const url = URL.createObjectURL(blob)
+	const a = document.createElement('a')
+	a.href = url
+	const disposition = response.headers.get('Content-Disposition')
+	const filenameMatch = disposition?.match(/filename="?([^"]+)"?/)
+	a.download = filenameMatch?.[1] || fallbackName
+	a.style.display = 'none'
+	document.body.appendChild(a)
+	a.click()
+	a.remove()
+	URL.revokeObjectURL(url)
+}
 
 class PdfService {
 	async exportRecipeHtml(
@@ -32,30 +60,28 @@ class PdfService {
 				'Content-Type': 'application/json',
 				...(token ? { Authorization: `Bearer ${token}` } : {}),
 			},
-			body: JSON.stringify(options),
+			body: JSON.stringify({ ...options, lang: currentLang() }),
 		})
+		await triggerDownload(response, 'receta.pdf')
+	}
 
-		if (!response.ok) {
-			const errText = await response.text().catch(() => '')
-			throw new Error(errText || 'Error generating PDF')
-		}
-		const contentType = response.headers.get('Content-Type') || ''
-		if (!contentType.includes('application/pdf')) {
-			throw new Error('El servidor no devolvió un PDF válido')
-		}
-
-		const blob = await response.blob()
-		const url = URL.createObjectURL(blob)
-		const a = document.createElement('a')
-		a.href = url
-		const disposition = response.headers.get('Content-Disposition')
-		const filenameMatch = disposition?.match(/filename="?([^"]+)"?/)
-		a.download = filenameMatch?.[1] || 'receta.pdf'
-		a.style.display = 'none'
-		document.body.appendChild(a)
-		a.click()
-		a.remove()
-		URL.revokeObjectURL(url)
+	async downloadCombinedPdf(
+		entries: { recipeId: number; selectedOptions?: Record<number, number> }[],
+		options: {
+			showAuthor?: boolean
+			showVisibility?: boolean
+		} = {}
+	): Promise<void> {
+		const token = localStorage.getItem('token')
+		const response = await fetch(`${API_URL}/pdf/recipes/combined`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+			body: JSON.stringify({ entries, ...options, lang: currentLang() }),
+		})
+		await triggerDownload(response, 'recetas.pdf')
 	}
 
 	async importRecipeFromHtml(html: string): Promise<Recipe> {

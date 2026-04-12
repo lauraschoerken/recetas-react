@@ -217,6 +217,26 @@
 	font-weight: 500;
 }
 
+.pdf-merge-row {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex-wrap: wrap;
+	margin-bottom: 0.25rem;
+}
+
+.pdf-radio-label {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 0.9rem;
+	cursor: pointer;
+
+	input[type='radio'] {
+		cursor: pointer;
+	}
+}
+
 /* Nutrition Card */
 .recipe-nutrition-card {
 	background: linear-gradient(135deg, var(--primary-light) 0%, var(--success-bg) 100%);

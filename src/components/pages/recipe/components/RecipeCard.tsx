@@ -33,6 +33,7 @@ export function RecipeCard({ recipe, currentUserId, onDelete, onAddToWeek }: Rec
 	const [pdfQuestions, setPdfQuestions] = useState<PdfQuestion[]>([])
 	const [pdfRecipeCache, setPdfRecipeCache] = useState<Record<number, any>>({})
 	const [loadingPdfOptions, setLoadingPdfOptions] = useState(false)
+	const [pdfMerge, setPdfMerge] = useState(false)
 
 	const hasVariants = (recipe.components || []).some((c) => c.options.length > 1)
 
@@ -118,6 +119,29 @@ export function RecipeCard({ recipe, currentUserId, onDelete, onAddToWeek }: Rec
 		return selected
 	}
 
+	const collectAllEntries = (
+		rootId: number,
+		cache: Record<number, any>,
+		selections: Record<string, number>
+	): { recipeId: number; selectedOptions: Record<number, number> }[] => {
+		const entries: { recipeId: number; selectedOptions: Record<number, number> }[] = []
+		const visited = new Set<number>()
+		const walk = (recipeId: number) => {
+			if (visited.has(recipeId)) return
+			visited.add(recipeId)
+			const selectedOptions = getSelectedOptionsForRecipe(recipeId, cache, selections)
+			entries.push({ recipeId, selectedOptions })
+			const data = cache[recipeId]
+			for (const comp of data?.components || []) {
+				const selectedOpt = comp.options.find((o: any) => o.id === selectedOptions[comp.id])
+				const childId = selectedOpt?.recipe?.id
+				if (childId && cache[childId]) walk(childId)
+			}
+		}
+		walk(rootId)
+		return entries
+	}
+
 	const downloadRecipeTree = async (
 		recipeId: number,
 		cache: Record<number, any>,
@@ -188,7 +212,21 @@ export function RecipeCard({ recipe, currentUserId, onDelete, onAddToWeek }: Rec
 
 	const confirmPdfDownload = async () => {
 		try {
-			await downloadRecipeTree(recipe.id, pdfRecipeCache, pdfComponentSelections, new Set<number>())
+			const pdfOptions = {
+				showAuthor: localStorage.getItem('pdfShowAuthor') === 'true',
+				showVisibility: localStorage.getItem('pdfShowVisibility') === 'true',
+			}
+			if (pdfMerge) {
+				const entries = collectAllEntries(recipe.id, pdfRecipeCache, pdfComponentSelections)
+				await pdfService.downloadCombinedPdf(entries, pdfOptions)
+			} else {
+				await downloadRecipeTree(
+					recipe.id,
+					pdfRecipeCache,
+					pdfComponentSelections,
+					new Set<number>()
+				)
+			}
 			setShowPdfOptions(false)
 			toast.success(t('recipes.pdfDownloaded'))
 		} catch {
@@ -241,15 +279,40 @@ export function RecipeCard({ recipe, currentUserId, onDelete, onAddToWeek }: Rec
 							</div>
 						))}
 						<div className='recipe-card-pdf-actions'>
-							<button className='btn btn-outline' onClick={() => setShowPdfOptions(false)}>
-								{t('cancel')}
-							</button>
-							<button
-								className='btn btn-primary'
-								onClick={confirmPdfDownload}
-								disabled={loadingPdfOptions}>
-								{t('recipes.downloadPdf')}
-							</button>
+							{pdfQuestions.some((q) => q.depth > 0) && (
+								<div className='pdf-merge-row'>
+									<span className='recipe-card-pdf-label'>{t('recipes.pdfMode')}</span>
+									<label className='pdf-radio-label'>
+										<input
+											type='radio'
+											name={`pdfMode-${recipe.id}`}
+											checked={!pdfMerge}
+											onChange={() => setPdfMerge(false)}
+										/>
+										{t('recipes.pdfModeMultiple')}
+									</label>
+									<label className='pdf-radio-label'>
+										<input
+											type='radio'
+											name={`pdfMode-${recipe.id}`}
+											checked={pdfMerge}
+											onChange={() => setPdfMerge(true)}
+										/>
+										{t('recipes.pdfModeSingle')}
+									</label>
+								</div>
+							)}
+							<div className='flex gap-1'>
+								<button className='btn btn-outline' onClick={() => setShowPdfOptions(false)}>
+									{t('cancel')}
+								</button>
+								<button
+									className='btn btn-primary'
+									onClick={confirmPdfDownload}
+									disabled={loadingPdfOptions}>
+									{t('recipes.downloadPdf')}
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>

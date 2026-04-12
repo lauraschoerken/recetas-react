@@ -1,12 +1,12 @@
 import './RecipeDetail.scss'
 
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
-import { Recipe } from '@/services/recipe'
-import { pdfService } from '@/services/pdf'
 import { alertService } from '@/services/alert'
+import { pdfService } from '@/services/pdf'
+import { Recipe } from '@/services/recipe'
 import { shoppingService } from '@/services/shopping'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
@@ -36,6 +36,7 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 	const [pdfQuestions, setPdfQuestions] = useState<PdfQuestion[]>([])
 	const [pdfRecipeCache, setPdfRecipeCache] = useState<Record<number, any>>({})
 	const [loadingPdfOptions, setLoadingPdfOptions] = useState(false)
+	const [pdfMerge, setPdfMerge] = useState(false)
 
 	useEffect(() => {
 		alertService
@@ -109,16 +110,44 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 		return { questions, selections, cache }
 	}
 
-	const getSelectedOptionsForRecipe = (recipeId: number, cache: Record<number, any>) => {
+	const getSelectedOptionsForRecipe = (
+		recipeId: number,
+		cache: Record<number, any>,
+		selections?: Record<string, number>
+	) => {
+		const sel = selections ?? pdfComponentSelections
 		const selected: Record<number, number> = {}
 		const data = cache[recipeId]
 		for (const comp of data?.components || []) {
 			const key = selectionKey(recipeId, comp.id)
 			const defaultOptId = getDefaultOptionId(comp)
-			const value = pdfComponentSelections[key] || defaultOptId
+			const value = sel[key] || defaultOptId
 			if (value) selected[comp.id] = value
 		}
 		return selected
+	}
+
+	const collectAllEntries = (
+		rootId: number,
+		cache: Record<number, any>,
+		selections: Record<string, number>
+	): { recipeId: number; selectedOptions: Record<number, number> }[] => {
+		const entries: { recipeId: number; selectedOptions: Record<number, number> }[] = []
+		const visited = new Set<number>()
+		const walk = (recipeId: number) => {
+			if (visited.has(recipeId)) return
+			visited.add(recipeId)
+			const selectedOptions = getSelectedOptionsForRecipe(recipeId, cache, selections)
+			entries.push({ recipeId, selectedOptions })
+			const data = cache[recipeId]
+			for (const comp of data?.components || []) {
+				const selectedOpt = comp.options.find((o: any) => o.id === selectedOptions[comp.id])
+				const childId = selectedOpt?.recipe?.id
+				if (childId && cache[childId]) walk(childId)
+			}
+		}
+		walk(rootId)
+		return entries
 	}
 
 	const downloadRecipeTree = async (
@@ -220,8 +249,16 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 
 	const handleDownloadPdf = async () => {
 		try {
-			await downloadRecipeTree(recipe.id, pdfRecipeCache, new Set<number>())
-
+			const pdfOptions = {
+				showAuthor: localStorage.getItem('pdfShowAuthor') === 'true',
+				showVisibility: localStorage.getItem('pdfShowVisibility') === 'true',
+			}
+			if (pdfMerge) {
+				const entries = collectAllEntries(recipe.id, pdfRecipeCache, pdfComponentSelections)
+				await pdfService.downloadCombinedPdf(entries, pdfOptions)
+			} else {
+				await downloadRecipeTree(recipe.id, pdfRecipeCache, new Set<number>())
+			}
 			setShowPdfOptions(false)
 			toast.success(t('recipes.pdfDownloaded'))
 		} catch {
@@ -462,16 +499,41 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 								</select>
 							</div>
 						))}
-						<div className='flex gap-1 mt-2'>
-							<button className='btn btn-outline' onClick={() => setShowPdfOptions(false)}>
-								{t('cancel')}
-							</button>
-							<button
-								className='btn btn-primary'
-								onClick={handleDownloadPdf}
-								disabled={loadingPdfOptions}>
-								{t('recipes.downloadPdf')}
-							</button>
+						<div className='flex gap-1 mt-2' style={{ flexDirection: 'column', gap: '0.75rem' }}>
+							{pdfQuestions.some((q) => q.depth > 0) && (
+								<div className='pdf-merge-row'>
+									<span className='form-label'>{t('recipes.pdfMode')}</span>
+									<label className='pdf-radio-label'>
+										<input
+											type='radio'
+											name={`pdfMode-detail`}
+											checked={!pdfMerge}
+											onChange={() => setPdfMerge(false)}
+										/>
+										{t('recipes.pdfModeMultiple')}
+									</label>
+									<label className='pdf-radio-label'>
+										<input
+											type='radio'
+											name={`pdfMode-detail`}
+											checked={pdfMerge}
+											onChange={() => setPdfMerge(true)}
+										/>
+										{t('recipes.pdfModeSingle')}
+									</label>
+								</div>
+							)}
+							<div className='flex gap-1'>
+								<button className='btn btn-outline' onClick={() => setShowPdfOptions(false)}>
+									{t('cancel')}
+								</button>
+								<button
+									className='btn btn-primary'
+									onClick={handleDownloadPdf}
+									disabled={loadingPdfOptions}>
+									{t('recipes.downloadPdf')}
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
