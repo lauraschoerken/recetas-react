@@ -2,7 +2,13 @@ import './AlertBell.scss'
 
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { HiOutlineBell } from 'react-icons/hi2'
+import {
+	HiOutlineBell,
+	HiOutlineClock,
+	HiOutlineEye,
+	HiOutlineShoppingCart,
+	HiOutlineXMark,
+} from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
 
 import { alertService, StockAlert } from '@/services/alert'
@@ -102,28 +108,28 @@ export function AlertBell() {
 									<div className='alert-bell-message'>{alert.message}</div>
 									<div className='alert-bell-actions'>
 										<button
-											className='alert-action-btn'
+											className='alert-action-icon'
 											onClick={() => handleAction(alert, 'VIEWED')}
 											title={t('alerts.markViewed')}>
-											{t('alerts.view')}
+											<HiOutlineEye size={16} />
 										</button>
 										<button
-											className='alert-action-btn'
-											onClick={() => handleAction(alert, 'SNOOZED')}
-											title={t('alerts.snooze')}>
-											{t('alerts.snooze')}
-										</button>
-										<button
-											className='alert-action-btn primary'
+											className='alert-action-icon alert-action-icon--cart'
 											onClick={() => handleAddToShopping(alert)}
 											title={t('alerts.addToCart')}>
-											{t('alerts.addToCart')}
+											<HiOutlineShoppingCart size={16} />
 										</button>
 										<button
-											className='alert-action-btn'
+											className='alert-action-icon'
+											onClick={() => handleAction(alert, 'SNOOZED')}
+											title={t('alerts.snooze')}>
+											<HiOutlineClock size={16} />
+										</button>
+										<button
+											className='alert-action-icon alert-action-icon--dismiss'
 											onClick={() => handleAction(alert, 'RESOLVED')}
 											title={t('alerts.resolve')}>
-											{t('alerts.resolve')}
+											<HiOutlineXMark size={16} />
 										</button>
 									</div>
 								</div>
