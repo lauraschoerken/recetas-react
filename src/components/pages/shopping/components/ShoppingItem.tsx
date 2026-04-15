@@ -2,7 +2,7 @@ import './ShoppingItem.scss'
 
 import { useTranslation } from 'react-i18next'
 
-import { CloseIcon } from '@/components/shared/icons'
+import { DeleteIcon } from '@/components/shared/icons'
 import { ShoppingItem } from '@/services/shopping'
 
 interface ShoppingItemRowProps {
@@ -75,7 +75,7 @@ export function ShoppingItemRow({ item, checked, onToggle, onExclude }: Shopping
 					className='shopping-item-exclude'
 					onClick={onExclude}
 					title={t('shopping.excludeItem')}>
-					<CloseIcon size={14} aria-hidden='true' />
+					<DeleteIcon size={14} aria-hidden='true' />
 				</button>
 			)}
 		</li>

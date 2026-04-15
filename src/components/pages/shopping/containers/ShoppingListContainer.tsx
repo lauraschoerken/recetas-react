@@ -33,7 +33,6 @@ export function ShoppingListContainer() {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
 	const [allItems, setAllItems] = useState<ShoppingItem[]>([])
-	const [filteredItems, setFilteredItems] = useState<ShoppingItem[]>([])
 	const [excludedItems, setExcludedItems] = useState<Set<number>>(new Set())
 	const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set())
 	const [loading, setLoading] = useState(true)
@@ -70,9 +69,7 @@ export function ShoppingListContainer() {
 		}
 	}, [currentWeekStart])
 
-	useEffect(() => {
-		setFilteredItems(allItems.filter((item) => !excludedItems.has(item.ingredientId)))
-	}, [allItems, excludedItems])
+	const visibleItems = allItems.filter((item) => !excludedItems.has(item.ingredientId))
 
 	const loadShoppingList = async () => {
 		setLoading(true)
@@ -108,6 +105,13 @@ export function ShoppingListContainer() {
 		newExcluded.add(id)
 		setExcludedItems(newExcluded)
 		localStorage.setItem(`${key}_excluded`, JSON.stringify([...newExcluded]))
+
+		const newChecked = new Set(checkedItems)
+		if (newChecked.has(id)) {
+			newChecked.delete(id)
+			setCheckedItems(newChecked)
+			localStorage.setItem(`${key}_checked`, JSON.stringify([...newChecked]))
+		}
 	}
 
 	const handleRestoreItem = (id: number) => {
@@ -127,9 +131,7 @@ export function ShoppingListContainer() {
 	const resetAll = () => {
 		const key = getStorageKey(currentWeekStart)
 		setCheckedItems(new Set())
-		setExcludedItems(new Set())
 		localStorage.removeItem(`${key}_checked`)
-		localStorage.removeItem(`${key}_excluded`)
 	}
 
 	const goToPreviousWeek = () => {
@@ -198,7 +200,6 @@ export function ShoppingListContainer() {
 
 	const weekEndDate = getWeekEnd(currentWeekStart)
 	const weekLabel = `${currentWeekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${weekEndDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`
-
 	const excludedItemsList = allItems.filter((item) => excludedItems.has(item.ingredientId))
 
 	return (
@@ -222,6 +223,24 @@ export function ShoppingListContainer() {
 				</div>
 			</div>
 
+			{showReview && excludedItemsList.length > 0 && (
+				<div className='card mb-2 excluded-items-card'>
+					<h3 className='text-secondary mb-1'>{t('shopping.excludedTitle')}</h3>
+					<p className='text-sm text-secondary mb-1'>{t('shopping.excludedHint')}</p>
+					<div className='excluded-items-list'>
+						{excludedItemsList.map((item) => (
+							<button
+								key={item.ingredientId}
+								className='excluded-item-tag'
+								onClick={() => handleRestoreItem(item.ingredientId)}>
+								{item.name} ({item.totalQuantity} {item.unit})
+								<span className='restore-icon'>+</span>
+							</button>
+						))}
+					</div>
+				</div>
+			)}
+
 			<div className='card mb-2'>
 				<div className='flex flex-between flex-center'>
 					<button className='btn btn-outline btn-sm' onClick={goToPreviousWeek}>
@@ -242,42 +261,24 @@ export function ShoppingListContainer() {
 				</div>
 			</div>
 
-			{showReview && excludedItemsList.length > 0 && (
-				<div className='card mb-2 excluded-items-card'>
-					<h3 className='text-secondary mb-1'>{t('shopping.excludedTitle')}</h3>
-					<p className='text-sm text-secondary mb-1'>{t('shopping.excludedHint')}</p>
-					<div className='excluded-items-list'>
-						{excludedItemsList.map((item) => (
-							<button
-								key={item.ingredientId}
-								className='excluded-item-tag'
-								onClick={() => handleRestoreItem(item.ingredientId)}>
-								{item.name} ({item.totalQuantity} {item.unit})
-								<span className='restore-icon'>+</span>
-							</button>
-						))}
-					</div>
-				</div>
-			)}
-
 			{loading ? (
 				<div className='loading'>{t('shopping.loading')}</div>
 			) : (
 				<>
 					<ShoppingList
-						items={filteredItems}
+						items={visibleItems}
 						checkedItems={checkedItems}
 						onToggle={handleToggle}
 						onExclude={handleExclude}
 					/>
 
-					{(checkedItems.size > 0 || excludedItems.size > 0) && (
+					{checkedItems.size > 0 && (
 						<div className='shopping-actions mt-2'>
 							{checkedItems.size > 0 && (
 								<button
 									className='btn btn-primary btn-sm'
 									onClick={async () => {
-										const itemsToMark = filteredItems.filter((i) =>
+										const itemsToMark = visibleItems.filter((i) =>
 											checkedItems.has(i.ingredientId)
 										)
 										try {
@@ -303,11 +304,9 @@ export function ShoppingListContainer() {
 									{t('shopping.unmarkPurchased')}
 								</button>
 							)}
-							{(checkedItems.size > 0 || excludedItems.size > 0) && (
-								<button className='btn btn-outline btn-sm' onClick={resetAll}>
-									{t('shopping.resetAll')}
-								</button>
-							)}
+							<button className='btn btn-outline btn-sm' onClick={resetAll}>
+								{t('shopping.resetAll')}
+							</button>
 						</div>
 					)}
 				</>
