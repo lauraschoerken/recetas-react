@@ -1,4 +1,4 @@
-@use '../../../assets/styles/tokens' as t;
+﻿@use '../../../assets/styles/tokens' as t;
 
 .ingredients-list-component {
 	display: flex;
@@ -131,7 +131,7 @@
 }
 
 .macros-panel .macro-item {
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	border-radius: 4px;
 	padding: 0.25rem 0.5rem;
@@ -265,7 +265,7 @@
 }
 
 .btn-outline {
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	color: var(--text-secondary);
 }
@@ -289,7 +289,7 @@
 
 .add-variant-btn:hover {
 	background: var(--primary-color);
-	color: white;
+	color: var(--text-inverse);
 }
 
 .new-variant-form {
@@ -316,7 +316,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	padding: 0.25rem 0.5rem;
@@ -363,10 +363,10 @@
 	left: 0;
 	right: 0;
 	min-width: 280px;
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	border-radius: 10px;
-	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+	box-shadow: var(--shadow-lg);
 	list-style: none;
 	margin: 6px 0 0 0;
 	padding: 0.5rem;
@@ -392,7 +392,7 @@
 	align-items: center;
 	padding: 0.6rem 0.75rem;
 	cursor: pointer;
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	transition: all 0.15s;
 	gap: 0.5rem;
 }
@@ -468,7 +468,7 @@
 .macros-edit-panel {
 	background: var(--surface-1);
 	border: 1px solid var(--border-color);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	padding: 0.75rem;
 	margin-left: 0;
 }
@@ -491,7 +491,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	padding: 0.25rem 0.5rem;
@@ -588,10 +588,10 @@
 }
 
 .new-unit-modal {
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
-	border-radius: 8px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	border-radius: var(--radius-sm);
+	box-shadow: var(--shadow-lg);
 	margin-top: 0.5rem;
 }
 
@@ -672,7 +672,7 @@
 	margin-bottom: 1rem;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
 	.ingredients-table-header {
 		display: none;
 	}
@@ -682,6 +682,6 @@
 		gap: 0.5rem;
 		padding: 0.75rem;
 		background: var(--surface-1);
-		border-radius: 8px;
+		border-radius: var(--radius-sm);
 	}
 }

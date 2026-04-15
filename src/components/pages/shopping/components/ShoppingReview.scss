@@ -1,5 +1,5 @@
-.shopping-review {
-	background: white;
+﻿.shopping-review {
+	background: var(--surface-0);
 	border-radius: var(--radius);
 	box-shadow: var(--shadow-md);
 	max-width: 600px;
@@ -61,7 +61,7 @@
 	padding: 0.75rem;
 	margin-bottom: 0.5rem;
 	background: var(--surface-1);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	cursor: pointer;
 	transition: all 0.2s;
 	border: 2px solid transparent;
@@ -98,7 +98,7 @@
 .shopping-review-item-qty {
 	font-size: 0.85rem;
 	color: var(--text-secondary);
-	background: white;
+	background: var(--surface-0);
 	padding: 0.25rem 0.5rem;
 	border-radius: 4px;
 }

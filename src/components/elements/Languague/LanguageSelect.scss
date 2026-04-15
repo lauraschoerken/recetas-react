@@ -1,8 +1,8 @@
-:root {
+﻿:root {
 	--csel-radius: 50%;
 	--csel-pad-y: 0.45rem;
 	--csel-pad-x: 0.75rem;
-	--csel-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+	--csel-shadow: var(--shadow-lg);
 
 	--csel-bg: var(--bg);
 	--csel-fg: var(--fg);
@@ -38,7 +38,7 @@
 	cursor: pointer;
 
 	min-height: 36px;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow);
 	width: 2.2rem;
 	height: 2rem;
 
@@ -48,7 +48,7 @@
 		height: auto;
 		min-height: 36px;
 		padding: var(--csel-pad-y) var(--csel-pad-x);
-		border-radius: 12px;
+		border-radius: var(--radius);
 	}
 
 	&:hover {
@@ -101,7 +101,7 @@
 	background: var(--csel-bg);
 	color: var(--csel-fg);
 	border: 1px solid var(--csel-border);
-	border-radius: 12px;
+	border-radius: var(--radius);
 	box-shadow: var(--csel-shadow);
 	padding: 0.35rem;
 	list-style: none;
@@ -112,7 +112,7 @@
 .cselect__option {
 	list-style: none;
 	padding: 0.5rem 0.6rem;
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	cursor: pointer;
 	transition: background 0.15s ease;
 

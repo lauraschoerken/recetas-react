@@ -1,4 +1,4 @@
-@use '@/assets/styles/index' as *;
+﻿@use '@/assets/styles/index' as *;
 
 .main-layout {
 	min-height: 100dvh;
@@ -132,7 +132,7 @@
 	opacity: 0.6;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
 	.header__inner {
 		gap: 1rem;
 		padding-block: 0.6rem;

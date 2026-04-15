@@ -1,4 +1,4 @@
-.day-card {
+﻿.day-card {
 	background-color: var(--card-background);
 	border-radius: var(--radius);
 	box-shadow: var(--shadow);
@@ -21,7 +21,7 @@
 
 .day-card-today .day-card-header {
 	background-color: var(--primary-color);
-	color: white;
+	color: var(--text-inverse);
 }
 
 .day-card-name {
@@ -150,7 +150,7 @@
 
 .day-card-item:hover {
 	transform: translateY(-1px);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow);
 }
 
 .day-card-item[draggable='true']:active {
@@ -219,7 +219,7 @@
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: rgba(0, 0, 0, 0.5);
+	background: var(--overlay-bg);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -227,12 +227,12 @@
 }
 
 .cook-modal {
-	background: white;
+	background: var(--card-background);
 	border-radius: var(--radius);
 	padding: 1.5rem;
 	width: 100%;
 	max-width: 400px;
-	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+	box-shadow: var(--shadow-xl);
 }
 
 .cook-modal h3 {
@@ -283,7 +283,7 @@
 	padding: 0.75rem 1.25rem;
 	border: 1px solid var(--border-color);
 	border-radius: 4px;
-	background: white;
+	background: var(--card-background);
 	cursor: pointer;
 	font-size: 0.875rem;
 }
@@ -297,7 +297,7 @@
 	border: none;
 	border-radius: 4px;
 	background: var(--success-color);
-	color: white;
+	color: var(--text-inverse);
 	cursor: pointer;
 	font-size: 0.875rem;
 	font-weight: 500;
@@ -316,8 +316,8 @@
 	flex: 1;
 	padding: 0.75rem;
 	border: 2px solid var(--border-color);
-	border-radius: 8px;
-	background: white;
+	border-radius: var(--radius-sm);
+	background: var(--card-background);
 	cursor: pointer;
 	font-size: 0.9rem;
 	transition: all 0.2s;
@@ -336,8 +336,8 @@
 
 /* Sections - Separadas visualmente */
 .day-card-section {
-	background-color: white;
-	border-radius: 8px;
+	background-color: var(--text-inverse);
+	border-radius: var(--radius-sm);
 	padding: 0.75rem;
 	margin-bottom: 1rem;
 	border: 1px solid var(--border-color);
@@ -418,5 +418,5 @@
 
 .day-card-consume:hover {
 	background: var(--success-color);
-	color: white;
+	color: var(--text-inverse);
 }

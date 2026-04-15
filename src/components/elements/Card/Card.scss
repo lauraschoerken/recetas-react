@@ -1,4 +1,4 @@
-.demo-card {
+﻿.demo-card {
 	border: 1px solid var(--border);
 	border-radius: var(--card-radius);
 	background: var(--bg);
@@ -14,7 +14,7 @@
 
 	&:hover {
 		transform: translateY(-4px);
-		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+		box-shadow: var(--shadow-lg);
 	}
 
 	h3 {
@@ -69,5 +69,5 @@
 	font-weight: 600;
 	padding: 0.25rem 0.5rem;
 	border-radius: 6px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	box-shadow: var(--shadow);
 }

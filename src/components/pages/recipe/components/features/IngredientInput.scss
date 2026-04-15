@@ -1,4 +1,4 @@
-.ingredient-input {
+﻿.ingredient-input {
 	display: grid;
 	grid-template-columns: 1fr 90px 130px 36px;
 	gap: 0.5rem;
@@ -23,7 +23,7 @@
 }
 
 .ingredient-input .form-input:focus {
-	background: white;
+	background: var(--surface-0);
 	box-shadow: 0 0 0 2px var(--primary-light);
 }
 
@@ -60,7 +60,7 @@
 	color: var(--danger-color);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
 	.ingredient-input {
 		grid-template-columns: 1fr 70px 36px;
 		grid-template-rows: auto auto;

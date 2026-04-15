@@ -1,4 +1,4 @@
-.nutrition-panel {
+﻿.nutrition-panel {
 	background: var(--card-background);
 	border: 1px solid var(--border-color);
 	border-radius: var(--radius-lg);
@@ -41,7 +41,7 @@
 
 .day-btn.active {
 	background: var(--primary-color);
-	color: white;
+	color: var(--text-inverse);
 }
 
 .day-btn.today:not(.active) {
@@ -78,7 +78,7 @@
 
 .summary-toggle.active {
 	background: var(--primary-color);
-	color: white;
+	color: var(--text-inverse);
 	border-color: var(--primary-color);
 }
 
@@ -240,7 +240,7 @@
 	align-items: center;
 	min-width: 70px;
 	padding: 0.75rem;
-	border-radius: 12px;
+	border-radius: var(--radius);
 }
 
 .nutrition-value {
@@ -401,7 +401,7 @@
 	background: var(--surface-1);
 	color: var(--text-primary);
 	border: 1px solid var(--border-color);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 }
 
 .modal-card input::placeholder {
@@ -430,7 +430,7 @@
 	padding: 0.6rem 0.75rem;
 	background: var(--surface-1);
 	border: 1px solid var(--border-color);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 }
 
 .day-modal-plan-name {
@@ -448,7 +448,7 @@
 	margin-bottom: 1rem;
 	padding: 0.85rem;
 	border: 1px solid var(--border-color);
-	border-radius: 12px;
+	border-radius: var(--radius);
 	background: linear-gradient(180deg, var(--surface-1) 0%, var(--surface-0) 100%);
 }
 
@@ -481,7 +481,7 @@
 	background: transparent;
 	color: var(--text-secondary);
 	padding: 0.55rem 0.7rem;
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	font-weight: 600;
 	cursor: pointer;
 	transition: all 0.16s ease;
@@ -489,13 +489,13 @@
 
 .day-modal-tab:hover {
 	color: var(--text-primary);
-	background: rgba(148, 163, 184, 0.16);
+	background: var(--surface-2);
 }
 
 .day-modal-tab.active {
 	background: var(--card-background);
 	color: var(--primary-color);
-	box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+	box-shadow: var(--shadow);
 }
 
 .day-modal-input {
@@ -514,7 +514,7 @@
 	max-height: 240px;
 	overflow-y: auto;
 	border: 1px solid var(--border-color);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	background: var(--surface-0);
 }
 
@@ -608,7 +608,7 @@
 	font-weight: 500;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
 	.nutrition-panel-header {
 		flex-direction: column;
 		align-items: stretch;

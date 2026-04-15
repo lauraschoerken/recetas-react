@@ -1,10 +1,10 @@
-/* Row container */
+﻿/* Row container */
 .day-card-row {
 	display: grid;
 	grid-template-columns: 120px repeat(7, 1fr);
 	gap: 2px;
 	background: var(--border-color);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	overflow: hidden;
 }
 
@@ -30,7 +30,7 @@
 
 /* Day cells */
 .row-day-cell {
-	background: white;
+	background: var(--surface-0);
 	padding: 0.375rem;
 	min-height: 50px;
 	min-width: 0;
@@ -70,7 +70,7 @@
 
 .row-plan-item:hover {
 	border-color: var(--primary-color);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow);
 }
 
 .row-plan-item.is-dish {
@@ -170,7 +170,7 @@
 
 .action-consume:hover {
 	background: var(--success-color);
-	color: white;
+	color: var(--text-inverse);
 }
 
 .action-remove {
@@ -189,7 +189,7 @@
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: rgba(0, 0, 0, 0.5);
+	background: var(--overlay-bg);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -197,12 +197,12 @@
 }
 
 .cook-modal {
-	background: white;
-	border-radius: 12px;
+	background: var(--surface-0);
+	border-radius: var(--radius);
 	padding: 1.5rem;
 	width: 100%;
 	max-width: 400px;
-	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+	box-shadow: var(--shadow-xl);
 }
 
 .cook-modal h3 {
@@ -260,8 +260,8 @@
 	flex: 1;
 	padding: 0.75rem;
 	border: 2px solid var(--border-color);
-	border-radius: 8px;
-	background: white;
+	border-radius: var(--radius-sm);
+	background: var(--surface-0);
 	cursor: pointer;
 	font-size: 0.9rem;
 	transition: all 0.2s;
@@ -289,7 +289,7 @@
 	padding: 0.75rem 1.25rem;
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
-	background: white;
+	background: var(--surface-0);
 	cursor: pointer;
 	font-size: 0.875rem;
 }
@@ -303,7 +303,7 @@
 	border: none;
 	border-radius: 6px;
 	background: var(--success-color);
-	color: white;
+	color: var(--text-inverse);
 	cursor: pointer;
 	font-size: 0.875rem;
 	font-weight: 500;

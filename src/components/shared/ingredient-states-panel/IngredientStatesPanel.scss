@@ -1,7 +1,7 @@
-.ingredient-states-panel {
+﻿.ingredient-states-panel {
 	background: var(--surface-1);
 	border: 1px solid var(--border-color);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	padding: 0.75rem 1rem;
 }
 
@@ -29,7 +29,7 @@
 
 .add-state-btn:hover {
 	background: var(--primary-color);
-	color: white;
+	color: var(--text-inverse);
 }
 
 .states-list {
@@ -44,7 +44,7 @@
 	justify-content: space-between;
 	gap: 0.75rem;
 	padding: 0.5rem 0.75rem;
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
 }
@@ -167,7 +167,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	padding: 0.25rem 0.5rem;
@@ -215,7 +215,7 @@
 }
 
 .btn-outline {
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	color: var(--text-secondary);
 }

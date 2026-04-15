@@ -1,4 +1,4 @@
-.toast-container {
+﻿.toast-container {
 	position: fixed;
 	top: 1rem;
 	right: 1rem;
@@ -100,7 +100,7 @@
 	border-left: 4px solid var(--macro-protein);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30rem) {
 	.toast-container {
 		left: 1rem;
 		right: 1rem;

@@ -1,4 +1,4 @@
-.recipe-detail {
+﻿.recipe-detail {
 	max-width: 800px;
 }
 
@@ -35,9 +35,9 @@
 	border-radius: 999px;
 	font-size: 0.82rem;
 	font-weight: 600;
-	color: var(--primary-700, #163b75);
-	background: var(--primary-50, #e8f0ff);
-	border: 1px solid var(--primary-200, #bfd0f8);
+	color: var(--primary-color);
+	background: var(--primary-light);
+	border: 1px solid var(--primary-color);
 }
 
 .recipe-detail-actions {
@@ -48,7 +48,7 @@
 
 .recipe-threshold-section {
 	background: var(--surface-1);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	padding: 1rem;
 	margin-bottom: 1.5rem;
 }
@@ -82,7 +82,7 @@
 }
 
 .threshold-active {
-	color: var(--success-color, #22c55e);
+	color: var(--success-color);
 	font-weight: 600;
 }
 
@@ -160,7 +160,7 @@
 }
 
 .recipe-component {
-	background: var(--bg-light);
+	background: var(--surface-1);
 	border-radius: var(--radius-sm);
 	padding: 1rem;
 }
@@ -197,7 +197,7 @@
 	gap: 0.75rem;
 	padding: 0.5rem;
 	border-radius: var(--radius-sm);
-	background: white;
+	background: var(--surface-0);
 }
 
 .component-option.default {
@@ -289,9 +289,9 @@
 	flex-direction: column;
 	align-items: center;
 	padding: 0.75rem 0.5rem;
-	background: white;
+	background: var(--surface-0);
 	border-radius: var(--radius-sm);
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+	box-shadow: var(--shadow);
 }
 
 .nutrition-value {
@@ -328,10 +328,10 @@
 	color: var(--text-secondary);
 	text-align: center;
 	padding-top: 0.75rem;
-	border-top: 1px solid rgba(0, 0, 0, 0.08);
+	border-top: 1px solid var(--border-color);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 37.5rem) {
 	.nutrition-grid {
 		grid-template-columns: repeat(3, 1fr);
 	}

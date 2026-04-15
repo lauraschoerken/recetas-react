@@ -1,4 +1,4 @@
-.settings-container {
+﻿.settings-container {
 	max-width: 900px;
 	margin: 0 auto;
 	padding: 2rem;
@@ -39,7 +39,7 @@
 }
 
 .settings-nav-item.active {
-	background: var(--primary-light, rgba(99, 102, 241, 0.1));
+	background: var(--primary-light);
 	color: var(--primary-color);
 	font-weight: 600;
 }
@@ -162,7 +162,7 @@
 .form-input:focus {
 	outline: none;
 	border-color: var(--primary-color);
-	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+	box-shadow: 0 0 0 0.1875rem var(--primary-light);
 }
 
 .goal-options {
@@ -193,7 +193,7 @@
 
 .goal-btn.active {
 	border-color: var(--primary-color);
-	background: rgba(99, 102, 241, 0.1);
+	background: var(--primary-light);
 	color: var(--primary-color);
 }
 
@@ -283,7 +283,7 @@
 	font-size: 1rem;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
 	.settings-layout {
 		flex-direction: column;
 	}
@@ -334,7 +334,7 @@
 	font-size: 0.75rem;
 	font-weight: 600;
 	background: var(--primary-color);
-	color: white;
+	color: var(--text-inverse);
 	text-transform: uppercase;
 }
 
@@ -400,7 +400,7 @@
 		color: var(--text-secondary);
 
 		&:hover {
-			color: var(--color-danger, #e05252);
+			color: var(--danger-color);
 			opacity: 1;
 		}
 	}

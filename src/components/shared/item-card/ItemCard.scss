@@ -1,4 +1,4 @@
-.item-card {
+﻿.item-card {
 	background: linear-gradient(180deg, var(--card-background) 0%, var(--surface-1) 100%);
 	border: 1px solid var(--border-color);
 	border-radius: var(--radius);
@@ -195,7 +195,7 @@
 .btn-icon-primary:hover {
 	transform: translateY(-1px);
 	background: var(--primary-hover);
-	box-shadow: 0 6px 16px rgba(59, 130, 246, 0.2);
+	box-shadow: var(--shadow-lg);
 }
 
 .btn-icon-outline {
@@ -226,7 +226,7 @@
 	background: var(--danger-light);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30rem) {
 	.item-card {
 		max-width: 100%;
 		height: auto;

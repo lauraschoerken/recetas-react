@@ -1,4 +1,4 @@
-/* Styles extracted from AddToWeekModal inline styles (cleaned and variableized) */
+﻿/* Styles extracted from AddToWeekModal inline styles (cleaned and variableized) */
 
 .awm-variants-list {
 	display: flex;
@@ -85,7 +85,7 @@
 
 .awm-component {
 	padding: 0.75rem;
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	transition:
 		background 0.12s,
 		border-color 0.12s;
@@ -132,7 +132,7 @@
 	color: var(--text-primary);
 	border: 1px solid var(--border-color);
 	padding: 0.45rem 0.65rem;
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	box-shadow: none;
 }
 
@@ -142,8 +142,8 @@
 
 .awm-subcomponent-block {
 	padding: 0.9rem;
-	border-radius: 8px;
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--border-color);
 }
 
 .awm-loading {
@@ -165,7 +165,7 @@
 
 .awm-root .btn {
 	padding: 0.45rem 0.9rem;
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	font-weight: 600;
 	min-height: 36px;
 	display: inline-flex;
@@ -200,7 +200,7 @@
 .awm-root .btn.btn-primary {
 	background: var(--primary-color);
 	color: var(--text-inverse);
-	border: 1px solid rgba(0, 0, 0, 0.06);
+	border: 1px solid var(--border-color);
 	box-shadow: var(--shadow);
 }
 
@@ -216,7 +216,7 @@
 .awm-root .plan-type-btn {
 	flex: 1;
 	padding: 0.55rem 0.75rem;
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	background: transparent;
 	border: 1px solid var(--border-color);
 	color: var(--text-primary);

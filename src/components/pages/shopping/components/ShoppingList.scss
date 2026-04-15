@@ -1,4 +1,4 @@
-.shopping-list {
+﻿.shopping-list {
 	max-width: 600px;
 }
 
@@ -37,7 +37,7 @@
 	align-items: center;
 	gap: 0.5rem;
 	padding: 0.5rem 0.75rem;
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	border-radius: 20px;
 	font-size: 0.85rem;
@@ -54,7 +54,7 @@
 	width: 18px;
 	height: 18px;
 	background: var(--success-color);
-	color: white;
+	color: var(--text-inverse);
 	border-radius: 50%;
 	display: flex;
 	align-items: center;

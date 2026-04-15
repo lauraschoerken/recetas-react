@@ -1,4 +1,4 @@
-.home-container {
+﻿.home-container {
 	max-width: 900px;
 	margin: 0 auto;
 }
@@ -127,7 +127,7 @@
 	font-size: 1rem;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
 	.home-tabs {
 		flex-direction: column;
 	}

@@ -1,6 +1,6 @@
-.ingredient-card {
+﻿.ingredient-card {
 	background: var(--card-background);
-	border-radius: 12px;
+	border-radius: var(--radius);
 	padding: 1rem;
 	border: 1px solid var(--border-color);
 	display: flex;
@@ -172,7 +172,7 @@
 
 .conversions-panel {
 	background: var(--surface-1);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	padding: 0.75rem;
 	display: flex;
 	flex-direction: column;
@@ -279,14 +279,14 @@
 }
 
 .threshold-active-badge {
-	color: var(--success-color, #22c55e);
+	color: var(--success-color);
 	font-weight: 600;
 	margin-left: 0.25rem;
 }
 
 .threshold-panel {
 	background: var(--surface-1);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	padding: 0.75rem;
 	display: flex;
 	flex-direction: column;
@@ -422,7 +422,7 @@
 
 .variants-panel {
 	background: var(--surface-1);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	padding: 0.75rem;
 	display: flex;
 	flex-direction: column;
@@ -535,7 +535,7 @@
 	color: var(--danger-color);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30rem) {
 	.ingredient-card {
 		padding: 0.875rem;
 	}

@@ -1,4 +1,4 @@
-@use './_mixins' as *;
+﻿@use './_mixins' as *;
 
 :root {
 	@include theme-light();
@@ -27,6 +27,6 @@ body {
 .theme-toggle {
 	border: 1px solid var(--border);
 	background: var(--btn-bg);
-	border-radius: 12px;
+	border-radius: var(--radius);
 	padding: 0.4rem 0.6rem;
 }

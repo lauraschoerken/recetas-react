@@ -1,4 +1,4 @@
-.user-menu {
+﻿.user-menu {
 	position: relative;
 	display: inline-flex;
 }
@@ -7,7 +7,7 @@
 	border: none;
 	background: var(--btn-bg, var(--bg));
 	color: var(--fg);
-	border-radius: 12px;
+	border-radius: var(--radius);
 	padding: 0.45rem 0.75rem;
 	font-size: 0.95rem;
 	cursor: pointer;
@@ -26,7 +26,7 @@
 	top: calc(100% + 8px);
 	min-width: 160px;
 	background: var(--card-background);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	box-shadow: var(--shadow-lg);
 	padding: 0.5rem 0;
 	z-index: 9999;

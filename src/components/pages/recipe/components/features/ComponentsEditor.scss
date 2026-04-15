@@ -1,4 +1,4 @@
-@use '../../../../../assets/styles/tokens' as t;
+﻿@use '../../../../../assets/styles/tokens' as t;
 
 .components-editor {
 	display: flex;
@@ -218,7 +218,7 @@
 	background: var(--surface-0);
 	border: 1px solid t.$color-slate-200;
 	border-radius: 10px;
-	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+	box-shadow: var(--shadow-lg);
 	list-style: none;
 	margin: 6px 0 0;
 	padding: t.$space-2;
@@ -352,7 +352,7 @@
 	grid-column: 1 / -1;
 	background: var(--surface-1);
 	border: 1px solid var(--border-color);
-	border-radius: 8px;
+	border-radius: var(--radius-sm);
 	padding: 0.75rem 1rem;
 	margin-top: 0.25rem;
 }
@@ -378,7 +378,7 @@
 	font-size: 0.75rem;
 	border: 1px solid var(--border-color);
 	border-radius: 4px;
-	background: white;
+	background: var(--surface-0);
 }
 
 .add-state-btn {
@@ -396,7 +396,7 @@
 
 .add-state-btn:hover {
 	background: var(--primary-color);
-	color: white;
+	color: var(--text-inverse);
 }
 
 .conversions-list {
@@ -409,7 +409,7 @@
 }
 
 .conversions-list li {
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	border-radius: 4px;
 	padding: 0.25rem 0.5rem;
@@ -423,7 +423,7 @@
 }
 
 .macros-panel .macro-item {
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	border-radius: 4px;
 	padding: 0.2rem 0.4rem;
@@ -465,7 +465,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
-	background: white;
+	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	padding: 0.25rem 0.5rem;
@@ -552,7 +552,7 @@
 	margin-bottom: 1rem;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
 	.variant-header {
 		flex-wrap: wrap;
 	}

@@ -1,4 +1,4 @@
-.add-home-item-form {
+﻿.add-home-item-form {
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
@@ -128,7 +128,7 @@
 	margin-top: 0.5rem;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30rem) {
 	.quantity-row {
 		grid-template-columns: 1fr 1fr;
 	}
