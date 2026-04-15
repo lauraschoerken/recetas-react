@@ -60,6 +60,10 @@ class HouseholdService {
 		await api.delete(`/household/${householdId}/members/${userId}`)
 	}
 
+	async cancelInvite(householdId: number, inviteId: number): Promise<void> {
+		await api.delete(`/household/${householdId}/invites/${inviteId}`)
+	}
+
 	async leave(householdId: number): Promise<void> {
 		await api.post(`/household/${householdId}/leave`, {})
 	}

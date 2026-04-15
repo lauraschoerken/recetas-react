@@ -94,6 +94,24 @@ export function SettingsContainer() {
 
 	const handleInvite = async () => {
 		if (!inviteEmail.trim() || !household) return
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+		if (!emailRegex.test(inviteEmail.trim())) {
+			toast.error(t('settings.invalidEmail'))
+			return
+		}
+		const emailLower = inviteEmail.trim().toLowerCase()
+		// Comprobar si ya es miembro
+		const isMember = household.members.some((m) => m.user?.email?.toLowerCase() === emailLower)
+		if (isMember) {
+			toast.error(t('settings.alreadyMemberError'))
+			return
+		}
+		// Comprobar si ya hay invitación pendiente
+		const hasInvite = household.invites?.some((inv) => inv.email.toLowerCase() === emailLower)
+		if (hasInvite) {
+			toast.error(t('settings.alreadyInvitedError'))
+			return
+		}
 		try {
 			await householdService.invite(household.id, inviteEmail.trim())
 			setInviteEmail('')
@@ -102,6 +120,25 @@ export function SettingsContainer() {
 			setHousehold(hh)
 		} catch (e: any) {
 			toast.error(e.message || t('settings.errorInviting'))
+		}
+	}
+
+	const handleCancelInvite = async (inviteId: number) => {
+		if (!household) return
+		const ok = await confirm({
+			title: t('settings.cancelInviteTitle'),
+			message: t('settings.cancelInviteMsg'),
+			type: 'danger',
+			confirmText: t('settings.cancelInviteBtn'),
+		})
+		if (!ok) return
+		try {
+			await householdService.cancelInvite(household.id, inviteId)
+			const hh = await householdService.get()
+			setHousehold(hh)
+			toast.success(t('settings.inviteCancelled'))
+		} catch (e: any) {
+			toast.error(e.message || 'Error')
 		}
 	}
 
@@ -391,9 +428,25 @@ export function SettingsContainer() {
 													m.userId !==
 														household.members.find((mm) => mm.role === 'ADMIN')?.userId && (
 														<button
-															className='btn btn-outline btn-sm'
+															className='btn-icon btn-icon--danger'
+															title={t('settings.remove')}
 															onClick={() => handleRemoveMember(m.userId)}>
-															{t('settings.remove')}
+															<svg
+																xmlns='http://www.w3.org/2000/svg'
+																width='16'
+																height='16'
+																viewBox='0 0 24 24'
+																fill='none'
+																stroke='currentColor'
+																strokeWidth='2'
+																strokeLinecap='round'
+																strokeLinejoin='round'>
+																<polyline points='3 6 5 6 21 6' />
+																<path d='M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6' />
+																<path d='M10 11v6' />
+																<path d='M14 11v6' />
+																<path d='M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2' />
+															</svg>
 														</button>
 													)}
 											</div>
@@ -405,8 +458,18 @@ export function SettingsContainer() {
 											<h4>{t('settings.pendingInvites')}</h4>
 											{household.invites.map((inv) => (
 												<div key={inv.id} className='household-invite'>
-													{inv.email} \u2014 {t('settings.expires')}{' '}
-													{new Date(inv.expiresAt).toLocaleDateString()}
+													<span>
+														{inv.email} &mdash; {t('settings.expires')}{' '}
+														{new Date(inv.expiresAt).toLocaleDateString()}
+													</span>
+													{household.myRole === 'ADMIN' && (
+														<button
+															className='btn-icon btn-icon--muted'
+															title={t('settings.cancelInviteBtn')}
+															onClick={() => handleCancelInvite(inv.id)}>
+															{'\u2715'}
+														</button>
+													)}
 												</div>
 											))}
 										</div>
