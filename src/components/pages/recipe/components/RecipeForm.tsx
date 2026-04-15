@@ -78,6 +78,15 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 		customFiber: initialData?.customFiber,
 	})
 
+	// Macros calculados en tiempo real por el NutritionEditor (cooked states)
+	const [liveNutrition, setLiveNutrition] = useState<{
+		calories: number
+		protein: number
+		carbs: number
+		fat: number
+		fiber: number
+	} | null>(null)
+
 	const [ingredients, setIngredients] = useState<IngredientItem[]>(
 		initialData?.ingredients.map((i, idx) => {
 			const variant =
@@ -91,7 +100,7 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 				unit: i.unit,
 				isFromDatabase: true,
 				databaseId: i.id,
-				baseUnit: i.unit as 'g' | 'ml' | undefined,
+				baseUnit: (i.ingredientBaseUnit || i.unit) as 'g' | 'ml' | undefined,
 				conversions: i.conversions,
 				variants: i.variants,
 				variantId: i.variantId || variant?.id,
@@ -273,30 +282,68 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 		})
 	}
 
-	// Usar los macros del backend si están disponibles, si no calcular de ingredientes
-	const displayNutrition =
-		initialData?.nutritionPerServing ||
-		(nutritionSummary.hasData
-			? {
-					calories: Math.round(nutritionSummary.calories / servings),
-					protein: Math.round((nutritionSummary.protein / servings) * 10) / 10,
-					carbs: Math.round((nutritionSummary.carbs / servings) * 10) / 10,
-					fat: Math.round((nutritionSummary.fat / servings) * 10) / 10,
-					fiber: Math.round((nutritionSummary.fiber / servings) * 10) / 10,
-				}
-			: null)
+	// Prioridad: 1) customMacros manuales activos, 2) liveNutrition del NutritionEditor, 3) nutritionPerServing del backend, 4) calculado de ingredientes
+	const displayNutrition = useMemo(() => {
+		if (customMacros.customCalories != null) {
+			return {
+				calories: Math.round((customMacros.customCalories || 0) / servings),
+				protein: Math.round(((customMacros.customProtein || 0) / servings) * 10) / 10,
+				carbs: Math.round(((customMacros.customCarbs || 0) / servings) * 10) / 10,
+				fat: Math.round(((customMacros.customFat || 0) / servings) * 10) / 10,
+				fiber: Math.round(((customMacros.customFiber || 0) / servings) * 10) / 10,
+			}
+		}
+		if (liveNutrition) {
+			return {
+				calories: Math.round(liveNutrition.calories / servings),
+				protein: Math.round((liveNutrition.protein / servings) * 10) / 10,
+				carbs: Math.round((liveNutrition.carbs / servings) * 10) / 10,
+				fat: Math.round((liveNutrition.fat / servings) * 10) / 10,
+				fiber: Math.round((liveNutrition.fiber / servings) * 10) / 10,
+			}
+		}
+		if (initialData?.nutritionPerServing) {
+			return initialData.nutritionPerServing
+		}
+		if (nutritionSummary.hasData) {
+			return {
+				calories: Math.round(nutritionSummary.calories / servings),
+				protein: Math.round((nutritionSummary.protein / servings) * 10) / 10,
+				carbs: Math.round((nutritionSummary.carbs / servings) * 10) / 10,
+				fat: Math.round((nutritionSummary.fat / servings) * 10) / 10,
+				fiber: Math.round((nutritionSummary.fiber / servings) * 10) / 10,
+			}
+		}
+		return null
+	}, [customMacros, liveNutrition, initialData, nutritionSummary, servings])
 
-	const totalNutrition =
-		initialData?.nutrition ||
-		(nutritionSummary.hasData
-			? {
-					calories: nutritionSummary.calories,
-					protein: nutritionSummary.protein,
-					carbs: nutritionSummary.carbs,
-					fat: nutritionSummary.fat,
-					fiber: nutritionSummary.fiber,
-				}
-			: null)
+	const totalNutrition = useMemo(() => {
+		if (customMacros.customCalories != null) {
+			return {
+				calories: customMacros.customCalories || 0,
+				protein: customMacros.customProtein || 0,
+				carbs: customMacros.customCarbs || 0,
+				fat: customMacros.customFat || 0,
+				fiber: customMacros.customFiber || 0,
+			}
+		}
+		if (liveNutrition) {
+			return liveNutrition
+		}
+		if (initialData?.nutrition) {
+			return initialData.nutrition
+		}
+		if (nutritionSummary.hasData) {
+			return {
+				calories: nutritionSummary.calories,
+				protein: nutritionSummary.protein,
+				carbs: nutritionSummary.carbs,
+				fat: nutritionSummary.fat,
+				fiber: nutritionSummary.fiber,
+			}
+		}
+		return null
+	}, [customMacros, liveNutrition, initialData, nutritionSummary])
 
 	// Preparar ingredientes y recetas para NutritionEditor
 	const nutritionIngredients = useMemo(() => {
@@ -310,6 +357,8 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 			cookedVariantId?: number | null
 			cookedVariantName?: string
 			variants?: (typeof ingredients)[0]['variants']
+			baseUnit?: string
+			conversions?: (typeof ingredients)[0]['conversions']
 			source: 'direct' | 'component' | 'recipe'
 			componentName?: string
 			componentIndex?: number
@@ -332,6 +381,8 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 					cookedVariantId: ing.cookedVariantId,
 					cookedVariantName: ing.cookedVariantName,
 					variants: ing.variants,
+					baseUnit: ing.baseUnit,
+					conversions: ing.conversions,
 					source: 'direct',
 				})
 			}
@@ -366,6 +417,7 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 						cookedVariantId: opt.cookedVariantId,
 						cookedVariantName: undefined,
 						variants: opt.ingredientVariants,
+						conversions: opt.ingredientConversions,
 						source: 'component',
 						componentName: comp.name,
 						componentIndex: compIdx,
@@ -393,6 +445,13 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 			customCarbs?: number | null
 			customFat?: number | null
 			customFiber?: number | null
+		}
+		calculatedNutrition?: {
+			calories: number
+			protein: number
+			carbs: number
+			fat: number
+			fiber: number
 		}
 	}) => {
 		const newIngredients = [...ingredients]
@@ -435,6 +494,9 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 		setIngredients(newIngredients)
 		setComponents(newComponents)
 		setCustomMacros(data.customMacros)
+		if (data.calculatedNutrition) {
+			setLiveNutrition(data.calculatedNutrition)
+		}
 	}
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {

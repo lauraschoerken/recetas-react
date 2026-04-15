@@ -1,9 +1,36 @@
-import './NutritionEditor.scss'
+﻿import './NutritionEditor.scss'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { IngredientVariant } from '@/services/recipe'
+import { IngredientVariant, UnitConversion } from '@/services/recipe'
+
+// Convierte cantidad + unidad a gramos usando la tabla de conversiones
+function getGramsFromQuantity(
+	quantity: number,
+	unit: string,
+	baseUnit: string | undefined,
+	conversions: UnitConversion[] | undefined
+): number {
+	const u = unit.toLowerCase().trim()
+	const base = (baseUnit || '').toLowerCase()
+	if (!u || u === base || u === 'g' || u === 'ml') return quantity
+	if (u === 'kg' || u === 'l') return quantity * 1000
+	if (conversions && conversions.length > 0) {
+		const exact = conversions.find((c) => c.unitName.toLowerCase() === u)
+		if (exact) return quantity * exact.gramsPerUnit
+		// Normalizar plural/singular (unidades→unidad, cucharadas→cucharada)
+		const singular = u.endsWith('es') ? u.slice(0, -2) : u.endsWith('s') ? u.slice(0, -1) : null
+		if (singular) {
+			const fuzzy = conversions.find((c) => c.unitName.toLowerCase() === singular)
+			if (fuzzy) return quantity * fuzzy.gramsPerUnit
+		}
+		const plural = u + 's'
+		const fuzzy2 = conversions.find((c) => c.unitName.toLowerCase() === plural)
+		if (fuzzy2) return quantity * fuzzy2.gramsPerUnit
+	}
+	return quantity
+}
 
 interface NutritionIngredient {
 	id: number
@@ -15,6 +42,8 @@ interface NutritionIngredient {
 	cookedVariantId?: number | null
 	cookedVariantName?: string
 	variants?: IngredientVariant[]
+	baseUnit?: string
+	conversions?: UnitConversion[]
 	source: 'direct' | 'component' | 'recipe'
 	componentName?: string
 	componentIndex?: number
@@ -40,11 +69,23 @@ interface IngredientUpdate {
 	optionIndex?: number
 }
 
+interface CalculatedNutritionPayload {
+	calories: number
+	protein: number
+	carbs: number
+	fat: number
+	fiber: number
+}
+
 interface NutritionEditorProps {
 	ingredients: NutritionIngredient[]
 	customMacros: CustomMacros
 	servings: number
-	onChange: (data: { ingredientUpdates: IngredientUpdate[]; customMacros: CustomMacros }) => void
+	onChange: (data: {
+		ingredientUpdates: IngredientUpdate[]
+		customMacros: CustomMacros
+		calculatedNutrition: CalculatedNutritionPayload
+	}) => void
 }
 
 interface CalculatedNutrition {
@@ -65,12 +106,15 @@ export function NutritionEditor({
 	const [useCustomMacros, setUseCustomMacros] = useState(customMacros.customCalories != null)
 	const [localCustomMacros, setLocalCustomMacros] = useState<CustomMacros>(customMacros)
 	const [cookedVariants, setCookedVariants] = useState<Record<number, number | null>>({})
+	// Guard para emitir onChange solo una vez tras la inicialización de cookedVariants
+	const hasEmittedInitialRef = useRef(false)
 
 	// Crear un key único para detectar cambios en la estructura de ingredients
 	const ingredientsKey = ingredients.map((i) => `${i.id}-${i.name}`).join('|')
 
 	useEffect(() => {
 		// Inicializar cookedVariants cuando cambia la estructura de ingredients
+		hasEmittedInitialRef.current = false
 		const initial: Record<number, number | null> = {}
 		ingredients.forEach((ing, idx) => {
 			initial[idx] = ing.cookedVariantId || null
@@ -82,6 +126,15 @@ export function NutritionEditor({
 		setUseCustomMacros(customMacros.customCalories != null)
 		setLocalCustomMacros(customMacros)
 	}, [customMacros])
+
+	// Emitir calculatedNutrition al padre en cuanto cookedVariants se inicializa
+	useEffect(() => {
+		if (hasEmittedInitialRef.current) return
+		if (ingredients.length === 0) return
+		if (Object.keys(cookedVariants).length === 0) return
+		hasEmittedInitialRef.current = true
+		onChange(buildPayload(cookedVariants, useCustomMacros ? localCustomMacros : {}))
+	}, [cookedVariants]) // eslint-disable-line react-hooks/exhaustive-deps
 
 	const calculatedNutrition = useMemo<CalculatedNutrition>(() => {
 		let calories = 0,
@@ -112,13 +165,15 @@ export function NutritionEditor({
 				: originalVariant
 
 			if (selectedVariant) {
-				// Calcular la cantidad convertida usando los factores de peso
+				// 1. Convertir cantidad a gramos usando las conversiones de unidad
+				const gramsRaw = getGramsFromQuantity(ing.quantity, ing.unit, ing.baseUnit, ing.conversions)
+				// 2. Aplicar weightFactor: gramos crudos → gramos cocinados
 				const originalFactor = originalVariant?.weightFactor || 1
 				const selectedFactor = selectedVariant.weightFactor || 1
-				const convertedQuantity = (ing.quantity / originalFactor) * selectedFactor
+				const convertedGrams = (gramsRaw / originalFactor) * selectedFactor
 
-				// Calcular macros con la cantidad convertida
-				const factor = convertedQuantity / 100
+				// 3. Calcular macros sobre gramos cocinados
+				const factor = convertedGrams / 100
 				calories += (selectedVariant.calories || 0) * factor
 				protein += (selectedVariant.protein || 0) * factor
 				carbs += (selectedVariant.carbs || 0) * factor
@@ -136,6 +191,12 @@ export function NutritionEditor({
 		}
 	}, [ingredients, cookedVariants])
 
+	const buildPayload = (variants: Record<number, number | null>, macros: CustomMacros) => ({
+		ingredientUpdates: buildUpdates(variants),
+		customMacros: macros,
+		calculatedNutrition,
+	})
+
 	const buildUpdates = (variants: Record<number, number | null>): IngredientUpdate[] => {
 		return Object.entries(variants).map(([idx, vid]) => {
 			const ing = ingredients[parseInt(idx)]
@@ -152,28 +213,18 @@ export function NutritionEditor({
 	const handleCookedVariantChange = (index: number, variantId: number | null) => {
 		const newCookedVariants = { ...cookedVariants, [index]: variantId }
 		setCookedVariants(newCookedVariants)
-
-		onChange({
-			ingredientUpdates: buildUpdates(newCookedVariants),
-			customMacros: useCustomMacros ? localCustomMacros : {},
-		})
+		onChange(buildPayload(newCookedVariants, useCustomMacros ? localCustomMacros : {}))
 	}
 
 	const handleCustomMacroChange = (field: keyof CustomMacros, value: string) => {
 		const numValue = value === '' ? null : parseFloat(value)
 		const newMacros = { ...localCustomMacros, [field]: numValue }
 		setLocalCustomMacros(newMacros)
-
-		onChange({
-			ingredientUpdates: buildUpdates(cookedVariants),
-			customMacros: useCustomMacros ? newMacros : {},
-		})
+		onChange(buildPayload(cookedVariants, useCustomMacros ? newMacros : {}))
 	}
 
 	const handleToggleCustomMacros = (enabled: boolean) => {
 		setUseCustomMacros(enabled)
-
-		const updates = buildUpdates(cookedVariants)
 
 		if (enabled && localCustomMacros.customCalories == null) {
 			const prefilledMacros = {
@@ -184,12 +235,9 @@ export function NutritionEditor({
 				customFiber: calculatedNutrition.fiber,
 			}
 			setLocalCustomMacros(prefilledMacros)
-			onChange({ ingredientUpdates: updates, customMacros: prefilledMacros })
+			onChange(buildPayload(cookedVariants, prefilledMacros))
 		} else {
-			onChange({
-				ingredientUpdates: updates,
-				customMacros: enabled ? localCustomMacros : {},
-			})
+			onChange(buildPayload(cookedVariants, enabled ? localCustomMacros : {}))
 		}
 	}
 
@@ -236,15 +284,6 @@ export function NutritionEditor({
 								{directIngredients.map((ing) => {
 									const idx = ingredients.indexOf(ing)
 									const selectedVariantId = cookedVariants[idx] || ing.variantId
-									const originalVariant =
-										ing.variants?.find((v) => v.id === ing.variantId) ||
-										ing.variants?.find((v) => v.isDefault) ||
-										ing.variants?.[0]
-									const selectedVariant = ing.variants?.find((v) => v.id === selectedVariantId)
-									const originalFactor = originalVariant?.weightFactor || 1
-									const selectedFactor = selectedVariant?.weightFactor || 1
-									const convertedQty = Math.round((ing.quantity / originalFactor) * selectedFactor)
-									const showConversion = selectedFactor !== originalFactor
 
 									return (
 										<div key={idx} className='nutrition-ingredient-row'>
@@ -253,11 +292,6 @@ export function NutritionEditor({
 												<span className='nutrition-ingredient-name'>{ing.name}</span>
 												<span className='nutrition-ingredient-qty'>
 													{ing.quantity} {ing.unit}
-													{showConversion && (
-														<span className='nutrition-converted-qty'>
-															→ {convertedQty} {ing.unit} {selectedVariant?.name?.toLowerCase()}
-														</span>
-													)}
 												</span>
 											</div>
 											<div className='nutrition-ingredient-variant'>
@@ -329,19 +363,6 @@ export function NutritionEditor({
 													{options.map((ing) => {
 														const idx = ingredients.indexOf(ing)
 														const selectedVariantId = cookedVariants[idx] || ing.variantId
-														const originalVariant =
-															ing.variants?.find((v) => v.id === ing.variantId) ||
-															ing.variants?.find((v) => v.isDefault) ||
-															ing.variants?.[0]
-														const selectedVariant = ing.variants?.find(
-															(v) => v.id === selectedVariantId
-														)
-														const originalFactor = originalVariant?.weightFactor || 1
-														const selectedFactor = selectedVariant?.weightFactor || 1
-														const convertedQty = Math.round(
-															(ing.quantity / originalFactor) * selectedFactor
-														)
-														const showConversion = selectedFactor !== originalFactor
 
 														return (
 															<div
@@ -358,12 +379,6 @@ export function NutritionEditor({
 																	<span className='nutrition-ingredient-name'>{ing.name}</span>
 																	<span className='nutrition-ingredient-qty'>
 																		{ing.quantity} {ing.unit}
-																		{showConversion && (
-																			<span className='nutrition-converted-qty'>
-																				→ {convertedQty} {ing.unit}{' '}
-																				{selectedVariant?.name?.toLowerCase()}
-																			</span>
-																		)}
 																	</span>
 																</div>
 																<div className='nutrition-ingredient-variant'>

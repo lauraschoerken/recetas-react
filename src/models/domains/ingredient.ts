@@ -22,6 +22,7 @@ export interface Ingredient {
 	id: number
 	name: string
 	unit: string
+	ingredientBaseUnit?: string
 	quantity?: number
 	preferredUnit?: string | null
 	defaultLocation?: string | null
