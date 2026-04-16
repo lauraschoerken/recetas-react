@@ -28,6 +28,7 @@ interface HomeItemCardProps {
 	onAddToWeekPlan?: (item: HomeItem) => void
 	showLocation?: boolean
 	minServings?: number
+	minQuantity?: number
 }
 
 export function HomeItemCard({
@@ -38,6 +39,7 @@ export function HomeItemCard({
 	onAddToWeekPlan,
 	showLocation,
 	minServings,
+	minQuantity,
 }: HomeItemCardProps) {
 	const { t } = useTranslation()
 	const [isEditing, setIsEditing] = useState(false)
@@ -98,6 +100,15 @@ export function HomeItemCard({
 
 	return (
 		<div className={`home-item-card ${isRecipe ? 'is-recipe' : ''}`}>
+			{/* Below-minimum indicator — top-right corner icon with tooltip */}
+			{((isRecipe &&
+				minServings !== undefined &&
+				(item.projectedTotal ?? item.quantity) < minServings) ||
+				(isIngredient && minQuantity !== undefined && item.quantity < minQuantity)) && (
+				<span className='home-item-below-min' title={t('homePage.belowMinimum')}>
+					⚠️
+				</span>
+			)}
 			<div className='home-item-main'>
 				<div className='home-item-info'>
 					<span className='home-item-name'>{name}</span>
@@ -111,13 +122,6 @@ export function HomeItemCard({
 					{isIngredient && currentVariant && (
 						<span className='home-item-variant-badge'>{currentVariant.name}</span>
 					)}
-					{isRecipe &&
-						minServings !== undefined &&
-						(item.projectedTotal ?? item.quantity) < minServings && (
-							<span className='home-item-below-min' title={t('homePage.belowMinimum')}>
-								⚠️ {t('homePage.belowMinimum')}
-							</span>
-						)}
 				</div>
 
 				{isEditing ? (

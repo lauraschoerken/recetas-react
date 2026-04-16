@@ -67,7 +67,7 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 
 	useEffect(() => {
 		if (itemType === 'recipe') {
-			api.get<Recipe[]>('/recipes').then(setRecipes)
+			api.get<{ data: Recipe[] }>('/recipes?pageSize=1000').then((res) => setRecipes(res.data))
 			setUnit('porciones')
 		} else {
 			setUnit('unidad')

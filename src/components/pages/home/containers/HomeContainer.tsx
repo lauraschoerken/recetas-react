@@ -26,6 +26,7 @@ export function HomeContainer() {
 	const [items, setItems] = useState<HomeItem[]>([])
 	const [loading, setLoading] = useState(true)
 	const [recipeThresholds, setRecipeThresholds] = useState<Map<number, number>>(new Map())
+	const [ingredientThresholds, setIngredientThresholds] = useState<Map<number, number>>(new Map())
 	const [searchParams, setSearchParams] = useSearchParams()
 	const [showAddForm, setShowAddForm] = useState(false)
 	const [searchQuery, setSearchQuery] = useState('')
@@ -40,6 +41,12 @@ export function HomeContainer() {
 			.getRecipeThresholds()
 			.then((thresholds) => {
 				setRecipeThresholds(new Map(thresholds.map((t) => [t.recipeId, t.minServings])))
+			})
+			.catch(() => {})
+		alertService
+			.getIngredientThresholds()
+			.then((thresholds) => {
+				setIngredientThresholds(new Map(thresholds.map((t) => [t.ingredientId, t.minQuantity])))
 			})
 			.catch(() => {})
 	}, [])
@@ -234,6 +241,9 @@ export function HomeContainer() {
 								onAddToWeekPlan={handleOpenWeekPlan}
 								showLocation
 								minServings={item.recipe?.id ? recipeThresholds.get(item.recipe.id) : undefined}
+								minQuantity={
+									item.ingredient?.id ? ingredientThresholds.get(item.ingredient.id) : undefined
+								}
 							/>
 						))}
 					</div>
@@ -296,6 +306,9 @@ export function HomeContainer() {
 									onCook={handleCook}
 									onAddToWeekPlan={handleOpenWeekPlan}
 									minServings={item.recipe?.id ? recipeThresholds.get(item.recipe.id) : undefined}
+									minQuantity={
+										item.ingredient?.id ? ingredientThresholds.get(item.ingredient.id) : undefined
+									}
 								/>
 							))}
 						</div>
