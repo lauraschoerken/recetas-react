@@ -65,6 +65,16 @@
 	flex-shrink: 0;
 }
 
+.home-item-below-min {
+	font-size: 0.7rem;
+	padding: 0.15rem 0.4rem;
+	background: var(--warning-color);
+	color: var(--warning-fg);
+	border-radius: 6px;
+	font-weight: 600;
+	flex-shrink: 0;
+}
+
 .home-item-quantity {
 	display: flex;
 	align-items: baseline;

@@ -27,6 +27,7 @@ interface HomeItemCardProps {
 	onCook?: (id: number, result: { success: boolean; message: string }) => void
 	onAddToWeekPlan?: (item: HomeItem) => void
 	showLocation?: boolean
+	minServings?: number
 }
 
 export function HomeItemCard({
@@ -36,6 +37,7 @@ export function HomeItemCard({
 	onCook,
 	onAddToWeekPlan,
 	showLocation,
+	minServings,
 }: HomeItemCardProps) {
 	const { t } = useTranslation()
 	const [isEditing, setIsEditing] = useState(false)
@@ -109,6 +111,13 @@ export function HomeItemCard({
 					{isIngredient && currentVariant && (
 						<span className='home-item-variant-badge'>{currentVariant.name}</span>
 					)}
+					{isRecipe &&
+						minServings !== undefined &&
+						(item.projectedTotal ?? item.quantity) < minServings && (
+							<span className='home-item-below-min' title={t('homePage.belowMinimum')}>
+								⚠️ {t('homePage.belowMinimum')}
+							</span>
+						)}
 				</div>
 
 				{isEditing ? (

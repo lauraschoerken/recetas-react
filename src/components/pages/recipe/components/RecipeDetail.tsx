@@ -182,8 +182,10 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 		try {
 			await alertService.setRecipeThreshold({ recipeId: recipe.id, minServings: min })
 			setHasThreshold(true)
+			toast.success(t('recipes.thresholdSaved'))
 		} catch (error) {
 			console.error('Error saving threshold:', error)
+			toast.error(t('recipes.thresholdSaveError'))
 		}
 	}
 
@@ -192,8 +194,10 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 			await alertService.deleteRecipeThreshold(recipe.id)
 			setMinServings('')
 			setHasThreshold(false)
+			toast.success(t('recipes.thresholdRemoved'))
 		} catch (error) {
 			console.error('Error deleting threshold:', error)
+			toast.error(t('recipes.thresholdSaveError'))
 		}
 	}
 

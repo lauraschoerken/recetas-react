@@ -1,3 +1,4 @@
+import './RecipeDetail.scss'
 import './RecipeForm.scss'
 
 import { useMemo, useState } from 'react'
@@ -52,9 +53,23 @@ interface RecipeFormProps {
 	onCancel: () => void
 	loading: boolean
 	error: string | null
+	thresholdConfig?: {
+		minServings: string
+		hasThreshold: boolean
+		onChange: (value: string) => void
+		onSave: () => void
+		onDelete: () => void
+	}
 }
 
-export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: RecipeFormProps) {
+export function RecipeForm({
+	initialData,
+	onSubmit,
+	onCancel,
+	loading,
+	error,
+	thresholdConfig,
+}: RecipeFormProps) {
 	const { t } = useTranslation()
 	const [activeTab, setActiveTab] = useState<TabId>('recipe')
 	const [title, setTitle] = useState(initialData?.title || '')
@@ -585,6 +600,47 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 						/>
 					</div>
 
+					{thresholdConfig && (
+						<div className='form-group'>
+							<label className='form-label'>
+								{t('recipes.minStock')}{' '}
+								{thresholdConfig.hasThreshold && <span className='threshold-active'>✓</span>}
+							</label>
+							<p className='form-hint' style={{ marginBottom: '0.4rem' }}>
+								{t('recipes.minStockHint')}
+							</p>
+							<div className='threshold-form'>
+								<input
+									type='number'
+									className='form-input form-input-sm'
+									placeholder={t('recipes.minServings')}
+									value={thresholdConfig.minServings}
+									onChange={(e) => thresholdConfig.onChange(e.target.value)}
+									min={0}
+									step={1}
+								/>
+								<span className='threshold-unit'>{t('recipes.portionsUnit')}</span>
+								<button
+									type='button'
+									className='btn btn-sm btn-primary'
+									onClick={thresholdConfig.onSave}
+									disabled={
+										!thresholdConfig.minServings || Number(thresholdConfig.minServings) <= 0
+									}>
+									{t('recipes.saveThreshold')}
+								</button>
+								{thresholdConfig.hasThreshold && (
+									<button
+										type='button'
+										className='btn btn-sm btn-outline btn-danger'
+										onClick={thresholdConfig.onDelete}>
+										{t('recipes.removeThreshold')}
+									</button>
+								)}
+							</div>
+						</div>
+					)}
+
 					<div className='form-group'>
 						<label className='form-label'>{t('recipes.timeLabel')}</label>
 						<input
@@ -611,6 +667,19 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 					</div>
 
 					<div className='form-group'>
+						<label className='form-label'>{t('recipes.saveInLabel')}</label>
+						<select
+							className='form-input'
+							value={defaultLocation}
+							onChange={(e) => setDefaultLocation(e.target.value)}>
+							<option value=''>{t('recipes.noPreference')}</option>
+							<option value='nevera'>{t('homePage.fridge')}</option>
+							<option value='congelador'>{t('homePage.freezer')}</option>
+							<option value='despensa'>{t('homePage.pantry')}</option>
+						</select>
+					</div>
+
+					<div className='form-group'>
 						<label className='form-label'>{t('recipes.visibilityLabel')}</label>
 						<div className={`visibility-box ${isPublic ? 'is-public' : 'is-private'}`}>
 							<label className='toggle-container'>
@@ -625,19 +694,6 @@ export function RecipeForm({ initialData, onSubmit, onCancel, loading, error }: 
 								{isPublic ? t('recipes.publicHint') : t('recipes.privateHint')}
 							</span>
 						</div>
-					</div>
-
-					<div className='form-group'>
-						<label className='form-label'>{t('recipes.saveInLabel')}</label>
-						<select
-							className='form-input'
-							value={defaultLocation}
-							onChange={(e) => setDefaultLocation(e.target.value)}>
-							<option value=''>{t('recipes.noPreference')}</option>
-							<option value='nevera'>{t('homePage.fridge')}</option>
-							<option value='congelador'>{t('homePage.freezer')}</option>
-							<option value='despensa'>{t('homePage.pantry')}</option>
-						</select>
 					</div>
 				</div>
 			</div>

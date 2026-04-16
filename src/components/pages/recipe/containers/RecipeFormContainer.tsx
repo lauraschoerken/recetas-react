@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
+import { alertService } from '@/services/alert'
 import { CreateRecipeData, Recipe, recipeService } from '@/services/recipe'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
@@ -16,12 +17,24 @@ export function RecipeFormContainer() {
 	const [loading, setLoading] = useState(false)
 	const [initialLoading, setInitialLoading] = useState(!!id)
 	const [error, setError] = useState<string | null>(null)
+	const [minServings, setMinServings] = useState('')
+	const [hasThreshold, setHasThreshold] = useState(false)
 
 	const isEditing = !!id
 
 	useEffect(() => {
 		if (id) {
 			loadRecipe()
+			alertService
+				.getRecipeThresholds()
+				.then((thresholds) => {
+					const match = thresholds.find((thr) => thr.recipeId === parseInt(id))
+					if (match) {
+						setMinServings(match.minServings.toString())
+						setHasThreshold(true)
+					}
+				})
+				.catch(() => {})
 		}
 	}, [id])
 
@@ -33,6 +46,30 @@ export function RecipeFormContainer() {
 			setError(t('recipes.notFound'))
 		} finally {
 			setInitialLoading(false)
+		}
+	}
+
+	const handleSaveThreshold = async () => {
+		const min = Number(minServings)
+		if (!min || min <= 0 || !id) return
+		try {
+			await alertService.setRecipeThreshold({ recipeId: parseInt(id), minServings: min })
+			setHasThreshold(true)
+			toast.success(t('recipes.thresholdSaved'))
+		} catch {
+			toast.error(t('recipes.thresholdSaveError'))
+		}
+	}
+
+	const handleDeleteThreshold = async () => {
+		if (!id) return
+		try {
+			await alertService.deleteRecipeThreshold(parseInt(id))
+			setMinServings('')
+			setHasThreshold(false)
+			toast.success(t('recipes.thresholdRemoved'))
+		} catch {
+			toast.error(t('recipes.thresholdSaveError'))
 		}
 	}
 
@@ -77,6 +114,17 @@ export function RecipeFormContainer() {
 					onCancel={handleCancel}
 					loading={loading}
 					error={error}
+					thresholdConfig={
+						isEditing
+							? {
+									minServings,
+									hasThreshold,
+									onChange: setMinServings,
+									onSave: handleSaveThreshold,
+									onDelete: handleDeleteThreshold,
+								}
+							: undefined
+					}
 				/>
 			</div>
 		</>

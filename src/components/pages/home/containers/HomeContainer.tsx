@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 import { CreateHomeItemData, HomeItem, HomeLocation, homeService } from '@/services/home'
 import { shoppingService } from '@/services/shopping'
+import { alertService } from '@/services/alert'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import { getStoredPageSize, paginate } from '@/utils/pagination/usePagination'
 
@@ -24,6 +25,7 @@ export function HomeContainer() {
 	]
 	const [items, setItems] = useState<HomeItem[]>([])
 	const [loading, setLoading] = useState(true)
+	const [recipeThresholds, setRecipeThresholds] = useState<Map<number, number>>(new Map())
 	const [searchParams, setSearchParams] = useSearchParams()
 	const [showAddForm, setShowAddForm] = useState(false)
 	const [searchQuery, setSearchQuery] = useState('')
@@ -34,6 +36,12 @@ export function HomeContainer() {
 
 	useEffect(() => {
 		initializeHome()
+		alertService
+			.getRecipeThresholds()
+			.then((thresholds) => {
+				setRecipeThresholds(new Map(thresholds.map((t) => [t.recipeId, t.minServings])))
+			})
+			.catch(() => {})
 	}, [])
 
 	const initializeHome = async () => {
@@ -225,6 +233,7 @@ export function HomeContainer() {
 								onCook={handleCook}
 								onAddToWeekPlan={handleOpenWeekPlan}
 								showLocation
+								minServings={item.recipe?.id ? recipeThresholds.get(item.recipe.id) : undefined}
 							/>
 						))}
 					</div>
@@ -286,6 +295,7 @@ export function HomeContainer() {
 									onDelete={handleDelete}
 									onCook={handleCook}
 									onAddToWeekPlan={handleOpenWeekPlan}
+									minServings={item.recipe?.id ? recipeThresholds.get(item.recipe.id) : undefined}
 								/>
 							))}
 						</div>
