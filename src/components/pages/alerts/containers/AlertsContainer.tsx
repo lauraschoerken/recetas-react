@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import { alertService, StockAlert } from '@/services/alert'
 import { useDialog } from '@/utils/dialog/DialogContext'
+import { getStoredSnoozeDuration } from '@/utils/pagination/usePagination'
 
 export function AlertsContainer() {
 	const { t } = useTranslation()
@@ -34,7 +35,7 @@ export function AlertsContainer() {
 			await alertService.updateAlert(alert.id, {
 				status: action,
 				...(action === 'SNOOZED'
-					? { snoozedUntil: new Date(Date.now() + 86400000).toISOString() }
+					? { snoozedUntil: new Date(Date.now() + getStoredSnoozeDuration()).toISOString() }
 					: {}),
 			})
 			toast.success(

@@ -12,6 +12,7 @@ import {
 import { Link } from 'react-router-dom'
 
 import { alertService, StockAlert } from '@/services/alert'
+import { getStoredSnoozeDuration } from '@/utils/pagination/usePagination'
 
 export function AlertBell() {
 	const { t } = useTranslation()
@@ -61,7 +62,7 @@ export function AlertBell() {
 			await alertService.updateAlert(alert.id, {
 				status: action,
 				...(action === 'SNOOZED'
-					? { snoozedUntil: new Date(Date.now() + 86400000).toISOString() }
+					? { snoozedUntil: new Date(Date.now() + getStoredSnoozeDuration()).toISOString() }
 					: {}),
 			})
 			setAlerts((prev) => prev.filter((a) => a.id !== alert.id))

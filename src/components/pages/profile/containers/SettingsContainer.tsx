@@ -10,9 +10,12 @@ import {
 	getStoredPageSize,
 	setStoredPageSize,
 	PAGE_SIZE_OPTIONS,
+	getStoredSnoozeDuration,
+	setStoredSnoozeDuration,
+	SNOOZE_OPTIONS,
 } from '@/utils/pagination/usePagination'
 
-type SettingsSection = 'household' | 'alerts' | 'pdf' | 'backup' | 'pagination'
+type SettingsSection = 'household' | 'alerts' | 'pdf' | 'backup' | 'display'
 
 export function SettingsContainer() {
 	const { t } = useTranslation()
@@ -25,10 +28,11 @@ export function SettingsContainer() {
 		{ id: 'alerts', label: t('settings.alerts'), icon: '🔔' },
 		{ id: 'pdf', label: t('settings.pdfSettings'), icon: '📄' },
 		{ id: 'backup', label: t('settings.importExport'), icon: '💾' },
-		{ id: 'pagination', label: t('settings.paginationSection'), icon: '📋' },
+		{ id: 'display', label: t('settings.displaySection'), icon: '🎛️' },
 	]
 
 	const [pageSize, setPageSizeState] = useState(getStoredPageSize)
+	const [snoozeDuration, setSnoozeDurationState] = useState(getStoredSnoozeDuration)
 
 	// Household state
 	const [household, setHousehold] = useState<Household | null>(null)
@@ -599,10 +603,10 @@ export function SettingsContainer() {
 						</div>
 					)}
 
-					{activeSection === 'pagination' && (
+					{activeSection === 'display' && (
 						<div className='settings-card'>
-							<h2 className='settings-card-title'>{t('settings.paginationSection')}</h2>
-							<p className='settings-card-description'>{t('settings.paginationSectionDesc')}</p>
+							<h2 className='settings-card-title'>{t('settings.displaySection')}</h2>
+							<p className='settings-card-description'>{t('settings.displaySectionDesc')}</p>
 
 							<div className='form-group' style={{ maxWidth: '16rem', marginTop: '1rem' }}>
 								<label className='form-label'>{t('settings.itemsPerPage')}</label>
@@ -618,6 +622,25 @@ export function SettingsContainer() {
 												toast.success(t('settings.configSaved'))
 											}}>
 											{size}
+										</button>
+									))}
+								</div>
+							</div>
+
+							<div className='form-group' style={{ marginTop: '1.5rem' }}>
+								<label className='form-label'>{t('settings.snoozeDuration')}</label>
+								<div className='page-size-options'>
+									{SNOOZE_OPTIONS.map((opt) => (
+										<button
+											key={opt.value}
+											type='button'
+											className={`page-size-btn ${snoozeDuration === opt.value ? 'active' : ''}`}
+											onClick={() => {
+												setStoredSnoozeDuration(opt.value)
+												setSnoozeDurationState(opt.value)
+												toast.success(t('settings.configSaved'))
+											}}>
+											{t(opt.labelKey)}
 										</button>
 									))}
 								</div>
