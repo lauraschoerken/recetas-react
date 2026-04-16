@@ -781,12 +781,6 @@ export function IngredientListContainer() {
 
 			<div className='ingredient-stats'>
 				<span>{t('ingredients.count', { count: total })}</span>
-				<span className='ingredient-stats-separator'>|</span>
-				<span>
-					{t('ingredients.withNutrition', {
-						count: ingredients.filter((i) => i.calories != null).length,
-					})}
-				</span>
 			</div>
 
 			{loading ? (
