@@ -16,7 +16,18 @@ export type {
 
 export const recipeService = {
 	async getAll(): Promise<Recipe[]> {
-		return api.get<Recipe[]>('/recipes')
+		const result = await api.get<{ data: Recipe[]; total: number }>('/recipes')
+		return result.data
+	},
+
+	async getAllPaginated(params: {
+		page: number
+		pageSize: number
+		search?: string
+	}): Promise<{ data: Recipe[]; total: number }> {
+		const q = new URLSearchParams({ page: String(params.page), pageSize: String(params.pageSize) })
+		if (params.search) q.set('search', params.search)
+		return api.get<{ data: Recipe[]; total: number }>(`/recipes?${q}`)
 	},
 
 	async getById(id: number): Promise<Recipe> {

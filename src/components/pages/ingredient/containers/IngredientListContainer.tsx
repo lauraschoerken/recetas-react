@@ -1,13 +1,16 @@
 import './IngredientListContainer.scss'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 
 import { CloseIcon } from '@/components/shared/icons'
+import { Pagination } from '@/components/shared/pagination/Pagination'
 import { alertService } from '@/services/alert'
 import { Ingredient, ingredientService, UpdateIngredientData } from '@/services/ingredient'
 import { shoppingService } from '@/services/shopping'
 import { useDialog } from '@/utils/dialog/DialogContext'
+import { getStoredPageSize } from '@/utils/pagination/usePagination'
 
 import { IngredientCard } from '../components/IngredientCard'
 
@@ -40,9 +43,14 @@ export function IngredientListContainer() {
 	const { confirm, toast } = useDialog()
 	const [ingredients, setIngredients] = useState<Ingredient[]>([])
 	const [loading, setLoading] = useState(true)
+	const [total, setTotal] = useState(0)
+	const [searchParams, setSearchParams] = useSearchParams()
+	const [pageSize] = useState(getStoredPageSize)
 	const [showAddForm, setShowAddForm] = useState(false)
-	const [searchTerm, setSearchTerm] = useState('')
 	const [addMode, setAddMode] = useState<'single' | 'multiple'>('single')
+
+	const search = searchParams.get('q') || ''
+	const currentPage = parseInt(searchParams.get('page') || '1', 10)
 
 	// Estado para modo simple (un ingrediente)
 	const [newName, setNewName] = useState('')
@@ -81,20 +89,26 @@ export function IngredientListContainer() {
 	)
 	const [addingToWeekPlan, setAddingToWeekPlan] = useState(false)
 
-	useEffect(() => {
-		loadIngredients()
-	}, [])
-
-	const loadIngredients = async () => {
+	const loadIngredients = useCallback(async () => {
+		setLoading(true)
 		try {
-			const data = await ingredientService.getAll()
-			setIngredients(data)
+			const result = await ingredientService.getAllPaginated({
+				page: currentPage,
+				pageSize,
+				search,
+			})
+			setIngredients(result.data)
+			setTotal(result.total)
 		} catch (error) {
 			console.error('Error loading ingredients:', error)
 		} finally {
 			setLoading(false)
 		}
-	}
+	}, [currentPage, pageSize, search])
+
+	useEffect(() => {
+		loadIngredients()
+	}, [loadIngredients])
 
 	const getDefaultConversions = (unit: 'g' | 'ml'): NewConversion[] => {
 		if (unit === 'g') {
@@ -282,7 +296,8 @@ export function IngredientListContainer() {
 
 		try {
 			await ingredientService.delete(id)
-			setIngredients(ingredients.filter((ing) => ing.id !== id))
+			setIngredients((prev) => prev.filter((ing) => ing.id !== id))
+			setTotal((prev) => prev - 1)
 			toast.success(t('ingredients.deleted'))
 		} catch (error) {
 			toast.error(t('ingredients.deleteError'))
@@ -419,9 +434,19 @@ export function IngredientListContainer() {
 		}
 	}
 
-	const filteredIngredients = ingredients.filter((ing) =>
-		ing.name.toLowerCase().includes(searchTerm.toLowerCase())
-	)
+	const visibleIngredients = ingredients
+
+	const handleSearchChange = (value: string) => {
+		setSearchParams(
+			(prev) => {
+				const p = new URLSearchParams(prev)
+				p.set('q', value)
+				p.set('page', '1')
+				return p
+			},
+			{ replace: true }
+		)
+	}
 
 	if (loading) {
 		return <div className='loading'>{t('ingredients.loading')}</div>
@@ -742,39 +767,56 @@ export function IngredientListContainer() {
 					type='text'
 					className='form-input search-input'
 					placeholder={t('ingredients.searchPlaceholder')}
-					value={searchTerm}
-					onChange={(e) => setSearchTerm(e.target.value)}
+					value={search}
+					onChange={(e) => handleSearchChange(e.target.value)}
 				/>
 			</div>
 
 			<div className='ingredient-stats'>
-				<span>{t('ingredients.count', { count: filteredIngredients.length })}</span>
+				<span>{t('ingredients.count', { count: total })}</span>
 				<span className='ingredient-stats-separator'>|</span>
 				<span>
 					{t('ingredients.withNutrition', {
-						count: filteredIngredients.filter((i) => i.calories != null).length,
+						count: ingredients.filter((i) => i.calories != null).length,
 					})}
 				</span>
 			</div>
 
-			{filteredIngredients.length === 0 ? (
+			{total === 0 ? (
 				<div className='empty-state'>
 					<p>{t('ingredients.noResults')}</p>
 				</div>
 			) : (
-				<div className='ingredients-grid'>
-					{filteredIngredients.map((ingredient) => (
-						<IngredientCard
-							key={ingredient.id}
-							ingredient={ingredient}
-							onUpdate={handleUpdate}
-							onDelete={handleDelete}
-							onConversionChange={loadIngredients}
-							onAddToShopping={handleAddToShopping}
-							onAddToWeekPlan={handleOpenAddToWeekPlan}
-						/>
-					))}
-				</div>
+				<>
+					<div className='ingredients-grid'>
+						{visibleIngredients.map((ingredient) => (
+							<IngredientCard
+								key={ingredient.id}
+								ingredient={ingredient}
+								onUpdate={handleUpdate}
+								onDelete={handleDelete}
+								onConversionChange={loadIngredients}
+								onAddToShopping={handleAddToShopping}
+								onAddToWeekPlan={handleOpenAddToWeekPlan}
+							/>
+						))}
+					</div>
+					<Pagination
+						currentPage={currentPage}
+						total={total}
+						pageSize={pageSize}
+						onPageChange={(p) =>
+							setSearchParams(
+								(prev) => {
+									const n = new URLSearchParams(prev)
+									n.set('page', String(p))
+									return n
+								},
+								{ replace: true }
+							)
+						}
+					/>
+				</>
 			)}
 
 			{weekPlanIngredient && (

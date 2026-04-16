@@ -624,6 +624,16 @@
 		"joinError": "Error al aceptar invitación",
 		"invalidInvite": "Invitación no válida",
 		"processingInvite": "Procesando invitación...",
-		"loading": "Cargando..."
+		"loading": "Cargando...",
+		"paginationSection": "Paginación",
+		"paginationSectionDesc": "Elige cuántos elementos se muestran por página en recetas, casa e ingredientes.",
+		"itemsPerPage": "Elementos por página"
+	},
+
+	"pagination": {
+		"label": "Paginación",
+		"prev": "Página anterior",
+		"next": "Página siguiente",
+		"info": "Página {{current}} de {{total}}"
 	}
 }

@@ -1,40 +1,51 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
+import { Pagination } from '@/components/shared/pagination/Pagination'
 import { authService } from '@/services/auth'
 import { Recipe, recipeService } from '@/services/recipe'
 import { pdfService } from '@/services/pdf'
 import { useDialog } from '@/utils/dialog/DialogContext'
+import { getStoredPageSize } from '@/utils/pagination/usePagination'
 
 import { RecipeList } from '../components/RecipeList'
 
 export function RecipeListContainer() {
 	const { t } = useTranslation()
 	const navigate = useNavigate()
+	const [searchParams, setSearchParams] = useSearchParams()
 	const { confirm, toast } = useDialog()
 	const [recipes, setRecipes] = useState<Recipe[]>([])
+	const [total, setTotal] = useState(0)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
 	const [modalOpen, setModalOpen] = useState(false)
+	const [pageSize] = useState(getStoredPageSize)
 	const currentUser = authService.getUser()
 
-	useEffect(() => {
-		loadRecipes()
-	}, [])
+	const currentPage = parseInt(searchParams.get('page') || '1', 10)
+	const search = searchParams.get('q') || ''
 
-	const loadRecipes = async () => {
+	const loadRecipes = useCallback(async () => {
+		setLoading(true)
+		setError(null)
 		try {
-			const data = await recipeService.getAll()
-			setRecipes(data)
-		} catch (err) {
+			const result = await recipeService.getAllPaginated({ page: currentPage, pageSize, search })
+			setRecipes(result.data)
+			setTotal(result.total)
+		} catch {
 			setError(t('recipes.loadError'))
 		} finally {
 			setLoading(false)
 		}
-	}
+	}, [currentPage, pageSize, search, t])
+
+	useEffect(() => {
+		loadRecipes()
+	}, [loadRecipes])
 
 	const handleDelete = async (id: number) => {
 		const confirmed = await confirm({
@@ -48,10 +59,23 @@ export function RecipeListContainer() {
 		try {
 			await recipeService.delete(id)
 			setRecipes(recipes.filter((r) => r.id !== id))
+			setTotal((prev) => prev - 1)
 			toast.success(t('recipes.deleted'))
 		} catch {
 			toast.error(t('recipes.deleteError'))
 		}
+	}
+
+	const handleSearch = (value: string) => {
+		setSearchParams(
+			(prev) => {
+				const p = new URLSearchParams(prev)
+				p.set('q', value)
+				p.set('page', '1')
+				return p
+			},
+			{ replace: true }
+		)
 	}
 
 	const handleAddToWeek = (recipe: Recipe) => {
@@ -120,11 +144,37 @@ export function RecipeListContainer() {
 				</div>
 			</div>
 
+			<div className='search-bar-container'>
+				<input
+					type='search'
+					className='form-input'
+					placeholder={t('search')}
+					value={search}
+					onChange={(e) => handleSearch(e.target.value)}
+				/>
+			</div>
+
 			<RecipeList
 				recipes={recipes}
 				currentUserId={currentUser?.id || 0}
 				onDelete={handleDelete}
 				onAddToWeek={handleAddToWeek}
+			/>
+
+			<Pagination
+				currentPage={currentPage}
+				total={total}
+				pageSize={pageSize}
+				onPageChange={(p) =>
+					setSearchParams(
+						(prev) => {
+							const n = new URLSearchParams(prev)
+							n.set('page', String(p))
+							return n
+						},
+						{ replace: true }
+					)
+				}
 			/>
 
 			<AddToWeekModal

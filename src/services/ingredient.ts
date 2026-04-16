@@ -47,7 +47,18 @@ export interface CreateConversionData {
 
 class IngredientService {
 	async getAll(): Promise<Ingredient[]> {
-		return api.get<Ingredient[]>('/ingredients')
+		const result = await api.get<{ data: Ingredient[]; total: number }>('/ingredients')
+		return result.data
+	}
+
+	async getAllPaginated(params: {
+		page: number
+		pageSize: number
+		search?: string
+	}): Promise<{ data: Ingredient[]; total: number }> {
+		const q = new URLSearchParams({ page: String(params.page), pageSize: String(params.pageSize) })
+		if (params.search) q.set('search', params.search)
+		return api.get<{ data: Ingredient[]; total: number }>(`/ingredients?${q}`)
 	}
 
 	async getById(id: number): Promise<Ingredient> {

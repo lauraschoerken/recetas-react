@@ -6,8 +6,13 @@ import { useTranslation } from 'react-i18next'
 import { householdService, Household } from '@/services/household'
 import { backupService } from '@/services/backup'
 import { useDialog } from '@/utils/dialog/DialogContext'
+import {
+	getStoredPageSize,
+	setStoredPageSize,
+	PAGE_SIZE_OPTIONS,
+} from '@/utils/pagination/usePagination'
 
-type SettingsSection = 'household' | 'alerts' | 'pdf' | 'backup'
+type SettingsSection = 'household' | 'alerts' | 'pdf' | 'backup' | 'pagination'
 
 export function SettingsContainer() {
 	const { t } = useTranslation()
@@ -16,11 +21,14 @@ export function SettingsContainer() {
 	const [activeSection, setActiveSection] = useState<SettingsSection>('household')
 
 	const NAV_ITEMS: { id: SettingsSection; label: string; icon: string }[] = [
-		{ id: 'household', label: t('settings.household'), icon: '\uD83C\uDFE0' },
-		{ id: 'alerts', label: t('settings.alerts'), icon: '\uD83D\uDD14' },
-		{ id: 'pdf', label: t('settings.pdfSettings'), icon: '\uD83D\uDCC4' },
-		{ id: 'backup', label: t('settings.importExport'), icon: '\uD83D\uDCBE' },
+		{ id: 'household', label: t('settings.household'), icon: '🏠' },
+		{ id: 'alerts', label: t('settings.alerts'), icon: '🔔' },
+		{ id: 'pdf', label: t('settings.pdfSettings'), icon: '📄' },
+		{ id: 'backup', label: t('settings.importExport'), icon: '💾' },
+		{ id: 'pagination', label: t('settings.paginationSection'), icon: '📋' },
 	]
+
+	const [pageSize, setPageSizeState] = useState(getStoredPageSize)
 
 	// Household state
 	const [household, setHousehold] = useState<Household | null>(null)
@@ -586,6 +594,32 @@ export function SettingsContainer() {
 											disabled={importing}
 										/>
 									</label>
+								</div>
+							</div>
+						</div>
+					)}
+
+					{activeSection === 'pagination' && (
+						<div className='settings-card'>
+							<h2 className='settings-card-title'>{t('settings.paginationSection')}</h2>
+							<p className='settings-card-description'>{t('settings.paginationSectionDesc')}</p>
+
+							<div className='form-group' style={{ maxWidth: '16rem', marginTop: '1rem' }}>
+								<label className='form-label'>{t('settings.itemsPerPage')}</label>
+								<div className='page-size-options'>
+									{PAGE_SIZE_OPTIONS.map((size) => (
+										<button
+											key={size}
+											type='button'
+											className={`page-size-btn ${pageSize === size ? 'active' : ''}`}
+											onClick={() => {
+												setStoredPageSize(size)
+												setPageSizeState(size)
+												toast.success(t('settings.configSaved'))
+											}}>
+											{size}
+										</button>
+									))}
 								</div>
 							</div>
 						</div>

@@ -438,3 +438,36 @@
 .home-search {
 	margin-bottom: 1rem;
 }
+// ── Pagination settings ──
+
+.page-size-options {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	margin-top: 0.5rem;
+}
+
+.page-size-btn {
+	min-width: 3rem;
+	padding: 0.4rem 0.75rem;
+	border: 1px solid var(--border-color);
+	border-radius: 0.375rem;
+	background: var(--surface-1);
+	color: var(--text-primary);
+	cursor: pointer;
+	font-size: 0.9rem;
+	transition:
+		background 0.15s,
+		border-color 0.15s;
+
+	&:hover {
+		border-color: var(--primary-color);
+		background: var(--primary-light);
+	}
+
+	&.active {
+		background: var(--primary-color);
+		color: #fff;
+		border-color: var(--primary-color);
+	}
+}

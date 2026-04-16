@@ -1,14 +1,17 @@
 import './HomeContainer.scss'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { CreateHomeItemData, HomeItem, HomeLocation, homeService } from '@/services/home'
 import { shoppingService } from '@/services/shopping'
 import { useDialog } from '@/utils/dialog/DialogContext'
+import { getStoredPageSize, paginate } from '@/utils/pagination/usePagination'
 
 import { AddHomeItemForm } from '../components/AddHomeItemForm'
 import { HomeItemCard } from '../components/HomeItemCard'
+import { Pagination } from '@/components/shared/pagination/Pagination'
 
 export function HomeContainer() {
 	const { t } = useTranslation()
@@ -21,9 +24,13 @@ export function HomeContainer() {
 	]
 	const [items, setItems] = useState<HomeItem[]>([])
 	const [loading, setLoading] = useState(true)
-	const [activeTab, setActiveTab] = useState<HomeLocation>('nevera')
+	const [searchParams, setSearchParams] = useSearchParams()
 	const [showAddForm, setShowAddForm] = useState(false)
 	const [searchQuery, setSearchQuery] = useState('')
+	const [pageSize] = useState(getStoredPageSize)
+
+	const activeTab = (searchParams.get('tab') as HomeLocation) ?? 'nevera'
+	const currentPage = parseInt(searchParams.get('page') || '1', 10)
 
 	useEffect(() => {
 		initializeHome()
@@ -150,6 +157,7 @@ export function HomeContainer() {
 			const name = (item.recipe?.title || item.ingredient?.name || '').toLowerCase()
 			return name.includes(q)
 		})
+	const visibleItems = paginate(filteredItems, currentPage, pageSize)
 
 	const searchAllLocations = (query: string) => {
 		if (!query.trim()) return []
@@ -188,7 +196,17 @@ export function HomeContainer() {
 					className='form-input'
 					placeholder={t('homePage.searchPlaceholder')}
 					value={searchQuery}
-					onChange={(e) => setSearchQuery(e.target.value)}
+					onChange={(e) => {
+						setSearchQuery(e.target.value)
+						setSearchParams(
+							(prev) => {
+								const p = new URLSearchParams(prev)
+								p.set('page', '1')
+								return p
+							},
+							{ replace: true }
+						)
+					}}
 				/>
 			</div>
 
@@ -224,7 +242,7 @@ export function HomeContainer() {
 						key={loc.id}
 						className={`home-tab ${activeTab === loc.id ? 'active' : ''}`}
 						onClick={() => {
-							setActiveTab(loc.id)
+							setSearchParams({ tab: loc.id, page: '1' }, { replace: true })
 							setShowAddForm(false)
 						}}>
 						<span className='home-tab-icon'>{loc.icon}</span>
@@ -258,18 +276,35 @@ export function HomeContainer() {
 						</p>
 					</div>
 				) : (
-					<div className='home-items-grid'>
-						{filteredItems.map((item) => (
-							<HomeItemCard
-								key={item.id}
-								item={item}
-								onUpdate={handleUpdate}
-								onDelete={handleDelete}
-								onCook={handleCook}
-								onAddToWeekPlan={handleOpenWeekPlan}
-							/>
-						))}
-					</div>
+					<>
+						<div className='home-items-grid'>
+							{visibleItems.map((item) => (
+								<HomeItemCard
+									key={item.id}
+									item={item}
+									onUpdate={handleUpdate}
+									onDelete={handleDelete}
+									onCook={handleCook}
+									onAddToWeekPlan={handleOpenWeekPlan}
+								/>
+							))}
+						</div>
+						<Pagination
+							currentPage={currentPage}
+							total={filteredItems.length}
+							pageSize={pageSize}
+							onPageChange={(p) =>
+								setSearchParams(
+									(prev) => {
+										const n = new URLSearchParams(prev)
+										n.set('page', String(p))
+										return n
+									},
+									{ replace: true }
+								)
+							}
+						/>
+					</>
 				)}
 			</div>
 
