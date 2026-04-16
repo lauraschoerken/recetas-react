@@ -2,9 +2,11 @@ import './SettingsContainer.scss'
 
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { HiOutlineTrash, HiOutlinePencil, HiOutlineCheck, HiOutlineXMark } from 'react-icons/hi2'
 
 import { householdService, Household } from '@/services/household'
 import { backupService } from '@/services/backup'
+import { alertService, IngredientThreshold, RecipeThreshold } from '@/services/alert'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import {
 	getStoredPageSize,
@@ -15,7 +17,7 @@ import {
 	SNOOZE_OPTIONS,
 } from '@/utils/pagination/usePagination'
 
-type SettingsSection = 'household' | 'alerts' | 'pdf' | 'backup' | 'display'
+type SettingsSection = 'household' | 'alerts' | 'thresholds' | 'pdf' | 'backup' | 'display'
 
 export function SettingsContainer() {
 	const { t } = useTranslation()
@@ -26,6 +28,7 @@ export function SettingsContainer() {
 	const NAV_ITEMS: { id: SettingsSection; label: string; icon: string }[] = [
 		{ id: 'household', label: t('settings.household'), icon: '🏠' },
 		{ id: 'alerts', label: t('settings.alerts'), icon: '🔔' },
+		{ id: 'thresholds', label: t('settings.thresholdsSection'), icon: '📦' },
 		{ id: 'pdf', label: t('settings.pdfSettings'), icon: '📄' },
 		{ id: 'backup', label: t('settings.importExport'), icon: '💾' },
 		{ id: 'display', label: t('settings.displaySection'), icon: '🎛️' },
@@ -33,6 +36,16 @@ export function SettingsContainer() {
 
 	const [pageSize, setPageSizeState] = useState(getStoredPageSize)
 	const [snoozeDuration, setSnoozeDurationState] = useState(getStoredSnoozeDuration)
+
+	// Thresholds state
+	const [ingredientThresholds, setIngredientThresholds] = useState<IngredientThreshold[]>([])
+	const [recipeThresholds, setRecipeThresholds] = useState<RecipeThreshold[]>([])
+	const [thresholdsLoading, setThresholdsLoading] = useState(false)
+	const [thresholdsSearch, setThresholdsSearch] = useState('')
+	const [editingIngredient, setEditingIngredient] = useState<{ id: number; value: string } | null>(
+		null
+	)
+	const [editingRecipe, setEditingRecipe] = useState<{ id: number; value: string } | null>(null)
 
 	// Household state
 	const [household, setHousehold] = useState<Household | null>(null)
@@ -65,6 +78,84 @@ export function SettingsContainer() {
 	useEffect(() => {
 		loadAll()
 	}, [])
+
+	useEffect(() => {
+		if (activeSection === 'thresholds') {
+			loadThresholds()
+		}
+	}, [activeSection])
+
+	const loadThresholds = async () => {
+		setThresholdsLoading(true)
+		try {
+			const [ing, rec] = await Promise.all([
+				alertService.getIngredientThresholds(),
+				alertService.getRecipeThresholds(),
+			])
+			setIngredientThresholds(ing)
+			setRecipeThresholds(rec)
+		} catch {
+			console.error('Error loading thresholds')
+		} finally {
+			setThresholdsLoading(false)
+		}
+	}
+
+	const handleDeleteIngredientThreshold = async (ingredientId: number) => {
+		try {
+			await alertService.deleteIngredientThreshold(ingredientId)
+			setIngredientThresholds((prev) => prev.filter((t) => t.ingredientId !== ingredientId))
+			toast.success(t('settings.thresholdRemoved'))
+		} catch {
+			toast.error(t('settings.errorSaving'))
+		}
+	}
+
+	const handleDeleteRecipeThreshold = async (recipeId: number) => {
+		try {
+			await alertService.deleteRecipeThreshold(recipeId)
+			setRecipeThresholds((prev) => prev.filter((t) => t.recipeId !== recipeId))
+			toast.success(t('settings.thresholdRemoved'))
+		} catch {
+			toast.error(t('settings.errorSaving'))
+		}
+	}
+
+	const handleSaveIngredientThreshold = async (th: IngredientThreshold, value: string) => {
+		const num = parseFloat(value)
+		if (!value || isNaN(num) || num <= 0) return
+		try {
+			await alertService.setIngredientThreshold({
+				ingredientId: th.ingredientId,
+				minQuantity: num,
+				unit: th.unit,
+			})
+			setIngredientThresholds((prev) =>
+				prev.map((item) =>
+					item.ingredientId === th.ingredientId ? { ...item, minQuantity: num } : item
+				)
+			)
+			setEditingIngredient(null)
+			toast.success(t('settings.configSaved'))
+		} catch {
+			toast.error(t('settings.errorSaving'))
+		}
+	}
+
+	const handleSaveRecipeThreshold = async (th: RecipeThreshold, value: string) => {
+		const num = parseInt(value, 10)
+		if (!value || isNaN(num) || num <= 0) return
+		try {
+			await alertService.setRecipeThreshold({ recipeId: th.recipeId, minServings: num })
+			setRecipeThresholds((prev) =>
+				prev.map((item) => (item.recipeId === th.recipeId ? { ...item, minServings: num } : item))
+			)
+			setEditingRecipe(null)
+			toast.success(t('settings.configSaved'))
+		} catch {
+			toast.error(t('settings.errorSaving'))
+		}
+	}
 
 	const loadAll = async () => {
 		try {
@@ -600,6 +691,196 @@ export function SettingsContainer() {
 									</label>
 								</div>
 							</div>
+						</div>
+					)}
+
+					{activeSection === 'thresholds' && (
+						<div className='settings-card'>
+							<h2 className='settings-card-title'>{t('settings.thresholdsSection')}</h2>
+							<p className='settings-card-description'>{t('settings.thresholdsSectionDesc')}</p>
+
+							{thresholdsLoading ? (
+								<p className='settings-card-description'>{t('settings.loading')}</p>
+							) : (
+								<>
+									<input
+										type='search'
+										className='form-input'
+										placeholder={t('settings.thresholdsSearch')}
+										value={thresholdsSearch}
+										onChange={(e) => setThresholdsSearch(e.target.value)}
+										style={{ marginTop: '1rem', maxWidth: '20rem' }}
+									/>
+
+									<h3 className='settings-subsection-title' style={{ marginTop: '1.5rem' }}>
+										{t('settings.thresholdsIngredients')}
+									</h3>
+									{ingredientThresholds.filter((th) =>
+										(th.ingredient?.name ?? '')
+											.toLowerCase()
+											.includes(thresholdsSearch.toLowerCase())
+									).length === 0 ? (
+										<p className='settings-card-description'>{t('settings.thresholdsEmpty')}</p>
+									) : (
+										<ul className='thresholds-list'>
+											{ingredientThresholds
+												.filter((th) =>
+													(th.ingredient?.name ?? '')
+														.toLowerCase()
+														.includes(thresholdsSearch.toLowerCase())
+												)
+												.map((th) => (
+													<li key={th.id} className='thresholds-list__item'>
+														<span className='thresholds-list__name'>
+															{th.ingredient?.name ?? `#${th.ingredientId}`}
+														</span>
+														{editingIngredient?.id === th.ingredientId ? (
+															<div className='thresholds-list__edit'>
+																<input
+																	type='number'
+																	className='form-input form-input-sm'
+																	value={editingIngredient.value}
+																	onChange={(e) =>
+																		setEditingIngredient({
+																			id: th.ingredientId,
+																			value: e.target.value,
+																		})
+																	}
+																	min={0}
+																	step={0.1}
+																	autoFocus
+																/>
+																<span className='thresholds-list__unit'>{th.unit}</span>
+																<button
+																	type='button'
+																	className='btn-icon'
+																	onClick={() =>
+																		handleSaveIngredientThreshold(th, editingIngredient.value)
+																	}>
+																	<HiOutlineCheck />
+																</button>
+																<button
+																	type='button'
+																	className='btn-icon'
+																	onClick={() => setEditingIngredient(null)}>
+																	<HiOutlineXMark />
+																</button>
+															</div>
+														) : (
+															<span className='thresholds-list__meta'>
+																{t('settings.thresholdsMin')} {th.minQuantity} {th.unit}
+															</span>
+														)}
+														<div className='thresholds-list__actions'>
+															{editingIngredient?.id !== th.ingredientId && (
+																<button
+																	type='button'
+																	className='btn-icon'
+																	onClick={() =>
+																		setEditingIngredient({
+																			id: th.ingredientId,
+																			value: String(th.minQuantity),
+																		})
+																	}>
+																	<HiOutlinePencil />
+																</button>
+															)}
+															<button
+																type='button'
+																className='btn-icon btn-icon--danger'
+																onClick={() => handleDeleteIngredientThreshold(th.ingredientId)}>
+																<HiOutlineTrash />
+															</button>
+														</div>
+													</li>
+												))}
+										</ul>
+									)}
+
+									<h3 className='settings-subsection-title' style={{ marginTop: '1.5rem' }}>
+										{t('settings.thresholdsRecipes')}
+									</h3>
+									{recipeThresholds.filter((th) =>
+										(th.recipe?.title ?? '').toLowerCase().includes(thresholdsSearch.toLowerCase())
+									).length === 0 ? (
+										<p className='settings-card-description'>{t('settings.thresholdsEmpty')}</p>
+									) : (
+										<ul className='thresholds-list'>
+											{recipeThresholds
+												.filter((th) =>
+													(th.recipe?.title ?? '')
+														.toLowerCase()
+														.includes(thresholdsSearch.toLowerCase())
+												)
+												.map((th) => (
+													<li key={th.id} className='thresholds-list__item'>
+														<span className='thresholds-list__name'>
+															{th.recipe?.title ?? `#${th.recipeId}`}
+														</span>
+														{editingRecipe?.id === th.recipeId ? (
+															<div className='thresholds-list__edit'>
+																<input
+																	type='number'
+																	className='form-input form-input-sm'
+																	value={editingRecipe.value}
+																	onChange={(e) =>
+																		setEditingRecipe({ id: th.recipeId, value: e.target.value })
+																	}
+																	min={1}
+																	step={1}
+																	autoFocus
+																/>
+																<span className='thresholds-list__unit'>
+																	{t('recipes.portionsUnit')}
+																</span>
+																<button
+																	type='button'
+																	className='btn-icon'
+																	onClick={() =>
+																		handleSaveRecipeThreshold(th, editingRecipe.value)
+																	}>
+																	<HiOutlineCheck />
+																</button>
+																<button
+																	type='button'
+																	className='btn-icon'
+																	onClick={() => setEditingRecipe(null)}>
+																	<HiOutlineXMark />
+																</button>
+															</div>
+														) : (
+															<span className='thresholds-list__meta'>
+																{t('settings.thresholdsMin')} {th.minServings}{' '}
+																{t('recipes.portionsUnit')}
+															</span>
+														)}
+														<div className='thresholds-list__actions'>
+															{editingRecipe?.id !== th.recipeId && (
+																<button
+																	type='button'
+																	className='btn-icon'
+																	onClick={() =>
+																		setEditingRecipe({
+																			id: th.recipeId,
+																			value: String(th.minServings),
+																		})
+																	}>
+																	<HiOutlinePencil />
+																</button>
+															)}
+															<button
+																type='button'
+																className='btn-icon btn-icon--danger'
+																onClick={() => handleDeleteRecipeThreshold(th.recipeId)}>
+																<HiOutlineTrash />
+															</button>
+														</div>
+													</li>
+												))}
+										</ul>
+									)}
+								</>
+							)}
 						</div>
 					)}
 

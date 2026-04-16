@@ -528,7 +528,15 @@
 		"snoozeDuration": "Snooze duration",
 		"snooze1day": "1 day",
 		"snooze3days": "3 days",
-		"snooze1week": "1 week"
+		"snooze1week": "1 week",
+		"thresholdsSection": "Minimums",
+		"thresholdsSectionDesc": "List of minimum quantities you want to have at home, for both ingredients and recipes.",
+		"thresholdsIngredients": "Ingredients",
+		"thresholdsRecipes": "Recipes",
+		"thresholdsMin": "Minimum:",
+		"thresholdsEmpty": "No minimums configured.",
+		"thresholdRemoved": "Minimum removed",
+		"thresholdsSearch": "Search by name..."
 	},
 	"units": {
 		"unit": "unit",

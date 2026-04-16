@@ -625,7 +625,15 @@
 		"snoozeDuration": "Duración del posponer",
 		"snooze1day": "1 día",
 		"snooze3days": "3 días",
-		"snooze1week": "1 semana"
+		"snooze1week": "1 semana",
+		"thresholdsSection": "Mínimos",
+		"thresholdsSectionDesc": "Lista de cantidades mínimas que quieres tener en casa, tanto de ingredientes como de recetas.",
+		"thresholdsIngredients": "Ingredientes",
+		"thresholdsRecipes": "Recetas",
+		"thresholdsMin": "Mínimo:",
+		"thresholdsEmpty": "No hay mínimos configurados.",
+		"thresholdRemoved": "Mínimo eliminado",
+		"thresholdsSearch": "Buscar por nombre..."
 	},
 	"pagination": {
 		"label": "Paginación",
