@@ -1,6 +1,6 @@
 import './IngredientListContainer.scss'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
@@ -51,6 +51,9 @@ export function IngredientListContainer() {
 
 	const search = searchParams.get('q') || ''
 	const currentPage = parseInt(searchParams.get('page') || '1', 10)
+
+	const [localSearch, setLocalSearch] = useState(search)
+	const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
 	// Estado para modo simple (un ingrediente)
 	const [newName, setNewName] = useState('')
@@ -436,20 +439,24 @@ export function IngredientListContainer() {
 
 	const visibleIngredients = ingredients
 
-	const handleSearchChange = (value: string) => {
-		setSearchParams(
-			(prev) => {
-				const p = new URLSearchParams(prev)
-				p.set('q', value)
-				p.set('page', '1')
-				return p
-			},
-			{ replace: true }
-		)
-	}
+	useEffect(() => {
+		setLocalSearch(search)
+	}, [search])
 
-	if (loading) {
-		return <div className='loading'>{t('ingredients.loading')}</div>
+	const handleSearchChange = (value: string) => {
+		setLocalSearch(value)
+		if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
+		searchDebounceRef.current = setTimeout(() => {
+			setSearchParams(
+				(prev) => {
+					const p = new URLSearchParams(prev)
+					p.set('q', value)
+					p.set('page', '1')
+					return p
+				},
+				{ replace: true }
+			)
+		}, 300)
 	}
 
 	return (
@@ -767,7 +774,7 @@ export function IngredientListContainer() {
 					type='text'
 					className='form-input search-input'
 					placeholder={t('ingredients.searchPlaceholder')}
-					value={search}
+					value={localSearch}
 					onChange={(e) => handleSearchChange(e.target.value)}
 				/>
 			</div>
@@ -782,7 +789,9 @@ export function IngredientListContainer() {
 				</span>
 			</div>
 
-			{total === 0 ? (
+			{loading ? (
+				<div className='loading'>{t('ingredients.loading')}</div>
+			) : total === 0 ? (
 				<div className='empty-state'>
 					<p>{t('ingredients.noResults')}</p>
 				</div>
