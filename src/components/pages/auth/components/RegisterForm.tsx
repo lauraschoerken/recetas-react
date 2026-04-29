@@ -1,8 +1,8 @@
 import './AuthForm.scss'
 
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 
 interface RegisterFormProps {
 	onSubmit: (name: string, email: string, password: string) => void
