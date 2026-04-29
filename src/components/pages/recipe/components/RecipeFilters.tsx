@@ -74,7 +74,9 @@ export function RecipeFilters({ filters, onChange, onClear, activeCount }: Recip
 								checked={filters.visibility === v}
 								onChange={() => updateVisibility(v)}
 							/>
-							{t(`recipes.filter${v.charAt(0).toUpperCase() + v.slice(1)}` as any)}
+							{t(
+								`recipes.filter${v.charAt(0).toUpperCase() + v.slice(1)}` as Parameters<typeof t>[0]
+							)}
 						</label>
 					))}
 				</div>

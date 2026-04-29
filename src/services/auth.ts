@@ -33,6 +33,11 @@ export const authService = {
 		return !!localStorage.getItem('token')
 	},
 
+	isAdmin(): boolean {
+		const user = this.getUser()
+		return user?.role === 'ADMIN'
+	},
+
 	async updateAccount(data: { name?: string; email?: string; imageUrl?: string }): Promise<User> {
 		const user = await api.put<User>('/auth/account', data)
 		localStorage.setItem('user', JSON.stringify(user))

@@ -1,0 +1,120 @@
+.ing-tags-panel {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding: 0.75rem 0 0;
+
+	&__list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.375rem;
+		min-height: 1.5rem;
+	}
+
+	&__empty {
+		font-size: 0.8rem;
+		color: var(--text-muted);
+	}
+
+	&__chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.2rem 0.6rem;
+		border-radius: 999px;
+		font-size: 0.78rem;
+		font-weight: 500;
+		background: var(--surface-2);
+		color: var(--text-secondary);
+		border: 1.5px solid var(--border-color);
+		cursor: pointer;
+		transition: all 0.15s;
+
+		&:hover {
+			border-color: var(--primary-color);
+			color: var(--primary-color);
+		}
+
+		&--active {
+			background: var(--primary-color);
+			color: #fff;
+			border-color: var(--primary-color);
+
+			&:hover {
+				background: var(--primary-hover);
+				border-color: var(--primary-hover);
+				color: #fff;
+			}
+		}
+	}
+
+	&__chip-badge {
+		font-size: 0.65rem;
+		font-weight: 700;
+		background: rgba(255, 255, 255, 0.3);
+		border-radius: 999px;
+		padding: 0 0.2rem;
+	}
+
+	&__create {
+		display: flex;
+		gap: 0.375rem;
+		align-items: center;
+	}
+
+	&__input {
+		flex: 1;
+		padding: 0.3rem 0.5rem;
+		border: 1px solid var(--border-color);
+		border-radius: 0.25rem;
+		background: var(--surface-0);
+		color: var(--text-primary);
+		font-size: 0.8rem;
+
+		&:focus {
+			outline: none;
+			border-color: var(--primary-color);
+		}
+	}
+
+	&__btn-create {
+		padding: 0.3rem 0.625rem;
+		background: var(--primary-color);
+		color: #fff;
+		border: none;
+		border-radius: 0.25rem;
+		font-size: 0.8rem;
+		cursor: pointer;
+
+		&:hover {
+			background: var(--primary-hover);
+		}
+	}
+
+	&__btn-cancel {
+		padding: 0.3rem 0.5rem;
+		background: var(--surface-2);
+		color: var(--text-secondary);
+		border: none;
+		border-radius: 0.25rem;
+		font-size: 0.8rem;
+		cursor: pointer;
+	}
+
+	&__btn-add {
+		align-self: flex-start;
+		padding: 0.25rem 0.5rem;
+		background: none;
+		border: 1px dashed var(--border-color);
+		border-radius: 0.25rem;
+		color: var(--text-muted);
+		font-size: 0.8rem;
+		cursor: pointer;
+		transition: all 0.15s;
+
+		&:hover {
+			border-color: var(--primary-color);
+			color: var(--primary-color);
+		}
+	}
+}

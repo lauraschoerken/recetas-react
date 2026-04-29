@@ -13,6 +13,7 @@ import { RecipeFormContainer } from '@/components/pages/recipe/containers/Recipe
 import { RecipeListContainer } from '@/components/pages/recipe/containers/RecipeListContainer'
 import { ShoppingListContainer } from '@/components/pages/shopping/containers/ShoppingListContainer'
 import { WeekPlanContainer } from '@/components/pages/weekplan/containers/WeekPlanContainer'
+import { AdminContainer } from '@/components/pages/admin/containers/AdminContainer'
 import { IndexLayout } from '@/layouts'
 import { authService } from '@/services/auth'
 
@@ -32,6 +33,16 @@ const PublicOnlyRoutes = () => {
 	return <Outlet />
 }
 
+const AdminRoutes = () => {
+	if (!authService.isAuthenticated()) {
+		return <Navigate to='/login' replace />
+	}
+	if (!authService.isAdmin()) {
+		return <Navigate to='/recipes' replace />
+	}
+	return <Outlet />
+}
+
 export const router = createBrowserRouter([
 	{
 		element: <PublicOnlyRoutes />,
@@ -44,6 +55,16 @@ export const router = createBrowserRouter([
 					{ path: 'login', element: <LoginContainer /> },
 					{ path: 'register', element: <RegisterContainer /> },
 				],
+			},
+		],
+	},
+	{
+		element: <AdminRoutes />,
+		children: [
+			{
+				path: '/',
+				element: <IndexLayout />,
+				children: [{ path: 'admin', element: <AdminContainer /> }],
 			},
 		],
 	},

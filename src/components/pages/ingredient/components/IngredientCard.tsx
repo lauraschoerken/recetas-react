@@ -12,6 +12,8 @@ import {
 	UpdateIngredientData,
 } from '@/services/ingredient'
 import { alertService } from '@/services/alert'
+import { IngredientTagsPanel } from './IngredientTagsPanel'
+import { IngredientOverridePanel } from './IngredientOverridePanel'
 
 interface IngredientCardProps {
 	ingredient: Ingredient
@@ -60,6 +62,8 @@ export function IngredientCard({
 	const [minUnit, setMinUnit] = useState(ingredient.unit || 'g')
 	const [hasThreshold, setHasThreshold] = useState(false)
 	const [showThreshold, setShowThreshold] = useState(false)
+	const [showTags, setShowTags] = useState(false)
+	const [showOverride, setShowOverride] = useState(false)
 
 	const variants = ingredient.variants || []
 	const defaultVariant = variants.find((v) => v.isDefault) || variants[0]
@@ -687,6 +691,24 @@ export function IngredientCard({
 						📅
 					</button>
 				)}
+				<button
+					className={`btn-icon${showTags ? ' btn-icon--active' : ''}`}
+					onClick={() => {
+						setShowTags(!showTags)
+						setShowOverride(false)
+					}}
+					title={t('tags.title')}>
+					🏷️
+				</button>
+				<button
+					className={`btn-icon${showOverride ? ' btn-icon--active' : ''}`}
+					onClick={() => {
+						setShowOverride(!showOverride)
+						setShowTags(false)
+					}}
+					title={t('overrides.title')}>
+					⚙️
+				</button>
 				<button className='btn-icon' onClick={() => setIsEditing(true)} title={t('edit')}>
 					<EditIcon size={16} aria-hidden='true' />
 				</button>
@@ -697,6 +719,16 @@ export function IngredientCard({
 					<DeleteIcon size={16} aria-hidden='true' />
 				</button>
 			</div>
+
+			{showTags && <IngredientTagsPanel ingredientId={ingredient.id} />}
+
+			{showOverride && (
+				<IngredientOverridePanel
+					ingredientId={ingredient.id}
+					variants={variants}
+					ingredientUnit={ingredient.unit}
+				/>
+			)}
 		</div>
 	)
 }

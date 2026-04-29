@@ -8,10 +8,12 @@ import LanguageSelect from '@/components/elements/Languague/LanguagueSelect'
 import { ThemeToggle } from '@/components/elements/Theme/ThemeToggle'
 import { UserMenu } from '@/components/elements/User/UserMenu'
 import { APP_NAME } from '@/utils/constants'
+import { authService } from '@/services/auth'
 
 export const Header = () => {
 	const { t } = useTranslation()
 	const activeClass = 'link-active'
+	const isAdmin = authService.isAdmin()
 
 	return (
 		<header className='header'>
@@ -45,6 +47,13 @@ export const Header = () => {
 								className={({ isActive }) => (isActive ? activeClass : 'link')}>
 								{t('nav.shopping')}
 							</NavLink>
+							{isAdmin && (
+								<NavLink
+									to='/admin'
+									className={({ isActive }) => (isActive ? activeClass : 'link')}>
+									{t('nav.admin')}
+								</NavLink>
+							)}
 						</div>
 					</>
 					<div className='nav__actions'>
