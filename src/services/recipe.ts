@@ -24,7 +24,7 @@ export const recipeService = {
 		page: number
 		pageSize: number
 		search?: string
-		visibility?: 'all' | 'public' | 'mine'
+		visibility?: 'all' | 'public' | 'mine' | 'private'
 		ingredient?: string
 	}): Promise<{ data: Recipe[]; total: number }> {
 		const q = new URLSearchParams({ page: String(params.page), pageSize: String(params.pageSize) })

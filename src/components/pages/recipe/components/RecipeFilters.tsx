@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 export interface RecipeFilterValues {
-	visibility: 'all' | 'public' | 'mine'
+	visibility: 'all' | 'mine' | 'public' | 'private'
 	calories: string
 	caloriesOp: 'lt' | 'gt'
 	ingredient: string
@@ -63,7 +63,7 @@ export function RecipeFilters({ filters, onChange, onClear, activeCount }: Recip
 			<div className='recipe-filters__group'>
 				<label className='recipe-filters__label'>{t('recipes.filterVisibility')}</label>
 				<div className='recipe-filters__radio-group'>
-					{(['all', 'public', 'mine'] as const).map((v) => (
+					{(['all', 'mine', 'public', 'private'] as const).map((v) => (
 						<label
 							key={v}
 							className={`recipe-filters__radio${filters.visibility === v ? ' active' : ''}`}>
