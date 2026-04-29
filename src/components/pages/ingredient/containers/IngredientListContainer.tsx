@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router-dom'
 
 import { CloseIcon } from '@/components/shared/icons'
 import { Pagination } from '@/components/shared/pagination/Pagination'
-import { alertService } from '@/services/alert'
+import { alertService, IngredientThreshold } from '@/services/alert'
 import { Ingredient, ingredientService, UpdateIngredientData } from '@/services/ingredient'
 import { shoppingService } from '@/services/shopping'
 import { useDialog } from '@/utils/dialog/DialogContext'
@@ -42,6 +42,7 @@ export function IngredientListContainer() {
 	const { t } = useTranslation()
 	const { confirm, toast } = useDialog()
 	const [ingredients, setIngredients] = useState<Ingredient[]>([])
+	const [allThresholds, setAllThresholds] = useState<IngredientThreshold[]>([])
 	const [loading, setLoading] = useState(true)
 	const [total, setTotal] = useState(0)
 	const [searchParams, setSearchParams] = useSearchParams()
@@ -92,6 +93,15 @@ export function IngredientListContainer() {
 	)
 	const [addingToWeekPlan, setAddingToWeekPlan] = useState(false)
 
+	const loadThresholds = useCallback(async () => {
+		try {
+			const thresholds = await alertService.getIngredientThresholds()
+			setAllThresholds(thresholds)
+		} catch (error) {
+			console.error('Error loading thresholds:', error)
+		}
+	}, [])
+
 	const loadIngredients = useCallback(async () => {
 		setLoading(true)
 		try {
@@ -112,6 +122,10 @@ export function IngredientListContainer() {
 	useEffect(() => {
 		loadIngredients()
 	}, [loadIngredients])
+
+	useEffect(() => {
+		loadThresholds()
+	}, [loadThresholds])
 
 	const getDefaultConversions = (unit: 'g' | 'ml'): NewConversion[] => {
 		if (unit === 'g') {
@@ -271,6 +285,7 @@ export function IngredientListContainer() {
 			}
 
 			await loadIngredients()
+			await loadThresholds()
 			resetForm()
 			toast.success(t('ingredients.created'))
 		} catch (error) {
@@ -796,9 +811,11 @@ export function IngredientListContainer() {
 							<IngredientCard
 								key={ingredient.id}
 								ingredient={ingredient}
+								thresholdData={allThresholds.find((t) => t.ingredientId === ingredient.id) ?? null}
 								onUpdate={handleUpdate}
 								onDelete={handleDelete}
 								onConversionChange={loadIngredients}
+								onThresholdChange={loadThresholds}
 								onAddToShopping={handleAddToShopping}
 								onAddToWeekPlan={handleOpenAddToWeekPlan}
 							/>

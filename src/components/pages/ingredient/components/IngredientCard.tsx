@@ -11,24 +11,28 @@ import {
 	UnitConversion,
 	UpdateIngredientData,
 } from '@/services/ingredient'
-import { alertService } from '@/services/alert'
+import { alertService, IngredientThreshold } from '@/services/alert'
 import { IngredientTagsPanel } from './IngredientTagsPanel'
 import { IngredientOverridePanel } from './IngredientOverridePanel'
 
 interface IngredientCardProps {
 	ingredient: Ingredient
+	thresholdData?: IngredientThreshold | null
 	onUpdate: (id: number, data: UpdateIngredientData) => void
 	onDelete: (id: number) => void
 	onConversionChange?: () => void
+	onThresholdChange?: () => void
 	onAddToShopping?: (ingredient: Ingredient) => void
 	onAddToWeekPlan?: (ingredient: Ingredient) => void
 }
 
 export function IngredientCard({
 	ingredient,
+	thresholdData,
 	onUpdate,
 	onDelete,
 	onConversionChange,
+	onThresholdChange,
 	onAddToShopping,
 	onAddToWeekPlan,
 }: IngredientCardProps) {
@@ -70,22 +74,16 @@ export function IngredientCard({
 	const conversions = ingredient.conversions || []
 
 	useEffect(() => {
-		alertService
-			.getIngredientThresholds()
-			.then((thresholds) => {
-				const match = thresholds.find((t) => t.ingredientId === ingredient.id)
-				if (match) {
-					setMinQuantity(match.minQuantity.toString())
-					setMinUnit(match.unit)
-					setHasThreshold(true)
-				} else {
-					setMinQuantity('')
-					setMinUnit(ingredient.unit || 'g')
-					setHasThreshold(false)
-				}
-			})
-			.catch(() => {})
-	}, [ingredient.id, ingredient.unit])
+		if (thresholdData) {
+			setMinQuantity(thresholdData.minQuantity.toString())
+			setMinUnit(thresholdData.unit)
+			setHasThreshold(true)
+		} else {
+			setMinQuantity('')
+			setMinUnit(ingredient.unit || 'g')
+			setHasThreshold(false)
+		}
+	}, [thresholdData, ingredient.unit])
 
 	const handleSave = () => {
 		onUpdate(ingredient.id, {
@@ -218,6 +216,7 @@ export function IngredientCard({
 				unit: minUnit,
 			})
 			setHasThreshold(true)
+			onThresholdChange?.()
 		} catch (error) {
 			console.error('Error saving threshold:', error)
 		}
@@ -229,6 +228,7 @@ export function IngredientCard({
 			setMinQuantity('')
 			setMinUnit(ingredient.unit || 'g')
 			setHasThreshold(false)
+			onThresholdChange?.()
 		} catch (error) {
 			console.error('Error deleting threshold:', error)
 		}
