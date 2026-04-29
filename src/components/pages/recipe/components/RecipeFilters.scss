@@ -1,0 +1,86 @@
+.recipe-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.5rem;
+	align-items: flex-end;
+	padding: 1rem 1.25rem;
+	background-color: var(--surface-1);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius);
+	margin-bottom: 1.5rem;
+}
+
+.recipe-filters__group {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	min-width: 10rem;
+}
+
+.recipe-filters__label {
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--text-secondary);
+}
+
+.recipe-filters__radio-group {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.recipe-filters__radio {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.35rem 0.75rem;
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--border-color);
+	cursor: pointer;
+	font-size: 0.85rem;
+	color: var(--text-secondary);
+	transition: all 0.15s ease;
+	background-color: var(--surface-0);
+
+	input[type='radio'] {
+		display: none;
+	}
+
+	&.active {
+		border-color: var(--primary-color);
+		background-color: var(--primary-light);
+		color: var(--primary-color);
+		font-weight: 600;
+	}
+
+	&:hover:not(.active) {
+		border-color: var(--border-strong);
+		color: var(--text-primary);
+	}
+}
+
+.recipe-filters__input {
+	max-width: 12rem;
+	padding: 0.45rem 0.75rem;
+	font-size: 0.9rem;
+}
+
+.recipe-filters__calories-row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+
+	.recipe-filters__input {
+		max-width: 7rem;
+	}
+}
+
+.recipe-filters__clear {
+	align-self: flex-end;
+	font-size: 0.85rem;
+	padding: 0.45rem 1rem;
+	white-space: nowrap;
+}

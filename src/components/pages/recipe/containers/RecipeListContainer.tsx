@@ -11,6 +11,7 @@ import { useDialog } from '@/utils/dialog/DialogContext'
 import { getStoredPageSize } from '@/utils/pagination/usePagination'
 
 import { RecipeList } from '../components/RecipeList'
+import { RecipeFilters, RecipeFilterValues, DEFAULT_FILTERS } from '../components/RecipeFilters'
 
 export function RecipeListContainer() {
 	const { t } = useTranslation()
@@ -20,6 +21,7 @@ export function RecipeListContainer() {
 	const [recipes, setRecipes] = useState<Recipe[]>([])
 	const [total, setTotal] = useState(0)
 	const [loading, setLoading] = useState(true)
+	const [initialLoad, setInitialLoad] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
 	const [modalOpen, setModalOpen] = useState(false)
@@ -28,20 +30,39 @@ export function RecipeListContainer() {
 
 	const currentPage = parseInt(searchParams.get('page') || '1', 10)
 	const search = searchParams.get('q') || ''
+	const [filtersOpen, setFiltersOpen] = useState(false)
+	const [filters, setFilters] = useState<RecipeFilterValues>({
+		visibility: (searchParams.get('visibility') as RecipeFilterValues['visibility']) || 'all',
+		calories: searchParams.get('calories') || '',
+		caloriesOp: (searchParams.get('caloriesOp') as RecipeFilterValues['caloriesOp']) || 'lt',
+		ingredient: searchParams.get('ingredient') || '',
+	})
+
+	const activeFilterCount =
+		(filters.visibility !== 'all' ? 1 : 0) +
+		(filters.calories ? 1 : 0) +
+		(filters.ingredient ? 1 : 0)
 
 	const loadRecipes = useCallback(async () => {
 		setLoading(true)
 		setError(null)
 		try {
-			const result = await recipeService.getAllPaginated({ page: currentPage, pageSize, search })
+			const result = await recipeService.getAllPaginated({
+				page: currentPage,
+				pageSize,
+				search,
+				visibility: filters.visibility,
+				ingredient: filters.ingredient,
+			})
 			setRecipes(result.data)
 			setTotal(result.total)
 		} catch {
 			setError(t('recipes.loadError'))
 		} finally {
 			setLoading(false)
+			setInitialLoad(false)
 		}
-	}, [currentPage, pageSize, search, t])
+	}, [currentPage, pageSize, search, filters.visibility, filters.ingredient, t])
 
 	useEffect(() => {
 		loadRecipes()
@@ -71,6 +92,45 @@ export function RecipeListContainer() {
 			(prev) => {
 				const p = new URLSearchParams(prev)
 				p.set('q', value)
+				p.set('page', '1')
+				return p
+			},
+			{ replace: true }
+		)
+	}
+
+	const handleFiltersChange = (newFilters: RecipeFilterValues) => {
+		setFilters(newFilters)
+		setSearchParams(
+			(prev) => {
+				const p = new URLSearchParams(prev)
+				p.set('page', '1')
+				if (newFilters.visibility !== 'all') p.set('visibility', newFilters.visibility)
+				else p.delete('visibility')
+				if (newFilters.calories) {
+					p.set('calories', newFilters.calories)
+					p.set('caloriesOp', newFilters.caloriesOp)
+				} else {
+					p.delete('calories')
+					p.delete('caloriesOp')
+				}
+				if (newFilters.ingredient) p.set('ingredient', newFilters.ingredient)
+				else p.delete('ingredient')
+				return p
+			},
+			{ replace: true }
+		)
+	}
+
+	const handleFiltersClear = () => {
+		setFilters(DEFAULT_FILTERS)
+		setSearchParams(
+			(prev) => {
+				const p = new URLSearchParams(prev)
+				p.delete('visibility')
+				p.delete('calories')
+				p.delete('caloriesOp')
+				p.delete('ingredient')
 				p.set('page', '1')
 				return p
 			},
@@ -120,8 +180,19 @@ export function RecipeListContainer() {
 		}
 	}
 
-	if (loading) return <div className='loading'>{t('recipes.loading')}</div>
+	if (loading && initialLoad) return <div className='loading'>{t('recipes.loading')}</div>
 	if (error) return <div className='error-message'>{error}</div>
+
+	// Filtro client-side de calorías (campo calculado, no almacenado en BD)
+	const calVal = filters.calories ? parseInt(filters.calories, 10) : null
+	const visibleRecipes = calVal
+		? recipes.filter((r) => {
+				if (r.caloriesPerServing == null) return true
+				return filters.caloriesOp === 'lt'
+					? r.caloriesPerServing <= calVal
+					: r.caloriesPerServing >= calVal
+			})
+		: recipes
 
 	return (
 		<>
@@ -152,10 +223,28 @@ export function RecipeListContainer() {
 					value={search}
 					onChange={(e) => handleSearch(e.target.value)}
 				/>
+				<button
+					type='button'
+					className={`btn btn-outline recipe-filter-toggle${activeFilterCount > 0 ? ' active' : ''}`}
+					onClick={() => setFiltersOpen((o) => !o)}>
+					{t('recipes.filters')}
+					{activeFilterCount > 0 && (
+						<span className='recipe-filter-badge'>{activeFilterCount}</span>
+					)}
+				</button>
 			</div>
 
+			{filtersOpen && (
+				<RecipeFilters
+					filters={filters}
+					onChange={handleFiltersChange}
+					onClear={handleFiltersClear}
+					activeCount={activeFilterCount}
+				/>
+			)}
+
 			<RecipeList
-				recipes={recipes}
+				recipes={visibleRecipes}
 				currentUserId={currentUser?.id || 0}
 				onDelete={handleDelete}
 				onAddToWeek={handleAddToWeek}

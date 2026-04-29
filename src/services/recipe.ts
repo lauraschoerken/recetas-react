@@ -24,9 +24,13 @@ export const recipeService = {
 		page: number
 		pageSize: number
 		search?: string
+		visibility?: 'all' | 'public' | 'mine'
+		ingredient?: string
 	}): Promise<{ data: Recipe[]; total: number }> {
 		const q = new URLSearchParams({ page: String(params.page), pageSize: String(params.pageSize) })
 		if (params.search) q.set('search', params.search)
+		if (params.visibility && params.visibility !== 'all') q.set('visibility', params.visibility)
+		if (params.ingredient) q.set('ingredient', params.ingredient)
 		return api.get<{ data: Recipe[]; total: number }>(`/recipes?${q}`)
 	},
 
