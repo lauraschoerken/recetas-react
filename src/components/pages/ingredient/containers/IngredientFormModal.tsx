@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { CloseIcon, DeleteIcon, EditIcon, StarIcon } from '@/components/shared/icons'
 import { Modal } from '@/components/shared/modal'
 import { alertService, IngredientThreshold } from '@/services/alert'
+import { authService } from '@/services/auth'
 import {
 	Ingredient,
 	ingredientService,
@@ -13,6 +14,7 @@ import {
 	UnitConversion,
 } from '@/services/ingredient'
 import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras'
+import { ingredientProposalService, ProposalType } from '@/services/ingredientProposal'
 import { storeService, UserStore } from '@/services/store'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
@@ -63,6 +65,7 @@ interface BasicFieldsProps {
 	onUnitChange?: (v: 'g' | 'ml') => void
 	onSave?: () => void
 	saving?: boolean
+	readonlyName?: boolean // true = usuario normal en ingrediente GLOBAL
 }
 function BasicFields({
 	name,
@@ -75,6 +78,7 @@ function BasicFields({
 	onUnitChange,
 	onSave,
 	saving,
+	readonlyName,
 }: BasicFieldsProps) {
 	const { t } = useTranslation()
 	return (
@@ -87,6 +91,9 @@ function BasicFields({
 					value={name}
 					onChange={(e) => onNameChange(e.target.value)}
 					required={!onSave}
+					readOnly={readonlyName}
+					title={readonlyName ? t('ingredients.nameReadonlyHint') : undefined}
+					style={readonlyName ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
 				/>
 				{onUnitChange ? (
 					<select
@@ -304,6 +311,7 @@ export function IngredientFormModal({
 	const [showConversions, setShowConversions] = useState(false)
 	const [newConversions, setNewConversions] = useState<ConversionDraft[]>([])
 	const [newPreferredUnit, setNewPreferredUnit] = useState('')
+	const [proposeOnCreate, setProposeOnCreate] = useState(false)
 	const [activeStoreIds, setActiveStoreIds] = useState<number[]>([])
 	const [storeOrderIndifferent, setStoreOrderIndifferent] = useState(false)
 	const [bulkRows, setBulkRows] = useState<BulkRow[]>([{ id: 'b0', name: '', unit: 'g' }])
@@ -339,6 +347,20 @@ export function IngredientFormModal({
 	const [creatingNewTag, setCreatingNewTag] = useState(false)
 	const [newTagInput, setNewTagInput] = useState('')
 
+	// Propuesta al admin
+	const [showProposalForm, setShowProposalForm] = useState(false)
+	const [proposalType, setProposalType] = useState<ProposalType>('EDIT_FIELD')
+	const [proposalField, setProposalField] = useState('name')
+	const [proposalValue, setProposalValue] = useState('')
+	const [proposalConvUnit, setProposalConvUnit] = useState('')
+	const [proposalConvGrams, setProposalConvGrams] = useState('')
+	const [sendingProposal, setSendingProposal] = useState(false)
+	const [convMenuOpenId, setConvMenuOpenId] = useState<number | null>(null)
+
+	// Detectar si el usuario es admin y si el ingrediente es GLOBAL
+	const isUserAdmin = authService.isAdmin()
+	const isGlobalIngredient = ingredient?.status === 'GLOBAL' || (!ingredient?.status && isEdit)
+
 	// Inicializacion al abrir
 	useEffect(() => {
 		if (!isOpen) return
@@ -356,7 +378,14 @@ export function IngredientFormModal({
 			setImageUrl(ingredient.imageUrl ?? '')
 			setLocation(ingredient.defaultLocation ?? '')
 			setLocalVariants(ingredient.variants ?? [])
+			// Inicializar con datos del listado; luego cargar conversiones frescas (incluye personales)
 			setLocalConversions(ingredient.conversions ?? [])
+			ingredientService
+				.getConversions(ingredient.id)
+				.then(setLocalConversions)
+				.catch(() => {
+					/* mantener las del listado si falla */
+				})
 			setPreferredUnit(ingredient.preferredUnit ?? '')
 			if (thresholdData) {
 				setMinQuantity(thresholdData.minQuantity.toString())
@@ -393,6 +422,7 @@ export function IngredientFormModal({
 			setShowConversions(false)
 			setNewConversions([])
 			setNewPreferredUnit('')
+			setProposeOnCreate(false)
 			setActiveStoreIds([])
 			setStoreOrderIndifferent(false)
 			setNewTagIds([])
@@ -548,7 +578,17 @@ export function IngredientFormModal({
 				}
 			}
 
-			toast.success(t('ingredients.created'))
+			// Si el usuario quiere proponer el ingrediente al admin, cambiarlo a PENDING
+			if (proposeOnCreate && created.status === 'PRIVATE') {
+				try {
+					await ingredientService.propose(created.id)
+					toast.success(t('ingredients.createdPending'))
+				} catch {
+					toast.success(t('ingredients.created'))
+				}
+			} else {
+				toast.success(t('ingredients.created'))
+			}
 			onSaved()
 			onClose()
 		} catch {
@@ -695,12 +735,90 @@ export function IngredientFormModal({
 			toast.error(t('ingredients.updateError'))
 		}
 	}
-	const handleDeleteConversion = async (convId: number) => {
+	const handleDeleteConversion = async (conv: UnitConversion) => {
 		try {
-			await ingredientService.deleteConversion(convId)
-			setLocalConversions((prev) => prev.filter((c) => c.id !== convId))
+			if (conv.isUserOverride) {
+				await ingredientService.deleteConversionOverride(conv.id)
+			} else {
+				await ingredientService.deleteConversion(conv.id)
+			}
+			setLocalConversions((prev) => prev.filter((c) => c.id !== conv.id))
 		} catch {
 			toast.error(t('ingredients.updateError'))
+		}
+	}
+
+	// --- Propuesta al admin ---
+	const handlePropose = async () => {
+		if (!ingredient) return
+		setSendingProposal(true)
+		try {
+			if (proposalType === 'NEW_CONVERSION') {
+				if (!proposalConvUnit.trim() || !proposalConvGrams) return
+				await ingredientProposalService.create({
+					type: 'NEW_CONVERSION',
+					ingredientId: ingredient.id,
+					proposedValue: {
+						unitName: proposalConvUnit.trim(),
+						gramsPerUnit: Number(proposalConvGrams),
+					},
+				})
+			} else {
+				// EDIT_FIELD
+				const currentVal = proposalField === 'name' ? ingredient.name : ingredient.imageUrl
+				await ingredientProposalService.create({
+					type: 'EDIT_FIELD',
+					ingredientId: ingredient.id,
+					fieldName: proposalField,
+					currentValue: currentVal,
+					proposedValue: proposalValue.trim(),
+				})
+			}
+			toast.success(t('ingredients.proposalSent'))
+			setShowProposalForm(false)
+			setProposalValue('')
+			setProposalConvUnit('')
+			setProposalConvGrams('')
+		} catch {
+			toast.error(t('ingredients.proposalError'))
+		} finally {
+			setSendingProposal(false)
+		}
+	}
+
+	// --- Proponer conversión personal al admin (tipo quick-action desde el item) ---
+	const handleProposeConversion = async (conv: UnitConversion) => {
+		if (!ingredient) return
+		try {
+			await ingredientProposalService.create({
+				type: 'NEW_CONVERSION',
+				ingredientId: ingredient.id,
+				proposedValue: { unitName: conv.unitName, gramsPerUnit: conv.gramsPerUnit },
+			})
+			toast.success(t('ingredients.proposalSent'))
+			setConvMenuOpenId(null)
+		} catch {
+			toast.error(t('ingredients.proposalError'))
+		}
+	}
+
+	// --- Proponer ingrediente PRIVATE al admin desde modo edición ---
+	const [proposingIngredient, setProposingIngredient] = useState(false)
+	const handleProposeExisting = async () => {
+		if (!ingredient) return
+		setProposingIngredient(true)
+		try {
+			const updated = await ingredientService.propose(ingredient.id)
+			toast.success(t('ingredients.createdPending'))
+			onSaved()
+			// El ingrediente ya no es PRIVATE — refrescar los datos locales
+			if (updated) {
+				ingredient.status = updated.status
+			}
+		} catch {
+			toast.error(t('ingredients.proposalError'))
+		} finally {
+			setProposingIngredient(false)
 		}
 	}
 
@@ -958,6 +1076,30 @@ export function IngredientFormModal({
 					<form
 						onSubmit={!isEdit ? handleCreate : (e) => e.preventDefault()}
 						className={isEdit ? 'ifm-edit-form' : 'ifm-form'}>
+						{/* Aviso para usuario normal sobre cambios personales (ingrediente GLOBAL) */}
+						{isEdit && !isUserAdmin && isGlobalIngredient && (
+							<div className='ifm-personal-notice'>
+								<span>ℹ️ {t('ingredients.personalChangesNotice')}</span>
+							</div>
+						)}
+
+						{/* Banner proponer al admin — ingrediente PRIVATE del propio usuario */}
+						{isEdit && !isUserAdmin && ingredient.status === 'PRIVATE' && (
+							<div className='ifm-propose-banner'>
+								<div className='ifm-propose-banner__text'>
+									<strong>{t('ingredients.privateIngredient')}</strong>
+									<span>{t('ingredients.privateIngredientHint')}</span>
+								</div>
+								<button
+									type='button'
+									className='btn btn-sm btn-secondary'
+									disabled={proposingIngredient}
+									onClick={handleProposeExisting}>
+									{proposingIngredient ? t('loading') : t('ingredients.proposeToAdmin')}
+								</button>
+							</div>
+						)}
+
 						{/* Nombre, imagen, ubicacion */}
 						<div className={isEdit ? 'ifm-edit-section' : undefined}>
 							<BasicFields
@@ -971,6 +1113,7 @@ export function IngredientFormModal({
 								onUnitChange={!isEdit ? handleUnitChange : undefined}
 								onSave={isEdit ? handleSaveBasic : undefined}
 								saving={savingBasic}
+								readonlyName={isEdit && !isUserAdmin && isGlobalIngredient}
 							/>
 						</div>
 
@@ -1210,13 +1353,38 @@ export function IngredientFormModal({
 												1 {conv.unitName} = {conv.gramsPerUnit}
 												{unit}
 											</span>
-											<button
-												className='btn-icon-small btn-danger'
-												type='button'
-												title={t('delete')}
-												onClick={() => handleDeleteConversion(conv.id)}>
-												<DeleteIcon size={12} aria-hidden='true' />
-											</button>
+											<div className='ifm-conv-actions'>
+												{conv.isUserOverride && !isUserAdmin && (
+													<div className='ifm-conv-menu'>
+														<button
+															className='btn-icon-small ifm-conv-menu-btn'
+															type='button'
+															title={t('ingredients.moreOptions')}
+															onClick={() =>
+																setConvMenuOpenId(convMenuOpenId === conv.id ? null : conv.id)
+															}>
+															⋯
+														</button>
+														{convMenuOpenId === conv.id && (
+															<div className='ifm-conv-menu-dropdown'>
+																<button
+																	type='button'
+																	className='ifm-conv-menu-item'
+																	onClick={() => handleProposeConversion(conv)}>
+																	{t('ingredients.proposeGlobal')}
+																</button>
+															</div>
+														)}
+													</div>
+												)}
+												<button
+													className='btn-icon-small btn-danger'
+													type='button'
+													title={t('delete')}
+													onClick={() => handleDeleteConversion(conv)}>
+													<DeleteIcon size={12} aria-hidden='true' />
+												</button>
+											</div>
 										</div>
 									))}
 									<div className='ifm-conv-add-row'>
@@ -1456,16 +1624,123 @@ export function IngredientFormModal({
 							)}
 						</div>
 
+						{/* Sección propuesta al admin (solo para usuarios normales en ingredientes GLOBAL) */}
+						{isEdit && !isUserAdmin && isGlobalIngredient && (
+							<div className='ifm-edit-section'>
+								<button
+									type='button'
+									className='ifm-proposal-toggle'
+									onClick={() => setShowProposalForm((v) => !v)}>
+									{showProposalForm ? '▼' : '▶'} {t('ingredients.proposeChange')}
+								</button>
+								{showProposalForm && (
+									<div className='ifm-proposal-form'>
+										<p className='ifm-hint'>{t('ingredients.proposeHint')}</p>
+
+										{/* Tipo de propuesta */}
+										<div className='ifm-row'>
+											<select
+												className='form-input'
+												value={proposalType}
+												onChange={(e) => {
+													setProposalType(e.target.value as ProposalType)
+													setProposalValue('')
+													setProposalField('name')
+												}}>
+												<option value='EDIT_FIELD'>{t('ingredients.proposalTypeEditField')}</option>
+												<option value='NEW_CONVERSION'>
+													{t('ingredients.proposalTypeNewConversion')}
+												</option>
+											</select>
+										</div>
+
+										{proposalType === 'EDIT_FIELD' && (
+											<>
+												<div className='ifm-row'>
+													<select
+														className='form-input form-input-sm'
+														value={proposalField}
+														onChange={(e) => setProposalField(e.target.value)}>
+														<option value='name'>{t('ingredients.namePlaceholder')}</option>
+														<option value='imageUrl'>{t('ingredients.imageUrlPlaceholder')}</option>
+													</select>
+												</div>
+												<input
+													type='text'
+													className='form-input'
+													placeholder={t('ingredients.proposeValuePlaceholder')}
+													value={proposalValue}
+													onChange={(e) => setProposalValue(e.target.value)}
+												/>
+											</>
+										)}
+
+										{proposalType === 'NEW_CONVERSION' && (
+											<div className='ifm-conv-add-row'>
+												<span className='ifm-conv-prefix'>1</span>
+												<input
+													type='text'
+													className='form-input form-input-sm ifm-conv-name'
+													placeholder={t('ingredients.unitHeader')}
+													value={proposalConvUnit}
+													onChange={(e) => setProposalConvUnit(e.target.value)}
+												/>
+												<span className='ifm-conv-eq'>=</span>
+												<input
+													type='number'
+													className='form-input form-input-sm ifm-conv-val'
+													placeholder={unit}
+													value={proposalConvGrams}
+													onChange={(e) => setProposalConvGrams(e.target.value)}
+													min={0}
+													step={0.1}
+												/>
+												<span className='ifm-conv-suffix'>{unit}</span>
+											</div>
+										)}
+
+										<div className='ifm-section-save'>
+											<button
+												type='button'
+												className='btn btn-sm btn-secondary'
+												disabled={
+													sendingProposal ||
+													(proposalType === 'EDIT_FIELD' && !proposalValue.trim()) ||
+													(proposalType === 'NEW_CONVERSION' &&
+														(!proposalConvUnit.trim() || !proposalConvGrams))
+												}
+												onClick={handlePropose}>
+												{sendingProposal ? t('loading') : t('ingredients.proposalSend')}
+											</button>
+										</div>
+									</div>
+								)}
+							</div>
+						)}
+
 						{/* Acciones */}
 						<div className={`ifm-actions${isEdit ? ' ifm-actions--edit' : ''}`}>
-							<button type='button' className='btn btn-outline' onClick={onClose}>
-								{t('cancel')}
-							</button>
-							{!isEdit && (
-								<button type='submit' className='btn btn-primary'>
-									{t('ingredients.createBtn')}
-								</button>
+							{/* Checkbox "proponer al admin" — solo en creación para usuarios normales */}
+							{!isEdit && !isUserAdmin && (
+								<label className='ifm-propose-check'>
+									<input
+										type='checkbox'
+										checked={proposeOnCreate}
+										onChange={(e) => setProposeOnCreate(e.target.checked)}
+									/>
+									<span>{t('ingredients.proposeOnCreate')}</span>
+								</label>
 							)}
+							<div className='ifm-actions-buttons'>
+								<button type='button' className='btn btn-outline' onClick={onClose}>
+									{t('cancel')}
+								</button>
+								{!isEdit && (
+									<button type='submit' className='btn btn-primary'>
+										{t('ingredients.createBtn')}
+									</button>
+								)}
+							</div>
 						</div>
 					</form>
 				)}

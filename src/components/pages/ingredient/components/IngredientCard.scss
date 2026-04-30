@@ -156,6 +156,27 @@
 	color: #fff;
 }
 
+// ── Badge pendiente de revisión ───────────────────────────────
+.card-pending-badge {
+	position: absolute;
+	top: 0.3rem;
+	left: 0.3rem;
+	background: var(--warning-color, #f59e0b);
+	color: #fff;
+	font-size: 0.58rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	padding: 0.1rem 0.3rem;
+	border-radius: 0.2rem;
+	z-index: 2;
+	pointer-events: none;
+
+	&--private {
+		background: var(--text-muted, #9ca3af);
+	}
+}
+
 // ── Meta rows (threshold, preferred unit, stores) ────────
 .card-meta {
 	display: flex;

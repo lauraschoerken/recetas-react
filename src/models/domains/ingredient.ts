@@ -3,6 +3,7 @@ export interface UnitConversion {
 	unitName: string
 	gramsPerUnit: number
 	ingredientId?: number
+	isUserOverride?: boolean // true = override personal del usuario, no global
 }
 
 export interface IngredientVariant {
@@ -22,6 +23,7 @@ export interface Ingredient {
 	id: number
 	name: string
 	unit: string
+	status?: string // 'GLOBAL' | 'PENDING' | 'PRIVATE' | 'REJECTED'
 	ingredientBaseUnit?: string
 	quantity?: number
 	preferredUnit?: string | null

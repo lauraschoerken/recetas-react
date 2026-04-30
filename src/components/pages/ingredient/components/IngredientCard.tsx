@@ -73,7 +73,19 @@ export function IngredientCard({
 								: t('ingredients.noNutrition')}
 						</p>
 					</div>
+				)}{' '}
+				{ingredient.status === 'PRIVATE' && (
+					<span
+						className='card-pending-badge card-pending-badge--private'
+						title={t('ingredients.privateIngredient')}>
+						{t('ingredients.privateBadge')}
+					</span>
 				)}
+				{ingredient.status === 'PENDING' && (
+					<span className='card-pending-badge' title={t('ingredients.pendingReview')}>
+						{t('ingredients.pendingBadge')}
+					</span>
+				)}{' '}
 			</div>
 
 			<div className='card-quick-actions'>

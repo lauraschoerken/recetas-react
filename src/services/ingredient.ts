@@ -116,8 +116,18 @@ class IngredientService {
 		return api.delete(`/ingredients/conversions/${conversionId}`)
 	}
 
+	// Eliminar override personal de conversión (para conversiones con isUserOverride=true)
+	async deleteConversionOverride(overrideId: number): Promise<void> {
+		return api.delete(`/ingredients/conversion-overrides/${overrideId}`)
+	}
+
 	async getConversions(ingredientId: number): Promise<UnitConversion[]> {
 		return api.get<UnitConversion[]>(`/ingredients/${ingredientId}/conversions`)
+	}
+
+	// Proponer ingrediente PRIVATE al admin (lo pasa a PENDING)
+	async propose(ingredientId: number): Promise<Ingredient> {
+		return api.patch<Ingredient>(`/ingredients/${ingredientId}/propose`, {})
 	}
 }
 
