@@ -55,9 +55,37 @@ class IngredientService {
 		page: number
 		pageSize: number
 		search?: string
+		sortBy?: string
+		sortOrder?: 'asc' | 'desc'
+		location?: string
+		statusFilter?: string
+		hasNutrition?: boolean
+		minCalories?: number
+		maxCalories?: number
+		minProtein?: number
+		maxProtein?: number
+		minCarbs?: number
+		maxCarbs?: number
+		minFat?: number
+		maxFat?: number
+		tagIds?: number[]
 	}): Promise<{ data: Ingredient[]; total: number }> {
 		const q = new URLSearchParams({ page: String(params.page), pageSize: String(params.pageSize) })
 		if (params.search) q.set('search', params.search)
+		if (params.sortBy) q.set('sortBy', params.sortBy)
+		if (params.sortOrder) q.set('sortOrder', params.sortOrder)
+		if (params.location) q.set('location', params.location)
+		if (params.statusFilter) q.set('statusFilter', params.statusFilter)
+		if (params.hasNutrition) q.set('hasNutrition', 'true')
+		if (params.minCalories != null) q.set('minCalories', String(params.minCalories))
+		if (params.maxCalories != null) q.set('maxCalories', String(params.maxCalories))
+		if (params.minProtein != null) q.set('minProtein', String(params.minProtein))
+		if (params.maxProtein != null) q.set('maxProtein', String(params.maxProtein))
+		if (params.minCarbs != null) q.set('minCarbs', String(params.minCarbs))
+		if (params.maxCarbs != null) q.set('maxCarbs', String(params.maxCarbs))
+		if (params.minFat != null) q.set('minFat', String(params.minFat))
+		if (params.maxFat != null) q.set('maxFat', String(params.maxFat))
+		if (params.tagIds && params.tagIds.length > 0) q.set('tags', params.tagIds.join(','))
 		return api.get<{ data: Ingredient[]; total: number }>(`/ingredients?${q}`)
 	}
 
