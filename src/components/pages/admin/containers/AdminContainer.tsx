@@ -401,6 +401,8 @@ export function AdminContainer() {
 					setSelectedIngredient(null)
 					loadData()
 				}}
+				autoSaveOnClose
+				readonlyName
 				ingredient={
 					selectedIngredient
 						? {

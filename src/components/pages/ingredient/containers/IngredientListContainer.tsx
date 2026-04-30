@@ -211,6 +211,7 @@ export function IngredientListContainer() {
 				onClose={() => setEditingIngredient(null)}
 				onSaved={handleSaved}
 				ingredient={editingIngredient}
+				autoSaveOnClose
 				thresholdData={
 					editingIngredient
 						? (allThresholds.find((th) => th.ingredientId === editingIngredient.id) ?? null)

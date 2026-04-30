@@ -51,6 +51,10 @@ interface Props {
 	/** Pasado -> modo edicion; null/undefined -> modo creacion */
 	ingredient?: Ingredient | null
 	thresholdData?: IngredientThreshold | null
+	/** Fuerza el campo nombre como readonly */
+	readonlyName?: boolean
+	/** Al cerrar el modal (X u overlay), guarda automáticamente en lugar de descartar */
+	autoSaveOnClose?: boolean
 }
 
 // --- Sub-seccion: nombre, imagen, ubicacion ---------------------------------
@@ -282,6 +286,8 @@ export function IngredientFormModal({
 	onSaved,
 	ingredient,
 	thresholdData,
+	readonlyName: forceReadonlyName,
+	autoSaveOnClose,
 }: Props) {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
@@ -965,7 +971,10 @@ export function IngredientFormModal({
 
 	return (
 		<div className='ifm-wrapper'>
-			<Modal isOpen={isOpen} onClose={onClose} title={modalTitle}>
+			<Modal
+				isOpen={isOpen}
+				onClose={autoSaveOnClose && isEdit ? handleSaveBasic : onClose}
+				title={modalTitle}>
 				{/* Selector modo creacion: uno / varios */}
 				{!isEdit && (
 					<div className='ifm-mode-toggle'>
@@ -1113,7 +1122,7 @@ export function IngredientFormModal({
 								onUnitChange={!isEdit ? handleUnitChange : undefined}
 								onSave={isEdit ? handleSaveBasic : undefined}
 								saving={savingBasic}
-								readonlyName={isEdit && !isUserAdmin && isGlobalIngredient}
+								readonlyName={forceReadonlyName || (isEdit && !isUserAdmin && isGlobalIngredient)}
 							/>
 						</div>
 
