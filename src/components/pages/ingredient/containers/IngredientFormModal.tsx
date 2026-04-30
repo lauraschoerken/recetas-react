@@ -1,6 +1,6 @@
 ﻿import './IngredientFormModal.scss'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { CloseIcon, DeleteIcon, EditIcon, StarIcon } from '@/components/shared/icons'
@@ -151,64 +151,119 @@ function BasicFields({
 // --- Sub-seccion: tiendas ---------------------------------------------------
 interface StoresSectionProps {
 	allStores: UserStore[]
-	draftOrders?: Record<number, string>
-	onDraftOrderChange?: (storeId: number, value: string) => void
-	ingredientId?: number
-	togglingStoreId?: number | null
-	onEditOrderChange?: (store: UserStore, value: string) => void
+	activeStoreIds: number[]
+	indifferent: boolean
+	onToggleStore: (storeId: number) => void
+	onReorder: (newIds: number[]) => void
+	onIndifferentChange: (value: boolean) => void
 }
 function StoresSection({
 	allStores,
-	draftOrders,
-	onDraftOrderChange,
-	ingredientId,
-	togglingStoreId,
-	onEditOrderChange,
+	activeStoreIds,
+	indifferent,
+	onToggleStore,
+	onReorder,
+	onIndifferentChange,
 }: StoresSectionProps) {
 	const { t } = useTranslation()
+	const [dragOverId, setDragOverId] = useState<number | null>(null)
+	const dragId = useRef<number | null>(null)
+
 	if (allStores.length === 0) return <p className='ifm-hint'>{t('ingredients.storesNone')}</p>
 
+	const activeStores = activeStoreIds
+		.map((id) => allStores.find((s) => s.id === id))
+		.filter(Boolean) as UserStore[]
+	const inactiveStores = allStores.filter((s) => !activeStoreIds.includes(s.id))
+
+	const handleDragOver = (e: React.DragEvent, storeId: number) => {
+		e.preventDefault()
+		setDragOverId(storeId)
+	}
+	const handleDrop = (e: React.DragEvent, targetId: number) => {
+		e.preventDefault()
+		if (!dragId.current || dragId.current === targetId) {
+			setDragOverId(null)
+			return
+		}
+		const newIds = [...activeStoreIds]
+		const fromIdx = newIds.indexOf(dragId.current)
+		const toIdx = newIds.indexOf(targetId)
+		newIds.splice(fromIdx, 1)
+		newIds.splice(toIdx, 0, dragId.current)
+		onReorder(newIds)
+		dragId.current = null
+		setDragOverId(null)
+	}
+
 	return (
-		<div className='ifm-stores-list'>
-			{allStores.map((store) => {
-				let value = ''
-				let busy = false
-				let onChange: (v: string) => void
+		<div className='ifm-stores-section'>
+			{/* Checkbox: me es indiferente */}
+			<label
+				className={`ifm-stores-indifferent${activeStoreIds.length === 0 ? ' is-disabled' : ''}`}>
+				<input
+					type='checkbox'
+					checked={indifferent}
+					disabled={activeStoreIds.length === 0}
+					onChange={(e) => onIndifferentChange(e.target.checked)}
+				/>
+				<span>{t('stores.indifferentOrder')}</span>
+			</label>
 
-				if (draftOrders !== undefined && onDraftOrderChange) {
-					value = draftOrders[store.id] ?? ''
-					onChange = (v) => onDraftOrderChange(store.id, v)
-				} else if (ingredientId !== undefined && onEditOrderChange) {
-					const assoc = store.ingredients?.find((si) => si.ingredientId === ingredientId)
-					value = assoc ? (assoc.sortOrder != null ? String(assoc.sortOrder) : '0') : ''
-					busy = togglingStoreId === store.id
-					onChange = (v) => onEditOrderChange(store, v)
-				} else {
-					return null
-				}
+			{/* Tiendas activas — arrastrables si no es indiferente */}
+			{activeStores.length > 0 && (
+				<div className='ifm-stores-active'>
+					{activeStores.map((store, index) => (
+						<div
+							key={store.id}
+							className={`ifm-store-drag-row${indifferent ? ' is-indifferent' : ''}${dragOverId === store.id ? ' is-drag-over' : ''}`}
+							draggable={!indifferent}
+							onDragStart={() => {
+								dragId.current = store.id
+							}}
+							onDragOver={(e) => !indifferent && handleDragOver(e, store.id)}
+							onDrop={(e) => !indifferent && handleDrop(e, store.id)}
+							onDragEnd={() => {
+								dragId.current = null
+								setDragOverId(null)
+							}}>
+							{!indifferent && (
+								<span className='ifm-store-drag-handle' aria-hidden='true'>
+									⠿
+								</span>
+							)}
+							{!indifferent && <span className='ifm-store-drag-order'>{index + 1}</span>}
+							<span className='ifm-store-drag-name'>
+								{store.name}
+								{store.isShared && <span className='ifm-store-badge'>{t('stores.shared')}</span>}
+							</span>
+							<button
+								type='button'
+								className='ifm-store-remove'
+								title={t('stores.notHere')}
+								onClick={() => onToggleStore(store.id)}>
+								×
+							</button>
+						</div>
+					))}
+				</div>
+			)}
 
-				return (
-					<div key={store.id} className={`ifm-store-row${value ? ' is-active' : ''}`}>
-						<span className='ifm-store-name'>
-							{store.name}
+			{/* Tiendas no seleccionadas */}
+			{inactiveStores.length > 0 && (
+				<div className='ifm-stores-inactive'>
+					{inactiveStores.map((store) => (
+						<button
+							key={store.id}
+							type='button'
+							className='ifm-store-add-btn'
+							onClick={() => onToggleStore(store.id)}>
+							+ {store.name}
 							{store.isShared && <span className='ifm-store-badge'>{t('stores.shared')}</span>}
-						</span>
-						<select
-							className='form-input form-input-sm ifm-store-order-select'
-							value={value}
-							disabled={busy}
-							onChange={(e) => onChange(e.target.value)}>
-							<option value=''>— {t('stores.notHere')}</option>
-							<option value='0'>{t('stores.indifferent')}</option>
-							{Array.from({ length: allStores.length }, (_, i) => i + 1).map((n) => (
-								<option key={n} value={String(n)}>
-									{n}a {t('stores.option')}
-								</option>
-							))}
-						</select>
-					</div>
-				)
-			})}
+						</button>
+					))}
+				</div>
+			)}
 		</div>
 	)
 }
@@ -249,7 +304,8 @@ export function IngredientFormModal({
 	const [showConversions, setShowConversions] = useState(false)
 	const [newConversions, setNewConversions] = useState<ConversionDraft[]>([])
 	const [newPreferredUnit, setNewPreferredUnit] = useState('')
-	const [newStoreOrders, setNewStoreOrders] = useState<Record<number, string>>({})
+	const [activeStoreIds, setActiveStoreIds] = useState<number[]>([])
+	const [storeOrderIndifferent, setStoreOrderIndifferent] = useState(false)
 	const [bulkRows, setBulkRows] = useState<BulkRow[]>([{ id: 'b0', name: '', unit: 'g' }])
 	const [bulkCreating, setBulkCreating] = useState(false)
 
@@ -265,7 +321,6 @@ export function IngredientFormModal({
 	const [addingVariant, setAddingVariant] = useState(false)
 	const [newConvUnit, setNewConvUnit] = useState('')
 	const [newConvGrams, setNewConvGrams] = useState('')
-	const [togglingStoreId, setTogglingStoreId] = useState<number | null>(null)
 
 	// Formulario macro inline
 	const [vName, setVName] = useState('')
@@ -281,6 +336,8 @@ export function IngredientFormModal({
 	// Tags
 	const [allTags, setAllTags] = useState<IngredientTag[]>([])
 	const [newTagIds, setNewTagIds] = useState<number[]>([])
+	const [creatingNewTag, setCreatingNewTag] = useState(false)
+	const [newTagInput, setNewTagInput] = useState('')
 
 	// Inicializacion al abrir
 	useEffect(() => {
@@ -336,11 +393,35 @@ export function IngredientFormModal({
 			setShowConversions(false)
 			setNewConversions([])
 			setNewPreferredUnit('')
-			setNewStoreOrders({})
+			setActiveStoreIds([])
+			setStoreOrderIndifferent(false)
 			setNewTagIds([])
+			setCreatingNewTag(false)
+			setNewTagInput('')
 			setBulkRows([{ id: 'b0', name: '', unit: 'g' }])
 		}
 	}, [isOpen, ingredient, thresholdData])
+
+	// Sincronizar estado de tiendas cuando se cargan (modo edicion)
+	useEffect(() => {
+		if (!isOpen || !ingredient) return
+		const active = allStores
+			.filter((s) => s.ingredients?.some((si) => si.ingredientId === ingredient.id))
+			.sort((a, b) => {
+				const aOrd =
+					a.ingredients?.find((si) => si.ingredientId === ingredient.id)?.sortOrder ?? Infinity
+				const bOrd =
+					b.ingredients?.find((si) => si.ingredientId === ingredient.id)?.sortOrder ?? Infinity
+				return aOrd - bOrd
+			})
+			.map((s) => s.id)
+		setActiveStoreIds(active)
+		const anyOrdered = allStores.some(
+			(s) =>
+				(s.ingredients?.find((si) => si.ingredientId === ingredient.id)?.sortOrder ?? null) !== null
+		)
+		setStoreOrderIndifferent(active.length > 0 && !anyOrdered)
+	}, [allStores, isOpen, ingredient?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
 	// --- Helpers creacion ---
 	const getDefaultConversions = (unit: 'g' | 'ml'): ConversionDraft[] =>
@@ -364,6 +445,21 @@ export function IngredientFormModal({
 				return v
 			})
 		)
+	}
+
+	// --- Accion: crear tag inline (modo creacion) ---
+	const handleCreateTagInline = async () => {
+		const name = newTagInput.trim()
+		if (!name) return
+		try {
+			const created = await ingredientTagService.create({ name })
+			setAllTags((prev) => [...prev, created])
+			setNewTagIds((prev) => [...prev, created.id])
+			setNewTagInput('')
+			setCreatingNewTag(false)
+		} catch {
+			// silencioso
+		}
 	}
 
 	// --- Accion: crear uno ---
@@ -435,14 +531,10 @@ export function IngredientFormModal({
 				await ingredientService.update(created.id, { preferredUnit: newPreferredUnit })
 			}
 
-			for (const [storeIdStr, orderValue] of Object.entries(newStoreOrders)) {
-				if (!orderValue) continue
-				const sortOrder = orderValue === '0' ? null : Number(orderValue)
+			for (const [i, storeId] of activeStoreIds.entries()) {
+				const sortOrder = storeOrderIndifferent ? null : i + 1
 				try {
-					await storeService.addIngredient(Number(storeIdStr), {
-						ingredientId: created.id,
-						sortOrder,
-					})
+					await storeService.addIngredient(storeId, { ingredientId: created.id, sortOrder })
 				} catch {
 					/* ignorar si falla una tienda */
 				}
@@ -613,24 +705,57 @@ export function IngredientFormModal({
 	}
 
 	// --- Tiendas (edicion) ---
-	const handleStoreOrderChange = async (store: UserStore, value: string) => {
+	const handleToggleStoreEdit = async (storeId: number) => {
 		if (!ingredient) return
-		const currentAssoc = store.ingredients?.find((si) => si.ingredientId === ingredient.id)
-		setTogglingStoreId(store.id)
+		const isActive = activeStoreIds.includes(storeId)
 		try {
-			if (value === '') {
-				if (currentAssoc) await storeService.removeIngredient(store.id, ingredient.id)
+			if (isActive) {
+				await storeService.removeIngredient(storeId, ingredient.id)
+				setActiveStoreIds((prev) => prev.filter((id) => id !== storeId))
 			} else {
-				const sortOrder = value === '0' ? null : Number(value)
-				await storeService.addIngredient(store.id, { ingredientId: ingredient.id, sortOrder })
+				const sortOrder = storeOrderIndifferent ? null : activeStoreIds.length + 1
+				await storeService.addIngredient(storeId, { ingredientId: ingredient.id, sortOrder })
+				setActiveStoreIds((prev) => [...prev, storeId])
 			}
 			const updated = await storeService.getAll()
 			setAllStores(updated)
 			onSaved()
 		} catch {
 			toast.error(t('ingredients.updateError'))
-		} finally {
-			setTogglingStoreId(null)
+		}
+	}
+
+	const handleReorderEdit = async (newIds: number[]) => {
+		if (!ingredient || storeOrderIndifferent) {
+			setActiveStoreIds(newIds)
+			return
+		}
+		setActiveStoreIds(newIds)
+		try {
+			for (const [i, storeId] of newIds.entries()) {
+				await storeService.addIngredient(storeId, { ingredientId: ingredient.id, sortOrder: i + 1 })
+			}
+			const updated = await storeService.getAll()
+			setAllStores(updated)
+			onSaved()
+		} catch {
+			toast.error(t('ingredients.updateError'))
+		}
+	}
+
+	const handleIndifferentEdit = async (value: boolean) => {
+		if (!ingredient) return
+		setStoreOrderIndifferent(value)
+		try {
+			for (const [i, storeId] of activeStoreIds.entries()) {
+				const sortOrder = value ? null : i + 1
+				await storeService.addIngredient(storeId, { ingredientId: ingredient.id, sortOrder })
+			}
+			const updated = await storeService.getAll()
+			setAllStores(updated)
+			onSaved()
+		} catch {
+			toast.error(t('ingredients.updateError'))
 		}
 	}
 
@@ -1241,17 +1366,20 @@ export function IngredientFormModal({
 							<p className='ifm-section-label'>{t('ingredients.storesSection')}</p>
 							<StoresSection
 								allStores={allStores}
-								{...(isEdit
-									? {
-											ingredientId: ingredient.id,
-											togglingStoreId,
-											onEditOrderChange: handleStoreOrderChange,
-										}
-									: {
-											draftOrders: newStoreOrders,
-											onDraftOrderChange: (storeId: number, value: string) =>
-												setNewStoreOrders((prev) => ({ ...prev, [storeId]: value })),
-										})}
+								activeStoreIds={activeStoreIds}
+								indifferent={storeOrderIndifferent}
+								onToggleStore={
+									isEdit
+										? handleToggleStoreEdit
+										: (storeId) =>
+												setActiveStoreIds((prev) =>
+													prev.includes(storeId)
+														? prev.filter((id) => id !== storeId)
+														: [...prev, storeId]
+												)
+								}
+								onReorder={isEdit ? handleReorderEdit : setActiveStoreIds}
+								onIndifferentChange={isEdit ? handleIndifferentEdit : setStoreOrderIndifferent}
 							/>
 						</div>
 
@@ -1261,36 +1389,70 @@ export function IngredientFormModal({
 							{isEdit ? (
 								<IngredientTagsPanel ingredientId={ingredient.id} />
 							) : (
-								<div className='ing-tags-panel__list'>
-									{allTags.length === 0 ? (
-										<span className='ing-tags-panel__empty'>{t('tags.noTags')}</span>
-									) : (
-										allTags.map((tag) => (
+								<>
+									<div className='ing-tags-panel__list'>
+										{allTags.length === 0 ? (
+											<span className='ing-tags-panel__empty'>{t('tags.noTags')}</span>
+										) : (
+											allTags.map((tag) => (
+												<button
+													key={tag.id}
+													type='button'
+													className={`ing-tags-panel__chip${newTagIds.includes(tag.id) ? ' ing-tags-panel__chip--active' : ''}`}
+													style={
+														tag.color
+															? {
+																	borderColor: tag.color,
+																	...(newTagIds.includes(tag.id) ? { background: tag.color } : {}),
+																}
+															: {}
+													}
+													onClick={() =>
+														setNewTagIds((prev) =>
+															prev.includes(tag.id)
+																? prev.filter((id) => id !== tag.id)
+																: [...prev, tag.id]
+														)
+													}>
+													{tag.name}
+													{tag.isGlobal && <span className='ing-tags-panel__chip-badge'>G</span>}
+												</button>
+											))
+										)}
+									</div>
+									{creatingNewTag ? (
+										<div className='ing-tags-panel__create'>
+											<input
+												type='text'
+												value={newTagInput}
+												onChange={(e) => setNewTagInput(e.target.value)}
+												placeholder={t('tags.name')}
+												className='ing-tags-panel__input'
+												autoFocus
+												onKeyDown={(e) => e.key === 'Enter' && handleCreateTagInline()}
+											/>
 											<button
-												key={tag.id}
 												type='button'
-												className={`ing-tags-panel__chip${newTagIds.includes(tag.id) ? ' ing-tags-panel__chip--active' : ''}`}
-												style={
-													tag.color
-														? {
-																borderColor: tag.color,
-																...(newTagIds.includes(tag.id) ? { background: tag.color } : {}),
-															}
-														: {}
-												}
-												onClick={() =>
-													setNewTagIds((prev) =>
-														prev.includes(tag.id)
-															? prev.filter((id) => id !== tag.id)
-															: [...prev, tag.id]
-													)
-												}>
-												{tag.name}
-												{tag.isGlobal && <span className='ing-tags-panel__chip-badge'>G</span>}
+												className='ing-tags-panel__btn-create'
+												onClick={handleCreateTagInline}>
+												{t('save')}
 											</button>
-										))
+											<button
+												type='button'
+												className='ing-tags-panel__btn-cancel'
+												onClick={() => setCreatingNewTag(false)}>
+												{t('cancel')}
+											</button>
+										</div>
+									) : (
+										<button
+											type='button'
+											className='ing-tags-panel__btn-add'
+											onClick={() => setCreatingNewTag(true)}>
+											+ {t('tags.add')}
+										</button>
 									)}
-								</div>
+								</>
 							)}
 						</div>
 

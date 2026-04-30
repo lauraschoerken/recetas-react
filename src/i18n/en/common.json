@@ -685,6 +685,7 @@
 		"shared": "Shared with household",
 		"notHere": "Don't buy here",
 		"indifferent": "Indifferent",
+		"indifferentOrder": "Order doesn't matter",
 		"option": "option",
 		"created": "Store created",
 		"createError": "Error creating store",

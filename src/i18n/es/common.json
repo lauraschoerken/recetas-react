@@ -765,6 +765,7 @@
 		"shared": "Compartida con el hogar",
 		"notHere": "No compro aquí",
 		"indifferent": "Indiferente",
+		"indifferentOrder": "Me es indiferente el orden de compra",
 		"option": "opción",
 		"created": "Tienda creada",
 		"createError": "Error al crear tienda",

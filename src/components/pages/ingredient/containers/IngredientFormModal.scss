@@ -425,31 +425,91 @@
 }
 
 // ── Tiendas ──────────────────────────────────────────────────
-.ifm-stores-list {
+.ifm-stores-section {
 	display: flex;
 	flex-direction: column;
-	gap: 0.4rem;
+	gap: 0.5rem;
 }
 
-.ifm-store-row {
+.ifm-stores-indifferent {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
 	gap: 0.5rem;
-	padding: 0.35rem 0.6rem;
-	border-radius: 0.375rem;
-	border: 1px solid var(--border-color);
-	transition:
-		background 0.15s,
-		border-color 0.15s;
+	font-size: 0.875rem;
+	color: var(--text-primary);
+	cursor: pointer;
+	user-select: none;
 
-	&.is-active {
-		background: var(--primary-light);
-		border-color: var(--primary-color);
+	input[type='checkbox'] {
+		accent-color: var(--primary-color);
+		width: 1rem;
+		height: 1rem;
+		margin: 0;
+		cursor: pointer;
+	}
+
+	&.is-disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+		input {
+			cursor: not-allowed;
+		}
 	}
 }
 
-.ifm-store-name {
+.ifm-stores-active {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+
+.ifm-store-drag-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.35rem 0.6rem;
+	border-radius: 0.375rem;
+	border: 1px solid var(--primary-color);
+	background: var(--primary-light);
+	transition:
+		opacity 0.15s,
+		border-color 0.15s;
+
+	&:not(.is-indifferent) {
+		cursor: grab;
+		&:active {
+			cursor: grabbing;
+		}
+	}
+
+	&.is-drag-over {
+		border-color: var(--primary-hover);
+		opacity: 0.7;
+	}
+
+	&.is-indifferent {
+		border-color: var(--border-color);
+		background: var(--surface-1);
+	}
+}
+
+.ifm-store-drag-handle {
+	font-size: 1rem;
+	color: var(--text-muted);
+	cursor: grab;
+	flex-shrink: 0;
+}
+
+.ifm-store-drag-order {
+	min-width: 1.2rem;
+	text-align: center;
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--primary-color);
+	flex-shrink: 0;
+}
+
+.ifm-store-drag-name {
 	flex: 1;
 	font-size: 0.875rem;
 	color: var(--text-primary);
@@ -458,9 +518,45 @@
 	gap: 0.4rem;
 }
 
-.ifm-store-order-select {
-	max-width: 10rem;
+.ifm-store-remove {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: var(--text-muted);
+	font-size: 1rem;
+	line-height: 1;
+	padding: 0 0.1rem;
 	flex-shrink: 0;
+	&:hover {
+		color: var(--danger-color);
+	}
+}
+
+.ifm-stores-inactive {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+	padding-top: 0.15rem;
+}
+
+.ifm-store-add-btn {
+	background: none;
+	border: 1px dashed var(--border-color);
+	border-radius: 0.375rem;
+	padding: 0.25rem 0.6rem;
+	font-size: 0.8rem;
+	color: var(--text-secondary);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+	transition:
+		border-color 0.15s,
+		color 0.15s;
+	&:hover {
+		border-color: var(--primary-color);
+		color: var(--primary-color);
+	}
 }
 
 .ifm-store-badge {

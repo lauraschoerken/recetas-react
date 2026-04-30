@@ -54,50 +54,26 @@ export function IngredientCard({
 				tabIndex={0}
 				onKeyDown={(e) => e.key === 'Enter' && onEdit?.(ingredient)}>
 				{ingredient.imageUrl ? (
-					<img
-						src={ingredient.imageUrl}
-						alt={capitalizedName}
-						className='card-image'
-						onError={(e) => (e.currentTarget.style.display = 'none')}
-					/>
-				) : (
-					<div className='card-image-placeholder' />
-				)}
-				<div className='card-info'>
-					<div className='card-title-row'>
-						<span className='ingredient-name'>{capitalizedName}</span>
-						<span className='ingredient-unit-badge'>{ingredient.unit}</span>
+					<div className='card-cover' style={{ backgroundImage: `url(${ingredient.imageUrl})` }}>
+						<div className='card-info-overlay'>
+							<span className='ingredient-name is-over-image'>{capitalizedName}</span>
+							<p className='card-macros is-over-image'>
+								{defaultVariant
+									? formatMacros(defaultVariant) || t('ingredients.noNutrition')
+									: t('ingredients.noNutrition')}
+							</p>
+						</div>
 					</div>
-					<p className='card-macros'>
-						{defaultVariant
-							? formatMacros(defaultVariant) || t('ingredients.noNutrition')
-							: t('ingredients.noNutrition')}
-					</p>
-
-					{/* Cantidad mínima */}
-					{thresholdData && (
-						<p className='card-meta'>
-							<span className='card-meta__label'>{t('ingredients.minQtyShort')}</span>
-							{thresholdData.minQuantity} {thresholdData.unit}
+				) : (
+					<div className='card-no-image'>
+						<span className='ingredient-name'>{capitalizedName}</span>
+						<p className='card-macros'>
+							{defaultVariant
+								? formatMacros(defaultVariant) || t('ingredients.noNutrition')
+								: t('ingredients.noNutrition')}
 						</p>
-					)}
-
-					{/* Unidad en lista de compra */}
-					{ingredient.preferredUnit && (
-						<p className='card-meta'>
-							<span className='card-meta__label'>{t('ingredients.preferredUnitShort')}</span>
-							{ingredient.preferredUnit}
-						</p>
-					)}
-
-					{/* Tiendas donde se compra */}
-					{stores.length > 0 && (
-						<p className='card-meta'>
-							<span className='card-meta__label'>{t('ingredients.storesShort')}</span>
-							{stores.map((s) => s.name).join(', ')}
-						</p>
-					)}
-				</div>
+					</div>
+				)}
 			</div>
 
 			<div className='card-quick-actions'>
