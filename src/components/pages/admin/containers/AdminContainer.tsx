@@ -3,6 +3,7 @@ import './AdminContainer.scss'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { IngredientFormModal } from '@/components/pages/ingredient/containers/IngredientFormModal'
 import { adminService, AdminUser, PendingIngredient, Proposal } from '@/services/admin'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
@@ -18,6 +19,7 @@ export function AdminContainer() {
 	const [loading, setLoading] = useState(false)
 	const [search, setSearch] = useState('')
 	const [adminNotes, setAdminNotes] = useState<Record<number, string>>({})
+	const [selectedIngredient, setSelectedIngredient] = useState<PendingIngredient | null>(null)
 
 	useEffect(() => {
 		loadData()
@@ -206,23 +208,54 @@ export function AdminContainer() {
 							{pendingIngredients.length === 0 ? (
 								<p className='admin-container__empty'>{t('admin.noData')}</p>
 							) : (
-								<div className='admin-container__cards'>
+								<div className='admin-container__ing-list'>
 									{pendingIngredients.map((ing) => (
-										<div key={ing.id} className='admin-container__card'>
-											<div className='admin-container__card-info'>
-												<strong>{ing.name}</strong>
-												{ing.createdBy && (
-													<span className='admin-container__card-meta'>
-														{t('admin.proposedBy')}: {ing.createdBy.name} ({ing.createdBy.email})
+										<div key={ing.id} className='admin-container__ing-row'>
+											{ing.imageUrl ? (
+												<img
+													src={ing.imageUrl}
+													alt={ing.name}
+													className='admin-container__ing-thumb'
+												/>
+											) : (
+												<div className='admin-container__ing-thumb admin-container__ing-thumb--placeholder' />
+											)}
+											<div className='admin-container__ing-info'>
+												<button
+													className='admin-container__ing-name'
+													onClick={() => setSelectedIngredient(ing)}>
+													{ing.name}
+												</button>
+												<div className='admin-container__ing-meta'>
+													<span className='admin-container__pill admin-container__pill--unit'>
+														{ing.unit}
 													</span>
-												)}
-												{ing.variants.length > 0 && (
-													<span className='admin-container__card-meta'>
-														{ing.variants.map((v) => v.name).join(', ')}
+													{ing.defaultLocation && (
+														<span className='admin-container__pill admin-container__pill--location'>
+															{ing.defaultLocation}
+														</span>
+													)}
+													{ing.variants.length > 0 && (
+														<span className='admin-container__ing-variants'>
+															{ing.variants.map((v) => v.name).join(', ')}
+														</span>
+													)}
+												</div>
+												{ing.createdBy && (
+													<span className='admin-container__card-by'>
+														{t('admin.proposedBy')}: {ing.createdBy.name}{' '}
+														<span className='admin-container__card-email'>
+															({ing.createdBy.email})
+														</span>
 													</span>
 												)}
 											</div>
-											<div className='admin-container__card-actions'>
+											<div className='admin-container__ing-actions'>
+												<button
+													className='btn btn--secondary btn--sm'
+													onClick={() => setSelectedIngredient(ing)}>
+													{t('admin.viewDetail')}
+												</button>
 												<button
 													className='btn btn--primary btn--sm'
 													onClick={() => handleApproveIngredient(ing)}>
@@ -249,75 +282,143 @@ export function AdminContainer() {
 								<p className='admin-container__empty'>{t('admin.noData')}</p>
 							) : (
 								<div className='admin-container__cards'>
-									{proposals.map((proposal) => (
-										<div key={proposal.id} className='admin-container__card'>
-											<div className='admin-container__card-info'>
-												<div className='admin-container__card-row'>
-													<span>
-														<strong>{t('admin.type')}:</strong> {proposal.type}
-													</span>
-													<span>
-														<strong>{t('admin.ingredient')}:</strong> {proposal.ingredient.name}
-													</span>
-												</div>
-												{proposal.fieldName && (
-													<div className='admin-container__card-row'>
-														<span>
-															<strong>{t('admin.field')}:</strong> {proposal.fieldName}
+									{proposals.map((proposal) => {
+										const isNewConv = proposal.type === 'NEW_CONVERSION'
+										const proposedConv =
+											isNewConv &&
+											proposal.proposedValue &&
+											typeof proposal.proposedValue === 'object'
+												? (proposal.proposedValue as {
+														unit?: string
+														unitName?: string
+														gramsEquivalent?: number
+														gramsPerUnit?: number
+													})
+												: null
+										return (
+											<div
+												key={proposal.id}
+												className='admin-container__card admin-container__card--rich'>
+												{/* Cabecera: info + nota + botones */}
+												<div className='admin-container__card-top'>
+													<div className='admin-container__card-title-block'>
+														<div className='admin-container__card-pills'>
+															<span className='admin-container__pill admin-container__pill--type'>
+																{isNewConv
+																	? t('admin.typeNewConversion')
+																	: t('admin.typeEditField')}
+															</span>
+														</div>
+														<h3 className='admin-container__card-name'>
+															{proposal.ingredient.name}
+														</h3>
+														<span className='admin-container__card-by'>
+															{t('admin.proposedBy')}: {proposal.proposedBy.name}{' '}
+															<span className='admin-container__card-email'>
+																({proposal.proposedBy.email})
+															</span>
 														</span>
 													</div>
-												)}
-												{proposal.currentValue != null && (
-													<div className='admin-container__card-row'>
-														<span>
-															<strong>{t('admin.currentValue')}:</strong>{' '}
-															{String(proposal.currentValue)}
-														</span>
+													<div className='admin-container__card-actions'>
+														<input
+															type='text'
+															placeholder={t('admin.adminNote')}
+															value={adminNotes[proposal.id] ?? ''}
+															onChange={(e) =>
+																setAdminNotes((prev) => ({
+																	...prev,
+																	[proposal.id]: e.target.value,
+																}))
+															}
+															className='admin-container__note-input'
+														/>
+														<button
+															className='btn btn--primary btn--sm'
+															onClick={() => handleReviewProposal(proposal, 'ACCEPTED')}>
+															{t('admin.approve')}
+														</button>
+														<button
+															className='btn btn--danger btn--sm'
+															onClick={() => handleReviewProposal(proposal, 'REJECTED')}>
+															{t('admin.reject')}
+														</button>
 													</div>
-												)}
-												<div className='admin-container__card-row'>
-													<span>
-														<strong>{t('admin.proposedValue')}:</strong>{' '}
-														{String(proposal.proposedValue)}
-													</span>
 												</div>
-												<div className='admin-container__card-row'>
-													<span>
-														<strong>{t('admin.proposedBy')}:</strong> {proposal.proposedBy.name}
+
+												{/* Detalle del cambio — ancho completo */}
+												<div className='admin-container__card-section'>
+													<span className='admin-container__card-section-label'>
+														{t('admin.proposalDetail')}
 													</span>
-												</div>
-												<div className='admin-container__card-row'>
-													<input
-														type='text'
-														placeholder={t('admin.adminNote')}
-														value={adminNotes[proposal.id] ?? ''}
-														onChange={(e) =>
-															setAdminNotes((prev) => ({ ...prev, [proposal.id]: e.target.value }))
-														}
-														className='admin-container__note-input'
-													/>
+													{isNewConv && proposedConv ? (
+														<div className='admin-container__proposal-conv'>
+															<span className='admin-container__conversion admin-container__conversion--proposed'>
+																1 {proposedConv.unit ?? proposedConv.unitName} ={' '}
+																{proposedConv.gramsEquivalent ?? proposedConv.gramsPerUnit}g
+															</span>
+														</div>
+													) : (
+														<div className='admin-container__proposal-field'>
+															{proposal.fieldName && (
+																<span className='admin-container__proposal-row'>
+																	<strong>{t('admin.field')}:</strong> {proposal.fieldName}
+																</span>
+															)}
+															{proposal.currentValue != null && (
+																<span className='admin-container__proposal-row'>
+																	<strong>{t('admin.currentValue')}:</strong>{' '}
+																	<span className='admin-container__value admin-container__value--old'>
+																		{String(proposal.currentValue)}
+																	</span>
+																</span>
+															)}
+															<span className='admin-container__proposal-row'>
+																<strong>{t('admin.proposedValue')}:</strong>{' '}
+																<span className='admin-container__value admin-container__value--new'>
+																	{typeof proposal.proposedValue === 'object'
+																		? JSON.stringify(proposal.proposedValue)
+																		: String(proposal.proposedValue ?? '')}
+																</span>
+															</span>
+														</div>
+													)}
 												</div>
 											</div>
-											<div className='admin-container__card-actions'>
-												<button
-													className='btn btn--primary btn--sm'
-													onClick={() => handleReviewProposal(proposal, 'ACCEPTED')}>
-													{t('admin.approve')}
-												</button>
-												<button
-													className='btn btn--danger btn--sm'
-													onClick={() => handleReviewProposal(proposal, 'REJECTED')}>
-													{t('admin.reject')}
-												</button>
-											</div>
-										</div>
-									))}
+										)
+									})}
 								</div>
 							)}
 						</div>
 					)}
 				</>
 			)}
+
+			{/* Modal de edición del ingrediente pendiente (reutiliza IngredientFormModal) */}
+			<IngredientFormModal
+				isOpen={!!selectedIngredient}
+				onClose={() => setSelectedIngredient(null)}
+				onSaved={() => {
+					setSelectedIngredient(null)
+					loadData()
+				}}
+				ingredient={
+					selectedIngredient
+						? {
+								id: selectedIngredient.id,
+								name: selectedIngredient.name,
+								unit: selectedIngredient.unit,
+								status: selectedIngredient.status,
+								imageUrl: selectedIngredient.imageUrl,
+								defaultLocation: selectedIngredient.defaultLocation,
+								variants: selectedIngredient.variants,
+								conversions: selectedIngredient.conversions.map((c) => ({
+									...c,
+									ingredientId: selectedIngredient.id,
+								})),
+							}
+						: null
+				}
+			/>
 		</div>
 	)
 }

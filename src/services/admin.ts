@@ -9,13 +9,35 @@ export interface AdminUser {
 	createdAt: string
 }
 
+export interface PendingIngredientVariant {
+	id: number
+	name: string
+	isDefault: boolean
+	calories?: number | null
+	protein?: number | null
+	carbs?: number | null
+	fat?: number | null
+	fiber?: number | null
+	weightFactor: number
+}
+
+export interface PendingIngredientConversion {
+	id: number
+	unitName: string
+	gramsPerUnit: number
+}
+
 export interface PendingIngredient {
 	id: number
 	name: string
+	unit: string
 	status: string
+	imageUrl?: string | null
+	defaultLocation?: string | null
 	createdByUserId?: number
 	createdBy?: { id: number; name: string; email: string }
-	variants: Array<{ id: number; name: string }>
+	variants: PendingIngredientVariant[]
+	conversions: PendingIngredientConversion[]
 }
 
 export interface Proposal {
