@@ -345,17 +345,28 @@
 	object-fit: cover;
 }
 
-@media (max-width: 64rem) {
+/* Grid de ingredientes */
+.ingredients-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	gap: 0.75rem;
+	margin-bottom: 1.5rem;
+}
+
+@media (max-width: 40rem) {
 	.ingredients-grid {
-		grid-template-columns: repeat(4, 1fr);
+		grid-template-columns: repeat(2, 1fr);
+		gap: 0.625rem;
+	}
+}
+
+@media (max-width: 28rem) {
+	.ingredients-grid {
+		grid-template-columns: 1fr;
 	}
 }
 
 @media (max-width: 48rem) {
-	.ingredients-grid {
-		grid-template-columns: repeat(3, 1fr);
-	}
-
 	.add-ingredient-form .form-row {
 		grid-template-columns: 1fr;
 	}
@@ -390,12 +401,6 @@
 	}
 }
 
-@media (max-width: 36rem) {
-	.ingredients-grid {
-		grid-template-columns: repeat(2, 1fr);
-	}
-}
-
 @media (max-width: 30rem) {
 	.macros-row {
 		grid-template-columns: 1fr;
@@ -403,9 +408,5 @@
 
 	.macros-row .macro-input:last-child {
 		grid-column: span 1;
-	}
-
-	.ingredients-grid {
-		grid-template-columns: 1fr;
 	}
 }

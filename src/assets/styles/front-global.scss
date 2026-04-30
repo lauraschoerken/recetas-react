@@ -349,19 +349,10 @@ body {
 	margin-bottom: 2rem;
 }
 
-/* Grid de ingredientes */
-.ingredients-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-	gap: 0.875rem;
-	margin-bottom: 1.5rem;
-}
-
 @media (max-width: 40rem) {
 	.grid-2,
 	.grid-3,
-	.grid-4,
-	.ingredients-grid {
+	.grid-4 {
 		grid-template-columns: repeat(2, 1fr);
 		gap: 0.625rem;
 	}
@@ -370,8 +361,7 @@ body {
 @media (max-width: 28rem) {
 	.grid-2,
 	.grid-3,
-	.grid-4,
-	.ingredients-grid {
+	.grid-4 {
 		grid-template-columns: 1fr;
 	}
 }
