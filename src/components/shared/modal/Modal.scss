@@ -51,3 +51,24 @@
 .modal-body {
 	padding: 1.5rem;
 }
+
+@media (max-width: 40rem) {
+	.modal-overlay {
+		padding: 0;
+		align-items: flex-end;
+	}
+
+	.modal-content {
+		max-width: 100%;
+		border-radius: var(--radius) var(--radius) 0 0;
+		max-height: 92dvh;
+	}
+
+	.modal-body {
+		padding: 1rem;
+	}
+
+	.modal-header {
+		padding: 0.875rem 1rem;
+	}
+}

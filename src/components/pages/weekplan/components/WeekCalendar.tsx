@@ -57,26 +57,28 @@ export function WeekCalendar({
 
 	return (
 		<div className='week-calendar-split'>
-			{/* Cabecera de días */}
-			<div className='week-calendar-header'>
-				<div className='week-calendar-label'></div>
-				{days.map((day, index) => {
-					const isToday = new Date().toDateString() === day.date.toDateString()
-					const displayDate = day.date.toLocaleDateString('es-ES', {
-						day: 'numeric',
-						month: 'short',
-					})
-					return (
-						<div
-							key={index}
-							className={`week-calendar-day-header ${isToday ? 'is-today' : ''}`}
-							onClick={() => onDayClick?.(day.dateStr)}
-							style={{ cursor: onDayClick ? 'pointer' : undefined }}>
-							<span className='day-name'>{day.dayName}</span>
-							<span className='day-date'>{displayDate}</span>
-						</div>
-					)
-				})}
+			{/* Cabecera de días — scroll horizontal en móvil */}
+			<div className='week-calendar-scroll-wrapper'>
+				<div className='week-calendar-header'>
+					<div className='week-calendar-label'></div>
+					{days.map((day, index) => {
+						const isToday = new Date().toDateString() === day.date.toDateString()
+						const displayDate = day.date.toLocaleDateString('es-ES', {
+							day: 'numeric',
+							month: 'short',
+						})
+						return (
+							<div
+								key={index}
+								className={`week-calendar-day-header ${isToday ? 'is-today' : ''}`}
+								onClick={() => onDayClick?.(day.dateStr)}
+								style={{ cursor: onDayClick ? 'pointer' : undefined }}>
+								<span className='day-name'>{day.dayName}</span>
+								<span className='day-date'>{displayDate}</span>
+							</div>
+						)
+					})}
+				</div>
 			</div>
 
 			{/* Fila de Comidas */}

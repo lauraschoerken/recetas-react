@@ -565,3 +565,39 @@
 		min-width: 10rem;
 	}
 }
+
+// ── Responsive ───────────────────────────────────────────
+@media (max-width: 48rem) {
+	.settings-container {
+		padding: 1rem 0.5rem;
+	}
+
+	.settings-layout {
+		flex-direction: column;
+	}
+
+	.settings-nav {
+		flex-direction: row;
+		flex-wrap: wrap;
+		min-width: unset;
+		gap: 0.25rem;
+	}
+
+	.settings-nav-item {
+		padding: 0.5rem 0.75rem;
+		font-size: 0.85rem;
+	}
+
+	.settings-nav-label {
+		white-space: normal;
+	}
+
+	.settings-grid {
+		grid-template-columns: 1fr;
+		gap: 1rem;
+	}
+
+	.settings-card {
+		padding: 1rem;
+	}
+}

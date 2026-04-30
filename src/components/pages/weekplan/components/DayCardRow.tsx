@@ -168,96 +168,100 @@ export function DayCardRow({
 	}
 
 	return (
-		<div className={`day-card-row row-${type}`}>
-			<div className='row-label'>
-				<span>{title}</span>
-			</div>
-			{days.map((day, index) => {
-				const plans = type === 'meal' ? day.meals : day.preps
-				const isToday = new Date().toDateString() === day.date.toDateString()
-				const isDragOver = dragOverDate === day.dateStr
-
-				return (
-					<div
-						key={index}
-						className={`row-day-cell ${isToday ? 'is-today' : ''} ${isDragOver ? 'is-dragover' : ''}`}
-						onClick={() => onDayClick?.(day.dateStr)}
-						onDragOver={(e) => handleDragOver(e, day.dateStr)}
-						onDragLeave={handleDragLeave}
-						onDrop={(e) => handleDrop(e, day.dateStr)}>
-						{plans.length === 0 ? (
-							<span className='row-empty'>-</span>
-						) : (
-							plans.map((plan) => renderPlanItem(plan))
-						)}
-					</div>
-				)
-			})}
-
-			{/* Modal de cocinar */}
-			{cookingPlan && (
-				<div className='cook-modal-overlay' onClick={handleCancelCook}>
-					<div className='cook-modal' onClick={(e) => e.stopPropagation()}>
-						<h3>{t('weekPlan.cookTitle')}</h3>
-						<p className='cook-modal-recipe'>{getItemTitle(cookingPlan)}</p>
-						<p className='cook-modal-servings'>
-							{t('weekPlan.preparedServings')} {cookingPlan.servings}
-						</p>
-
-						<div className='cook-modal-field'>
-							<label htmlFor='leftovers'>{t('weekPlan.storeServings')}</label>
-							<input
-								type='number'
-								id='leftovers'
-								min='0'
-								max={cookingPlan.servings}
-								value={leftoverServings}
-								onChange={(e) =>
-									setLeftoverServings(
-										Math.min(cookingPlan.servings, Math.max(0, parseInt(e.target.value) || 0))
-									)
-								}
-							/>
-							<small className='cook-modal-hint'>
-								{leftoverServings === 0
-									? t('weekPlan.consumeAll')
-									: leftoverServings === cookingPlan.servings
-										? t('weekPlan.storeAll')
-										: t('weekPlan.consumeSome', { count: cookingPlan.servings - leftoverServings })}
-							</small>
-						</div>
-
-						{leftoverServings > 0 && (
-							<div className='cook-modal-field'>
-								<label>{t('weekPlan.storeIn')}</label>
-								<div className='cook-modal-location-options'>
-									<button
-										type='button'
-										className={`cook-modal-location-btn ${leftoverLocation === 'nevera' ? 'active' : ''}`}
-										onClick={() => setLeftoverLocation('nevera')}>
-										{t('weekPlan.fridgeLocation')}
-									</button>
-									<button
-										type='button'
-										className={`cook-modal-location-btn ${leftoverLocation === 'congelador' ? 'active' : ''}`}
-										onClick={() => setLeftoverLocation('congelador')}>
-										{t('weekPlan.freezerLocation')}
-									</button>
-								</div>
-							</div>
-						)}
-
-						<div className='cook-modal-actions'>
-							<button className='cook-modal-cancel' onClick={handleCancelCook}>
-								{t('cancel')}
-							</button>
-							<button className='cook-modal-confirm' onClick={handleConfirmCook}>
-								{t('confirm')}
-							</button>
-						</div>
-					</div>
+		<div className='week-calendar-scroll-wrapper'>
+			<div className={`day-card-row row-${type}`}>
+				<div className='row-label'>
+					<span>{title}</span>
 				</div>
-			)}
+				{days.map((day, index) => {
+					const plans = type === 'meal' ? day.meals : day.preps
+					const isToday = new Date().toDateString() === day.date.toDateString()
+					const isDragOver = dragOverDate === day.dateStr
+
+					return (
+						<div
+							key={index}
+							className={`row-day-cell ${isToday ? 'is-today' : ''} ${isDragOver ? 'is-dragover' : ''}`}
+							onClick={() => onDayClick?.(day.dateStr)}
+							onDragOver={(e) => handleDragOver(e, day.dateStr)}
+							onDragLeave={handleDragLeave}
+							onDrop={(e) => handleDrop(e, day.dateStr)}>
+							{plans.length === 0 ? (
+								<span className='row-empty'>-</span>
+							) : (
+								plans.map((plan) => renderPlanItem(plan))
+							)}
+						</div>
+					)
+				})}
+
+				{/* Modal de cocinar */}
+				{cookingPlan && (
+					<div className='cook-modal-overlay' onClick={handleCancelCook}>
+						<div className='cook-modal' onClick={(e) => e.stopPropagation()}>
+							<h3>{t('weekPlan.cookTitle')}</h3>
+							<p className='cook-modal-recipe'>{getItemTitle(cookingPlan)}</p>
+							<p className='cook-modal-servings'>
+								{t('weekPlan.preparedServings')} {cookingPlan.servings}
+							</p>
+
+							<div className='cook-modal-field'>
+								<label htmlFor='leftovers'>{t('weekPlan.storeServings')}</label>
+								<input
+									type='number'
+									id='leftovers'
+									min='0'
+									max={cookingPlan.servings}
+									value={leftoverServings}
+									onChange={(e) =>
+										setLeftoverServings(
+											Math.min(cookingPlan.servings, Math.max(0, parseInt(e.target.value) || 0))
+										)
+									}
+								/>
+								<small className='cook-modal-hint'>
+									{leftoverServings === 0
+										? t('weekPlan.consumeAll')
+										: leftoverServings === cookingPlan.servings
+											? t('weekPlan.storeAll')
+											: t('weekPlan.consumeSome', {
+													count: cookingPlan.servings - leftoverServings,
+												})}
+								</small>
+							</div>
+
+							{leftoverServings > 0 && (
+								<div className='cook-modal-field'>
+									<label>{t('weekPlan.storeIn')}</label>
+									<div className='cook-modal-location-options'>
+										<button
+											type='button'
+											className={`cook-modal-location-btn ${leftoverLocation === 'nevera' ? 'active' : ''}`}
+											onClick={() => setLeftoverLocation('nevera')}>
+											{t('weekPlan.fridgeLocation')}
+										</button>
+										<button
+											type='button'
+											className={`cook-modal-location-btn ${leftoverLocation === 'congelador' ? 'active' : ''}`}
+											onClick={() => setLeftoverLocation('congelador')}>
+											{t('weekPlan.freezerLocation')}
+										</button>
+									</div>
+								</div>
+							)}
+
+							<div className='cook-modal-actions'>
+								<button className='cook-modal-cancel' onClick={handleCancelCook}>
+									{t('cancel')}
+								</button>
+								<button className='cook-modal-confirm' onClick={handleConfirmCook}>
+									{t('confirm')}
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
+			</div>
 		</div>
 	)
 }

@@ -66,9 +66,30 @@
 .shopping-actions {
 	display: flex;
 	gap: 0.5rem;
+	flex-wrap: wrap;
 }
 
 .page-header-actions {
 	display: flex;
 	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+@media (max-width: 40rem) {
+	.shopping-list {
+		max-width: 100%;
+	}
+
+	.shopping-list-title {
+		font-size: 0.9rem;
+	}
+
+	.shopping-actions,
+	.page-header-actions {
+		flex-direction: column;
+
+		.btn {
+			width: 100%;
+		}
+	}
 }

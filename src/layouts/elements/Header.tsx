@@ -1,5 +1,6 @@
 import '../layout.scss'
 
+import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
@@ -14,6 +15,7 @@ export const Header = () => {
 	const { t } = useTranslation()
 	const activeClass = 'link-active'
 	const isAdmin = authService.isAdmin()
+	const [menuOpen, setMenuOpen] = useState(false)
 
 	return (
 		<header className='header'>
@@ -21,43 +23,47 @@ export const Header = () => {
 				<Link to='/' className='link brand'>
 					{APP_NAME}
 				</Link>
-				<nav className='nav'>
-					<>
-						<div className='nav__links'>
-							<NavLink
-								to='/recipes'
-								className={({ isActive }) => (isActive ? activeClass : 'link')}>
-								{t('nav.recipes')}
+
+				{/* Hamburguesa — solo móvil */}
+				<button
+					className={`nav__hamburger${menuOpen ? ' is-open' : ''}`}
+					aria-label='Menú'
+					onClick={() => setMenuOpen((v) => !v)}>
+					<span />
+					<span />
+					<span />
+				</button>
+
+				<nav className={`nav${menuOpen ? ' nav--open' : ''}`}>
+					<div className='nav__links' onClick={() => setMenuOpen(false)}>
+						<NavLink to='/recipes' className={({ isActive }) => (isActive ? activeClass : 'link')}>
+							{t('nav.recipes')}
+						</NavLink>
+						<NavLink to='/home' className={({ isActive }) => (isActive ? activeClass : 'link')}>
+							{t('nav.home')}
+						</NavLink>
+						<NavLink
+							to='/ingredients'
+							className={({ isActive }) => (isActive ? activeClass : 'link')}>
+							{t('nav.ingredients')}
+						</NavLink>
+						<NavLink
+							to='/week-plan'
+							className={({ isActive }) => (isActive ? activeClass : 'link')}>
+							{t('nav.weekPlan')}
+						</NavLink>
+						<NavLink
+							to='/shopping-list'
+							className={({ isActive }) => (isActive ? activeClass : 'link')}>
+							{t('nav.shopping')}
+						</NavLink>
+						{isAdmin && (
+							<NavLink to='/admin' className={({ isActive }) => (isActive ? activeClass : 'link')}>
+								{t('nav.admin')}
 							</NavLink>
-							<NavLink to='/home' className={({ isActive }) => (isActive ? activeClass : 'link')}>
-								{t('nav.home')}
-							</NavLink>
-							<NavLink
-								to='/ingredients'
-								className={({ isActive }) => (isActive ? activeClass : 'link')}>
-								{t('nav.ingredients')}
-							</NavLink>
-							<NavLink
-								to='/week-plan'
-								className={({ isActive }) => (isActive ? activeClass : 'link')}>
-								{t('nav.weekPlan')}
-							</NavLink>
-							<NavLink
-								to='/shopping-list'
-								className={({ isActive }) => (isActive ? activeClass : 'link')}>
-								{t('nav.shopping')}
-							</NavLink>
-							{isAdmin && (
-								<NavLink
-									to='/admin'
-									className={({ isActive }) => (isActive ? activeClass : 'link')}>
-									{t('nav.admin')}
-								</NavLink>
-							)}
-						</div>
-					</>
+						)}
+					</div>
 					<div className='nav__actions'>
-						{' '}
 						<AlertBell /> <ThemeToggle />
 						<LanguageSelect />
 						<UserMenu />

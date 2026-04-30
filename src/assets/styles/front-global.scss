@@ -176,9 +176,9 @@ body {
 }
 
 .container {
-	max-width: 1200px;
+	max-width: 1400px;
 	margin: 0 auto;
-	padding: 0 1rem;
+	padding: 0 0.75rem;
 }
 
 .page-header {
@@ -333,20 +333,47 @@ body {
 
 .grid {
 	display: grid;
-	gap: 1.5rem;
+	gap: 1rem;
 }
 
 .grid-2 {
-	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-}
-
-.grid-3 {
 	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
+.grid-3 {
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
 .grid-4 {
-	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
 	margin-bottom: 2rem;
+}
+
+/* Grid de ingredientes */
+.ingredients-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+	gap: 0.875rem;
+	margin-bottom: 1.5rem;
+}
+
+@media (max-width: 40rem) {
+	.grid-2,
+	.grid-3,
+	.grid-4,
+	.ingredients-grid {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 0.625rem;
+	}
+}
+
+@media (max-width: 28rem) {
+	.grid-2,
+	.grid-3,
+	.grid-4,
+	.ingredients-grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 .flex {
@@ -473,4 +500,41 @@ body {
 /* Grid de recetas con margen inferior */
 .grid-4 + * {
 	margin-top: 2rem;
+}
+
+// ── Responsive global ────────────────────────────────────
+@media (max-width: 40rem) {
+	.page-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.75rem;
+		margin-bottom: 1.25rem;
+	}
+
+	.page-title {
+		font-size: 1.375rem;
+	}
+
+	.btn-lg {
+		padding: 0.75rem 1.25rem;
+		font-size: 0.9rem;
+	}
+
+	.btn {
+		padding: 0.6rem 1rem;
+		font-size: 0.85rem;
+	}
+
+	.form-input {
+		padding: 0.75rem 0.875rem;
+		font-size: 0.95rem;
+	}
+
+	.search-bar-container {
+		flex-wrap: wrap;
+	}
+
+	.plan-type-selector {
+		flex-direction: column;
+	}
 }

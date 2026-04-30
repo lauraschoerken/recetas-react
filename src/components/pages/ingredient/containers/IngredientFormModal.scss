@@ -3,6 +3,12 @@
 	max-width: 680px;
 }
 
+@media (max-width: 40rem) {
+	.ifm-wrapper .modal-content {
+		max-width: 100%;
+	}
+}
+
 // ── Formulario base ─────────────────────────────────────────────
 .ifm-form {
 	display: flex;
