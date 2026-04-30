@@ -242,6 +242,28 @@
 	align-self: flex-start;
 }
 
+.macros-section {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.macros-section-label {
+	font-size: 0.85rem;
+	color: var(--text-secondary);
+	margin: 0;
+}
+
+.unit-badge-fixed {
+	padding: 0.4rem 0.6rem;
+	background: var(--surface-2);
+	color: var(--text-secondary);
+	border-radius: 6px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	flex-shrink: 0;
+}
+
 .search-bar {
 	margin-bottom: 1rem;
 }
@@ -262,8 +284,8 @@
 
 .ingredients-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-	gap: 1rem;
+	grid-template-columns: repeat(5, 1fr);
+	gap: 0.75rem;
 }
 
 .empty-state {
@@ -323,7 +345,17 @@
 	object-fit: cover;
 }
 
+@media (max-width: 64rem) {
+	.ingredients-grid {
+		grid-template-columns: repeat(4, 1fr);
+	}
+}
+
 @media (max-width: 48rem) {
+	.ingredients-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
 	.add-ingredient-form .form-row {
 		grid-template-columns: 1fr;
 	}
@@ -355,6 +387,12 @@
 	.mode-btn {
 		flex: 1;
 		text-align: center;
+	}
+}
+
+@media (max-width: 36rem) {
+	.ingredients-grid {
+		grid-template-columns: repeat(2, 1fr);
 	}
 }
 

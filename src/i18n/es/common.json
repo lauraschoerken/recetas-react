@@ -259,6 +259,11 @@
 		"addState": "+ Añadir estado",
 		"statePlaceholder": "Nombre del estado (ej: Cocinado, Frito...)",
 		"noNutrition": "Sin información nutricional",
+		"minQtyShort": "Mín:",
+		"preferredUnitShort": "Lista:",
+		"storesShort": "Tienda:",
+		"storesSection": "Dónde lo compro",
+		"storesNone": "No tienes tiendas configuradas. Cófiguralas en Ajustes > Tiendas.",
 		"defaultUnit": "Por defecto ({{unit}})",
 		"minQuantity": "Cantidad mínima",
 		"minQuantityHint": "Recibir alerta cuando quede menos de esta cantidad en casa",
@@ -306,7 +311,8 @@
 		"addToWeekPlan": "Añadir al plan semanal",
 		"addToWeekPlanTitle": "Añadir {{name}} al plan semanal",
 		"addedToWeekPlan": "Ingrediente añadido al plan semanal",
-		"addToWeekPlanError": "Error al añadir al plan semanal"
+		"addToWeekPlanError": "Error al añadir al plan semanal",
+		"preferredUnit": "Unidad en lista de compra"
 	},
 	"homePage": {
 		"title": "Mi Casa",
@@ -649,7 +655,13 @@
 		"thresholdsMin": "Mínimo:",
 		"thresholdsEmpty": "No hay mínimos configurados.",
 		"thresholdRemoved": "Mínimo eliminado",
-		"thresholdsSearch": "Buscar por nombre..."
+		"thresholdsSearch": "Buscar por nombre...",
+		"storesSection": "Tiendas",
+		"storesSectionDesc": "Gestiona las tiendas donde compras tus ingredientes.",
+		"storesAdd": "Añadir tienda",
+		"tagsSection": "Tags",
+		"tagsSectionDesc": "Gestiona las etiquetas para clasificar ingredientes.",
+		"tagsAdd": "Nueva tag"
 	},
 	"pagination": {
 		"label": "Paginación",
@@ -716,6 +728,8 @@
 		"deleted": "Tag eliminada",
 		"deleteError": "Error al eliminar tag",
 		"deleteConfirm": "¿Eliminar la tag \"{{name}}\"?",
+		"updated": "Tag actualizada",
+		"updateError": "Error al actualizar tag",
 		"assigned": "Tag asignada",
 		"unassigned": "Tag eliminada del ingrediente",
 		"hidden": "Tag ocultada",
@@ -749,6 +763,9 @@
 		"url": "URL de la tienda",
 		"logoUrl": "URL del logo",
 		"shared": "Compartida con el hogar",
+		"notHere": "No compro aquí",
+		"indifferent": "Indiferente",
+		"option": "opción",
 		"created": "Tienda creada",
 		"createError": "Error al crear tienda",
 		"updated": "Tienda actualizada",

@@ -255,6 +255,11 @@
 		"addState": "+ Add state",
 		"statePlaceholder": "State name (e.g.: Cooked, Fried...)",
 		"noNutrition": "No nutritional information",
+		"minQtyShort": "Min:",
+		"preferredUnitShort": "List:",
+		"storesShort": "Store:",
+		"storesSection": "Where I buy it",
+		"storesNone": "No stores configured. Set them up in Settings > Stores.",
 		"defaultUnit": "Default ({{unit}})",
 		"minQuantity": "Minimum quantity",
 		"minQuantityHint": "Receive alert when less than this quantity is at home",
@@ -302,7 +307,8 @@
 		"addToWeekPlan": "Add to week plan",
 		"addToWeekPlanTitle": "Add {{name}} to week plan",
 		"addedToWeekPlan": "Ingredient added to week plan",
-		"addToWeekPlanError": "Error adding to week plan"
+		"addToWeekPlanError": "Error adding to week plan",
+		"preferredUnit": "Unit for shopping list"
 	},
 	"homePage": {
 		"title": "My Home",
@@ -552,7 +558,13 @@
 		"thresholdsMin": "Minimum:",
 		"thresholdsEmpty": "No minimums configured.",
 		"thresholdRemoved": "Minimum removed",
-		"thresholdsSearch": "Search by name..."
+		"thresholdsSearch": "Search by name...",
+		"storesSection": "Stores",
+		"storesSectionDesc": "Manage the stores where you buy your ingredients.",
+		"storesAdd": "Add store",
+		"tagsSection": "Tags",
+		"tagsSectionDesc": "Manage labels to classify ingredients.",
+		"tagsAdd": "New tag"
 	},
 	"units": {
 		"unit": "unit",
@@ -636,6 +648,8 @@
 		"deleted": "Tag deleted",
 		"deleteError": "Error deleting tag",
 		"deleteConfirm": "Delete tag \"{{name}}\"?",
+		"updated": "Tag updated",
+		"updateError": "Error updating tag",
 		"assigned": "Tag assigned",
 		"unassigned": "Tag removed from ingredient",
 		"hidden": "Tag hidden",
@@ -669,6 +683,9 @@
 		"url": "Store URL",
 		"logoUrl": "Logo URL",
 		"shared": "Shared with household",
+		"notHere": "Don't buy here",
+		"indifferent": "Indifferent",
+		"option": "option",
 		"created": "Store created",
 		"createError": "Error creating store",
 		"updated": "Store updated",

@@ -1,42 +1,19 @@
-import './IngredientListContainer.scss'
+﻿import './IngredientListContainer.scss'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
-import { CloseIcon } from '@/components/shared/icons'
 import { Pagination } from '@/components/shared/pagination/Pagination'
 import { alertService, IngredientThreshold } from '@/services/alert'
 import { Ingredient, ingredientService, UpdateIngredientData } from '@/services/ingredient'
 import { shoppingService } from '@/services/shopping'
+import { storeService, UserStore } from '@/services/store'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import { getStoredPageSize } from '@/utils/pagination/usePagination'
 
 import { IngredientCard } from '../components/IngredientCard'
-
-const BASE_UNITS: ('g' | 'ml')[] = ['g', 'ml']
-
-interface NewConversion {
-	unitName: string
-	gramsPerUnit: string
-}
-
-interface NewVariant {
-	id: string
-	name: string
-	isDefault: boolean
-	calories: string
-	protein: string
-	carbs: string
-	fat: string
-	fiber: string
-}
-
-interface BulkIngredient {
-	id: string
-	name: string
-	unit: 'g' | 'ml'
-}
+import { IngredientFormModal } from './IngredientFormModal'
 
 export function IngredientListContainer() {
 	const { t } = useTranslation()
@@ -47,42 +24,18 @@ export function IngredientListContainer() {
 	const [total, setTotal] = useState(0)
 	const [searchParams, setSearchParams] = useSearchParams()
 	const [pageSize] = useState(getStoredPageSize)
-	const [showAddForm, setShowAddForm] = useState(false)
-	const [addMode, setAddMode] = useState<'single' | 'multiple'>('single')
+
+	const [stores, setStores] = useState<UserStore[]>([])
+
+	// Modales
+	const [showCreateModal, setShowCreateModal] = useState(false)
+	const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null)
 
 	const search = searchParams.get('q') || ''
 	const currentPage = parseInt(searchParams.get('page') || '1', 10)
 
 	const [localSearch, setLocalSearch] = useState(search)
 	const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-	// Estado para modo simple (un ingrediente)
-	const [newName, setNewName] = useState('')
-	const [newUnit, setNewUnit] = useState<'g' | 'ml'>('g')
-	const [newImageUrl, setNewImageUrl] = useState('')
-	const [newDefaultLocation, setNewDefaultLocation] = useState('')
-	const [newVariants, setNewVariants] = useState<NewVariant[]>([
-		{
-			id: `var-${Date.now()}`,
-			name: 'Crudo',
-			isDefault: true,
-			calories: '',
-			protein: '',
-			carbs: '',
-			fat: '',
-			fiber: '',
-		},
-	])
-	const [newConversions, setNewConversions] = useState<NewConversion[]>([])
-	const [showConversions, setShowConversions] = useState(false)
-	const [newMinQuantity, setNewMinQuantity] = useState<string>('')
-	const [newMinUnit, setNewMinUnit] = useState<string>('g')
-
-	// Estado para modo múltiple
-	const [bulkIngredients, setBulkIngredients] = useState<BulkIngredient[]>([
-		{ id: `bulk-${Date.now()}`, name: '', unit: 'g' },
-	])
-	const [bulkCreating, setBulkCreating] = useState(false)
 
 	// Estado para añadir al plan semanal
 	const [weekPlanIngredient, setWeekPlanIngredient] = useState<Ingredient | null>(null)
@@ -99,6 +52,15 @@ export function IngredientListContainer() {
 			setAllThresholds(thresholds)
 		} catch (error) {
 			console.error('Error loading thresholds:', error)
+		}
+	}, [])
+
+	const loadStores = useCallback(async () => {
+		try {
+			const s = await storeService.getAll()
+			setStores(s)
+		} catch (error) {
+			console.error('Error loading stores:', error)
 		}
 	}, [])
 
@@ -127,171 +89,9 @@ export function IngredientListContainer() {
 		loadThresholds()
 	}, [loadThresholds])
 
-	const getDefaultConversions = (unit: 'g' | 'ml'): NewConversion[] => {
-		if (unit === 'g') {
-			return [{ unitName: 'kg', gramsPerUnit: '1000' }]
-		} else {
-			return [{ unitName: 'L', gramsPerUnit: '1000' }]
-		}
-	}
-
-	const handleUnitChange = (unit: 'g' | 'ml') => {
-		setNewUnit(unit)
-		setNewMinUnit(unit)
-		if (showConversions) {
-			setNewConversions(getDefaultConversions(unit))
-		}
-	}
-
-	const toggleConversions = () => {
-		if (!showConversions) {
-			setNewConversions(getDefaultConversions(newUnit))
-		}
-		setShowConversions(!showConversions)
-	}
-
-	const addConversionRow = () => {
-		setNewConversions([...newConversions, { unitName: '', gramsPerUnit: '' }])
-	}
-
-	const removeConversionRow = (index: number) => {
-		setNewConversions(newConversions.filter((_, i) => i !== index))
-	}
-
-	const updateConversionRow = (index: number, field: keyof NewConversion, value: string) => {
-		const updated = [...newConversions]
-		updated[index][field] = value
-		setNewConversions(updated)
-	}
-
-	const addVariantRow = () => {
-		setNewVariants([
-			...newVariants,
-			{
-				id: `var-${Date.now()}`,
-				name: '',
-				isDefault: false,
-				calories: '',
-				protein: '',
-				carbs: '',
-				fat: '',
-				fiber: '',
-			},
-		])
-	}
-
-	const removeVariantRow = (id: string) => {
-		if (newVariants.length <= 1) return
-		const remaining = newVariants.filter((v) => v.id !== id)
-		// Si eliminamos el default, hacer default al primero
-		if (!remaining.some((v) => v.isDefault) && remaining.length > 0) {
-			remaining[0].isDefault = true
-		}
-		setNewVariants(remaining)
-	}
-
-	const updateVariantRow = (id: string, field: keyof NewVariant, value: string | boolean) => {
-		setNewVariants(
-			newVariants.map((v) => {
-				if (v.id === id) {
-					if (field === 'isDefault' && value === true) {
-						return { ...v, isDefault: true }
-					}
-					return { ...v, [field]: value }
-				}
-				// Si cambiamos a default, quitar default de los demás
-				if (field === 'isDefault' && value === true) {
-					return { ...v, isDefault: false }
-				}
-				return v
-			})
-		)
-	}
-
-	const handleCreate = async (e: React.FormEvent) => {
-		e.preventDefault()
-
-		if (!newName.trim()) return
-
-		// Filtrar variantes válidas (con nombre)
-		const validVariants = newVariants
-			.filter((v) => v.name.trim())
-			.map((v) => ({
-				name: v.name.trim(),
-				isDefault: v.isDefault,
-				calories: v.calories ? Number(v.calories) : undefined,
-				protein: v.protein ? Number(v.protein) : undefined,
-				carbs: v.carbs ? Number(v.carbs) : undefined,
-				fat: v.fat ? Number(v.fat) : undefined,
-				fiber: v.fiber ? Number(v.fiber) : undefined,
-			}))
-
-		// Si no hay variantes válidas, crear una por defecto
-		if (validVariants.length === 0) {
-			validVariants.push({
-				name: 'Crudo',
-				isDefault: true,
-				calories: undefined,
-				protein: undefined,
-				carbs: undefined,
-				fat: undefined,
-				fiber: undefined,
-			})
-		}
-
-		// Asegurar que al menos una es default
-		if (!validVariants.some((v) => v.isDefault)) {
-			validVariants[0].isDefault = true
-		}
-
-		try {
-			const created = await ingredientService.create({
-				name: newName.charAt(0).toUpperCase() + newName.slice(1),
-				unit: newUnit,
-				imageUrl: newImageUrl || undefined,
-				defaultLocation: newDefaultLocation || undefined,
-				variants: validVariants,
-			})
-
-			// Crear conversión por defecto (kg o L)
-			const defaultConversion =
-				newUnit === 'g'
-					? { unitName: 'kg', gramsPerUnit: 1000 }
-					: { unitName: 'L', gramsPerUnit: 1000 }
-
-			await ingredientService.addConversion(created.id, defaultConversion)
-
-			// Crear las conversiones adicionales del usuario
-			const validConversions = newConversions.filter(
-				(c) =>
-					c.unitName.trim() &&
-					c.gramsPerUnit &&
-					c.unitName.trim().toLowerCase() !== defaultConversion.unitName.toLowerCase()
-			)
-			for (const conv of validConversions) {
-				await ingredientService.addConversion(created.id, {
-					unitName: conv.unitName.trim(),
-					gramsPerUnit: Number(conv.gramsPerUnit),
-				})
-			}
-
-			// Crear umbral mínimo si se proporcionó
-			if (newMinQuantity && Number(newMinQuantity) > 0) {
-				await alertService.setIngredientThreshold({
-					ingredientId: created.id,
-					minQuantity: Number(newMinQuantity),
-					unit: newMinUnit,
-				})
-			}
-
-			await loadIngredients()
-			await loadThresholds()
-			resetForm()
-			toast.success(t('ingredients.created'))
-		} catch (error) {
-			toast.error(t('ingredients.createError'))
-		}
-	}
+	useEffect(() => {
+		loadStores()
+	}, [loadStores])
 
 	const handleUpdate = async (id: number, data: UpdateIngredientData) => {
 		try {
@@ -363,97 +163,6 @@ export function IngredientListContainer() {
 		}
 	}
 
-	const resetForm = () => {
-		setNewName('')
-		setNewUnit('g')
-		setNewImageUrl('')
-		setNewDefaultLocation('')
-		setNewVariants([
-			{
-				id: `var-${Date.now()}`,
-				name: 'Crudo',
-				isDefault: true,
-				calories: '',
-				protein: '',
-				carbs: '',
-				fat: '',
-				fiber: '',
-			},
-		])
-		setNewConversions([])
-		setShowConversions(false)
-		setNewMinQuantity('')
-		setNewMinUnit('g')
-		setShowAddForm(false)
-		setAddMode('single')
-		setBulkIngredients([{ id: `bulk-${Date.now()}`, name: '', unit: 'g' }])
-	}
-
-	// Funciones para modo múltiple
-	const addBulkRow = () => {
-		setBulkIngredients([...bulkIngredients, { id: `bulk-${Date.now()}`, name: '', unit: 'g' }])
-	}
-
-	const removeBulkRow = (id: string) => {
-		if (bulkIngredients.length > 1) {
-			setBulkIngredients(bulkIngredients.filter((ing) => ing.id !== id))
-		}
-	}
-
-	const updateBulkName = (id: string, value: string) => {
-		setBulkIngredients(
-			bulkIngredients.map((ing) => (ing.id === id ? { ...ing, name: value } : ing))
-		)
-	}
-
-	const updateBulkUnit = (id: string, value: 'g' | 'ml') => {
-		setBulkIngredients(
-			bulkIngredients.map((ing) => (ing.id === id ? { ...ing, unit: value } : ing))
-		)
-	}
-
-	const handleBulkKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-		if (e.key === 'Enter') {
-			e.preventDefault()
-			if (index === bulkIngredients.length - 1) {
-				addBulkRow()
-			} else {
-				const nextInput = document.querySelector<HTMLInputElement>(
-					`.bulk-ingredient-row:nth-child(${index + 2}) input[type="text"]`
-				)
-				nextInput?.focus()
-			}
-		}
-	}
-
-	const handleBulkCreate = async (e: React.FormEvent) => {
-		e.preventDefault()
-
-		const validIngredients = bulkIngredients
-			.filter((ing) => ing.name.trim())
-			.map((ing) => ({
-				name: ing.name.charAt(0).toUpperCase() + ing.name.slice(1),
-				unit: ing.unit,
-			}))
-
-		if (validIngredients.length === 0) return
-
-		setBulkCreating(true)
-
-		try {
-			await ingredientService.createBulk(validIngredients)
-			await loadIngredients()
-			resetForm()
-			toast.success(`${validIngredients.length} ${t('ingredients.bulkCreated')}`)
-		} catch (error) {
-			toast.error(t('ingredients.bulkCreateError'))
-		} finally {
-			setBulkCreating(false)
-		}
-	}
-
-	const visibleIngredients = ingredients
-
 	useEffect(() => {
 		setLocalSearch(search)
 	}, [search])
@@ -474,315 +183,40 @@ export function IngredientListContainer() {
 		}, 300)
 	}
 
+	const handleSaved = async () => {
+		await loadIngredients()
+		await loadThresholds()
+		await loadStores()
+	}
+
 	return (
 		<div className='ingredient-list-container'>
 			<div className='page-header'>
 				<h1 className='page-title'>{t('ingredients.title')}</h1>
-				<button className='btn btn-primary' onClick={() => setShowAddForm(!showAddForm)}>
-					{showAddForm ? t('ingredients.cancelBtn') : t('ingredients.new')}
+				<button className='btn btn-primary' onClick={() => setShowCreateModal(true)}>
+					{t('ingredients.new')}
 				</button>
 			</div>
 
-			{showAddForm && (
-				<div className='add-ingredient-form'>
-					<div className='add-mode-toggle'>
-						<button
-							type='button'
-							className={`mode-btn ${addMode === 'single' ? 'active' : ''}`}
-							onClick={() => setAddMode('single')}>
-							{t('ingredients.single')}
-						</button>
-						<button
-							type='button'
-							className={`mode-btn ${addMode === 'multiple' ? 'active' : ''}`}
-							onClick={() => setAddMode('multiple')}>
-							{t('ingredients.multiple')}
-						</button>
-					</div>
+			{/* Modal creacion */}
+			<IngredientFormModal
+				isOpen={showCreateModal}
+				onClose={() => setShowCreateModal(false)}
+				onSaved={handleSaved}
+			/>
 
-					{addMode === 'single' ? (
-						<form onSubmit={handleCreate}>
-							<div className='form-row'>
-								<input
-									type='text'
-									className='form-input'
-									placeholder={t('ingredients.namePlaceholder')}
-									value={newName}
-									onChange={(e) => setNewName(e.target.value)}
-									required
-								/>
-								<select
-									className='form-input unit-select'
-									value={newUnit}
-									onChange={(e) => handleUnitChange(e.target.value as 'g' | 'ml')}>
-									{BASE_UNITS.map((u) => (
-										<option key={u} value={u}>
-											{u}
-										</option>
-									))}
-								</select>
-							</div>
-
-							<div className='form-row image-row'>
-								<input
-									type='url'
-									className='form-input'
-									placeholder={t('ingredients.imageUrlPlaceholder')}
-									value={newImageUrl}
-									onChange={(e) => setNewImageUrl(e.target.value)}
-								/>
-								{newImageUrl && (
-									<div className='image-preview-small'>
-										<img
-											src={newImageUrl}
-											alt='Preview'
-											onError={(e) => (e.currentTarget.style.display = 'none')}
-										/>
-									</div>
-								)}
-							</div>
-							<div className='form-row'>
-								<select
-									className='form-input'
-									value={newDefaultLocation}
-									onChange={(e) => setNewDefaultLocation(e.target.value)}>
-									<option value=''>{t('ingredients.defaultLocationOption')}</option>
-									<option value='nevera'>{t('homePage.fridge')}</option>
-									<option value='congelador'>{t('homePage.freezer')}</option>
-									<option value='despensa'>{t('homePage.pantry')}</option>
-								</select>
-							</div>
-							<div className='form-row threshold-row'>
-								<label className='form-label'>{t('ingredients.minQuantity')}</label>
-								<div className='form-row-inline'>
-									<input
-										type='number'
-										className='form-input'
-										placeholder={t('ingredients.quantityPlaceholder')}
-										value={newMinQuantity}
-										onChange={(e) => setNewMinQuantity(e.target.value)}
-										min={0}
-										step={1}
-									/>
-									<span className='form-unit'>{newUnit}</span>
-								</div>
-								<p className='form-hint'>{t('ingredients.minQuantityHint')}</p>
-							</div>
-							<div className='variants-section'>
-								<p className='form-hint'>{t('ingredients.statesHint', { unit: newUnit })}</p>
-
-								<div className='variants-list-create'>
-									{newVariants.map((variant) => (
-										<div
-											key={variant.id}
-											className={`variant-create-row ${variant.isDefault ? 'is-default' : ''}`}>
-											<div className='variant-create-header'>
-												<input
-													type='radio'
-													name='defaultVariant'
-													checked={variant.isDefault}
-													onChange={() => updateVariantRow(variant.id, 'isDefault', true)}
-													title={t('default')}
-												/>
-												<input
-													type='text'
-													className='form-input variant-name-input'
-													placeholder={t('ingredients.variantsPlaceholder')}
-													value={variant.name}
-													onChange={(e) => updateVariantRow(variant.id, 'name', e.target.value)}
-												/>
-												{newVariants.length > 1 && (
-													<button
-														type='button'
-														className='btn-icon-small'
-														onClick={() => removeVariantRow(variant.id)}>
-														<CloseIcon size={14} aria-hidden='true' />
-													</button>
-												)}
-											</div>
-											<div className='variant-create-macros'>
-												<input
-													type='number'
-													className='form-input'
-													placeholder={t('weekPlan.kcal')}
-													value={variant.calories}
-													onChange={(e) => updateVariantRow(variant.id, 'calories', e.target.value)}
-													min={0}
-												/>
-												<input
-													type='number'
-													className='form-input'
-													placeholder={t('weekPlan.prot')}
-													value={variant.protein}
-													onChange={(e) => updateVariantRow(variant.id, 'protein', e.target.value)}
-													min={0}
-													step={0.1}
-												/>
-												<input
-													type='number'
-													className='form-input'
-													placeholder={t('weekPlan.carbsShort')}
-													value={variant.carbs}
-													onChange={(e) => updateVariantRow(variant.id, 'carbs', e.target.value)}
-													min={0}
-													step={0.1}
-												/>
-												<input
-													type='number'
-													className='form-input'
-													placeholder={t('weekPlan.fatShort')}
-													value={variant.fat}
-													onChange={(e) => updateVariantRow(variant.id, 'fat', e.target.value)}
-													min={0}
-													step={0.1}
-												/>
-												<input
-													type='number'
-													className='form-input'
-													placeholder={t('fiber')}
-													value={variant.fiber}
-													onChange={(e) => updateVariantRow(variant.id, 'fiber', e.target.value)}
-													min={0}
-													step={0.1}
-												/>
-											</div>
-										</div>
-									))}
-								</div>
-
-								<button
-									type='button'
-									className='btn btn-outline btn-sm add-variant-create-btn'
-									onClick={addVariantRow}>
-									{t('ingredients.addAnother')}
-								</button>
-							</div>
-
-							<button type='button' className='conversions-toggle-btn' onClick={toggleConversions}>
-								{showConversions ? '▼' : '▶'} {t('recipes.unitConversions')}
-							</button>
-
-							{showConversions && (
-								<div className='conversions-section'>
-									<p className='form-hint'>
-										Define equivalencias (ej: 1 {newUnit === 'g' ? 'kg' : 'L'} ={' '}
-										{newUnit === 'g' ? '1000g' : '1000ml'})
-									</p>
-
-									{newConversions.map((conv, index) => (
-										<div key={index} className='conversion-row'>
-											<span className='conversion-prefix'>1</span>
-											<input
-												type='text'
-												className='form-input conversion-name-input'
-												placeholder={
-													newUnit === 'g' ? 'kg, unidad, cucharada...' : 'L, vaso, taza...'
-												}
-												value={conv.unitName}
-												onChange={(e) => updateConversionRow(index, 'unitName', e.target.value)}
-											/>
-											<span className='conversion-equals'>=</span>
-											<input
-												type='number'
-												className='form-input conversion-value-input'
-												placeholder='1000'
-												value={conv.gramsPerUnit}
-												onChange={(e) => updateConversionRow(index, 'gramsPerUnit', e.target.value)}
-												min={0}
-												step={0.1}
-											/>
-											<span className='conversion-suffix'>{newUnit}</span>
-											<button
-												type='button'
-												className='btn-icon-small'
-												onClick={() => removeConversionRow(index)}>
-												<CloseIcon size={14} aria-hidden='true' />
-											</button>
-										</div>
-									))}
-
-									<button
-										type='button'
-										className='btn btn-outline btn-sm add-conversion-btn'
-										onClick={addConversionRow}>
-										{t('ingredients.addConversion')}
-									</button>
-								</div>
-							)}
-
-							<div className='form-actions'>
-								<button type='button' className='btn btn-outline' onClick={resetForm}>
-									{t('cancel')}
-								</button>
-								<button type='submit' className='btn btn-primary'>
-									{t('ingredients.createBtn')}
-								</button>
-							</div>
-						</form>
-					) : (
-						<form onSubmit={handleBulkCreate}>
-							<p className='form-hint bulk-hint'>{t('ingredients.bulkHint')}</p>
-
-							<div className='bulk-ingredients-list'>
-								{bulkIngredients.map((ing, index) => (
-									<div key={ing.id} className='bulk-ingredient-row'>
-										<span className='bulk-row-number'>{index + 1}</span>
-										<input
-											type='text'
-											className='form-input'
-											placeholder={t('ingredients.namePlaceholder')}
-											value={ing.name}
-											onChange={(e) => updateBulkName(ing.id, e.target.value)}
-											onKeyDown={(e) => handleBulkKeyDown(e, index)}
-											autoFocus={index === bulkIngredients.length - 1}
-										/>
-										<select
-											className='form-input unit-select'
-											value={ing.unit}
-											onChange={(e) => updateBulkUnit(ing.id, e.target.value as 'g' | 'ml')}>
-											{BASE_UNITS.map((u) => (
-												<option key={u} value={u}>
-													{u}
-												</option>
-											))}
-										</select>
-										<button
-											type='button'
-											className='btn-icon-small'
-											onClick={() => removeBulkRow(ing.id)}
-											disabled={bulkIngredients.length === 1}>
-											<CloseIcon size={14} aria-hidden='true' />
-										</button>
-									</div>
-								))}
-							</div>
-
-							<button
-								type='button'
-								className='btn btn-outline btn-sm add-bulk-row-btn'
-								onClick={addBulkRow}>
-								{t('ingredients.addAnother')}
-							</button>
-
-							<div className='form-actions'>
-								<button type='button' className='btn btn-outline' onClick={resetForm}>
-									{t('cancel')}
-								</button>
-								<button
-									type='submit'
-									className='btn btn-primary'
-									disabled={bulkCreating || !bulkIngredients.some((ing) => ing.name.trim())}>
-									{bulkCreating
-										? t('loading')
-										: t('ingredients.createCount', {
-												count: bulkIngredients.filter((ing) => ing.name.trim()).length,
-											})}
-								</button>
-							</div>
-						</form>
-					)}
-				</div>
-			)}
+			{/* Modal edicion */}
+			<IngredientFormModal
+				isOpen={!!editingIngredient}
+				onClose={() => setEditingIngredient(null)}
+				onSaved={handleSaved}
+				ingredient={editingIngredient}
+				thresholdData={
+					editingIngredient
+						? (allThresholds.find((th) => th.ingredientId === editingIngredient.id) ?? null)
+						: null
+				}
+			/>
 
 			<div className='search-bar'>
 				<input
@@ -807,13 +241,30 @@ export function IngredientListContainer() {
 			) : (
 				<>
 					<div className='ingredients-grid'>
-						{visibleIngredients.map((ingredient) => (
+						{ingredients.map((ingredient) => (
 							<IngredientCard
 								key={ingredient.id}
 								ingredient={ingredient}
-								thresholdData={allThresholds.find((t) => t.ingredientId === ingredient.id) ?? null}
+								thresholdData={
+									allThresholds.find((th) => th.ingredientId === ingredient.id) ?? null
+								}
+								stores={stores
+									.filter((s) => s.ingredients?.some((si) => si.ingredientId === ingredient.id))
+									.sort((a, b) => {
+										const aOrd = a.ingredients?.find(
+											(si) => si.ingredientId === ingredient.id
+										)?.sortOrder
+										const bOrd = b.ingredients?.find(
+											(si) => si.ingredientId === ingredient.id
+										)?.sortOrder
+										if (aOrd == null && bOrd == null) return 0
+										if (aOrd == null) return 1
+										if (bOrd == null) return -1
+										return aOrd - bOrd
+									})}
 								onUpdate={handleUpdate}
 								onDelete={handleDelete}
+								onEdit={setEditingIngredient}
 								onConversionChange={loadIngredients}
 								onThresholdChange={loadThresholds}
 								onAddToShopping={handleAddToShopping}

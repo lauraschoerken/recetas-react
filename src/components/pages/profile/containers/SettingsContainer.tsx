@@ -7,6 +7,8 @@ import { HiOutlineTrash, HiOutlinePencil, HiOutlineCheck, HiOutlineXMark } from 
 import { householdService, Household } from '@/services/household'
 import { backupService } from '@/services/backup'
 import { alertService, IngredientThreshold, RecipeThreshold } from '@/services/alert'
+import { storeService, UserStore } from '@/services/store'
+import { ingredientTagService, IngredientTag } from '@/services/ingredientExtras'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import {
 	getStoredPageSize,
@@ -17,7 +19,15 @@ import {
 	SNOOZE_OPTIONS,
 } from '@/utils/pagination/usePagination'
 
-type SettingsSection = 'household' | 'alerts' | 'thresholds' | 'pdf' | 'backup' | 'display'
+type SettingsSection =
+	| 'household'
+	| 'alerts'
+	| 'thresholds'
+	| 'pdf'
+	| 'backup'
+	| 'display'
+	| 'stores'
+	| 'tags'
 
 export function SettingsContainer() {
 	const { t } = useTranslation()
@@ -29,6 +39,8 @@ export function SettingsContainer() {
 		{ id: 'household', label: t('settings.household'), icon: '🏠' },
 		{ id: 'alerts', label: t('settings.alerts'), icon: '🔔' },
 		{ id: 'thresholds', label: t('settings.thresholdsSection'), icon: '📦' },
+		{ id: 'stores', label: t('settings.storesSection'), icon: '🛒' },
+		{ id: 'tags', label: t('settings.tagsSection'), icon: '🏷️' },
 		{ id: 'pdf', label: t('settings.pdfSettings'), icon: '📄' },
 		{ id: 'backup', label: t('settings.importExport'), icon: '💾' },
 		{ id: 'display', label: t('settings.displaySection'), icon: '🎛️' },
@@ -67,6 +79,23 @@ export function SettingsContainer() {
 	const [importing, setImporting] = useState(false)
 	const [importMode, setImportMode] = useState<'overwrite' | 'keep' | 'review'>('keep')
 
+	// Stores state
+	const [stores, setStores] = useState<UserStore[]>([])
+	const [storesLoading, setStoresLoading] = useState(false)
+	const [newStoreName, setNewStoreName] = useState('')
+	const [newStoreUrl, setNewStoreUrl] = useState('')
+	const [newStoreLogoUrl, setNewStoreLogoUrl] = useState('')
+	const [newStoreShared, setNewStoreShared] = useState(false)
+	const [editingStoreId, setEditingStoreId] = useState<number | null>(null)
+	const [editingStoreName, setEditingStoreName] = useState('')
+
+	// Tags state
+	const [tags, setTags] = useState<IngredientTag[]>([])
+	const [tagsLoading, setTagsLoading] = useState(false)
+	const [newTagName, setNewTagName] = useState('')
+	const [editingTagId, setEditingTagId] = useState<number | null>(null)
+	const [editingTagName, setEditingTagName] = useState('')
+
 	// PDF settings state (stored in localStorage)
 	const [pdfShowAuthor, setPdfShowAuthor] = useState(
 		() => localStorage.getItem('pdfShowAuthor') === 'true'
@@ -83,6 +112,12 @@ export function SettingsContainer() {
 		if (activeSection === 'thresholds') {
 			loadThresholds()
 		}
+		if (activeSection === 'stores') {
+			loadStores()
+		}
+		if (activeSection === 'tags') {
+			loadTags()
+		}
 	}, [activeSection])
 
 	const loadThresholds = async () => {
@@ -98,6 +133,120 @@ export function SettingsContainer() {
 			console.error('Error loading thresholds')
 		} finally {
 			setThresholdsLoading(false)
+		}
+	}
+
+	const loadStores = async () => {
+		setStoresLoading(true)
+		try {
+			const data = await storeService.getAll()
+			setStores(data)
+		} catch {
+			console.error('Error loading stores')
+		} finally {
+			setStoresLoading(false)
+		}
+	}
+
+	const handleCreateStore = async () => {
+		if (!newStoreName.trim()) return
+		try {
+			const created = await storeService.create({
+				name: newStoreName.trim(),
+				url: newStoreUrl.trim() || undefined,
+				logoUrl: newStoreLogoUrl.trim() || undefined,
+				isShared: newStoreShared,
+			})
+			setStores((prev) => [...prev, created])
+			setNewStoreName('')
+			setNewStoreUrl('')
+			setNewStoreLogoUrl('')
+			setNewStoreShared(false)
+			toast.success(t('stores.created'))
+		} catch {
+			toast.error(t('stores.createError'))
+		}
+	}
+
+	const handleUpdateStore = async (id: number) => {
+		if (!editingStoreName.trim()) return
+		try {
+			const updated = await storeService.update(id, { name: editingStoreName.trim() })
+			setStores((prev) => prev.map((s) => (s.id === id ? updated : s)))
+			setEditingStoreId(null)
+			toast.success(t('stores.updated'))
+		} catch {
+			toast.error(t('stores.updateError'))
+		}
+	}
+
+	const handleDeleteStore = async (id: number) => {
+		const ok = await confirm({
+			title: t('stores.deleteConfirm', { name: stores.find((s) => s.id === id)?.name }),
+			message: '',
+			confirmText: t('delete'),
+			type: 'danger',
+		})
+		if (!ok) return
+		try {
+			await storeService.delete(id)
+			setStores((prev) => prev.filter((s) => s.id !== id))
+			toast.success(t('stores.deleted'))
+		} catch {
+			toast.error(t('stores.deleteError'))
+		}
+	}
+
+	const loadTags = async () => {
+		setTagsLoading(true)
+		try {
+			const data = await ingredientTagService.getAll()
+			setTags(data)
+		} catch {
+			console.error('Error loading tags')
+		} finally {
+			setTagsLoading(false)
+		}
+	}
+
+	const handleCreateTag = async () => {
+		if (!newTagName.trim()) return
+		try {
+			const created = await ingredientTagService.create({ name: newTagName.trim() })
+			setTags((prev) => [...prev, created])
+			setNewTagName('')
+			toast.success(t('tags.created'))
+		} catch {
+			toast.error(t('tags.createError'))
+		}
+	}
+
+	const handleUpdateTag = async (id: number) => {
+		if (!editingTagName.trim()) return
+		try {
+			const updated = await ingredientTagService.update(id, { name: editingTagName.trim() })
+			setTags((prev) => prev.map((tg) => (tg.id === id ? updated : tg)))
+			setEditingTagId(null)
+			toast.success(t('tags.updated'))
+		} catch {
+			toast.error(t('tags.updateError'))
+		}
+	}
+
+	const handleDeleteTag = async (id: number) => {
+		const ok = await confirm({
+			title: t('tags.deleteConfirm', { name: tags.find((tg) => tg.id === id)?.name }),
+			message: '',
+			confirmText: t('delete'),
+			type: 'danger',
+		})
+		if (!ok) return
+		try {
+			await ingredientTagService.delete(id)
+			setTags((prev) => prev.filter((tg) => tg.id !== id))
+			toast.success(t('tags.deleted'))
+		} catch {
+			toast.error(t('tags.deleteError'))
 		}
 	}
 
@@ -879,6 +1028,241 @@ export function SettingsContainer() {
 												))}
 										</ul>
 									)}
+								</>
+							)}
+						</div>
+					)}
+
+					{activeSection === 'stores' && (
+						<div className='settings-card'>
+							<h2 className='settings-card-title'>{t('settings.storesSection')}</h2>
+							<p className='settings-card-description'>{t('settings.storesSectionDesc')}</p>
+
+							{storesLoading ? (
+								<p className='settings-card-description'>{t('settings.loading')}</p>
+							) : (
+								<>
+									{stores.length === 0 ? (
+										<p className='settings-card-description'>{t('stores.noStores')}</p>
+									) : (
+										<ul className='thresholds-list'>
+											{stores.map((store) => (
+												<li key={store.id} className='thresholds-list__item'>
+													{editingStoreId === store.id ? (
+														<>
+															<input
+																className='form-input form-input-sm'
+																value={editingStoreName}
+																onChange={(e) => setEditingStoreName(e.target.value)}
+																autoFocus
+																onKeyDown={(e) => {
+																	if (e.key === 'Enter') handleUpdateStore(store.id)
+																	if (e.key === 'Escape') setEditingStoreId(null)
+																}}
+															/>
+															<div className='thresholds-list__actions'>
+																<button
+																	type='button'
+																	className='btn-icon'
+																	onClick={() => handleUpdateStore(store.id)}>
+																	<HiOutlineCheck />
+																</button>
+																<button
+																	type='button'
+																	className='btn-icon'
+																	onClick={() => setEditingStoreId(null)}>
+																	<HiOutlineXMark />
+																</button>
+															</div>
+														</>
+													) : (
+														<>
+															<span className='thresholds-list__name'>
+																{store.name}
+																{store.isShared && (
+																	<span className='settings-badge'> {t('stores.shared')}</span>
+																)}
+															</span>
+															{store.url && (
+																<a
+																	href={store.url}
+																	target='_blank'
+																	rel='noopener noreferrer'
+																	className='thresholds-list__meta'>
+																	{store.url}
+																</a>
+															)}
+															<div className='thresholds-list__actions'>
+																<button
+																	type='button'
+																	className='btn-icon'
+																	onClick={() => {
+																		setEditingStoreId(store.id)
+																		setEditingStoreName(store.name)
+																	}}>
+																	<HiOutlinePencil />
+																</button>
+																<button
+																	type='button'
+																	className='btn-icon btn-icon--danger'
+																	onClick={() => handleDeleteStore(store.id)}>
+																	<HiOutlineTrash />
+																</button>
+															</div>
+														</>
+													)}
+												</li>
+											))}
+										</ul>
+									)}
+
+									<div className='settings-add-form'>
+										<h4 className='settings-subsection-title'>{t('settings.storesAdd')}</h4>
+										<div className='form-group' style={{ maxWidth: '24rem' }}>
+											<input
+												type='text'
+												className='form-input'
+												placeholder={t('stores.name')}
+												value={newStoreName}
+												onChange={(e) => setNewStoreName(e.target.value)}
+												onKeyDown={(e) => e.key === 'Enter' && handleCreateStore()}
+											/>
+										</div>
+										<div className='form-group' style={{ maxWidth: '24rem' }}>
+											<input
+												type='url'
+												className='form-input'
+												placeholder={t('stores.url')}
+												value={newStoreUrl}
+												onChange={(e) => setNewStoreUrl(e.target.value)}
+											/>
+										</div>
+										<div className='form-group' style={{ maxWidth: '24rem' }}>
+											<input
+												type='url'
+												className='form-input'
+												placeholder={t('stores.logoUrl')}
+												value={newStoreLogoUrl}
+												onChange={(e) => setNewStoreLogoUrl(e.target.value)}
+											/>
+										</div>
+										<label className='toggle-label' style={{ marginBottom: '0.75rem' }}>
+											<input
+												type='checkbox'
+												checked={newStoreShared}
+												onChange={(e) => setNewStoreShared(e.target.checked)}
+											/>
+											<span>{t('stores.shared')}</span>
+										</label>
+										<button
+											className='btn btn-primary btn-sm'
+											onClick={handleCreateStore}
+											disabled={!newStoreName.trim()}>
+											{t('stores.add')}
+										</button>
+									</div>
+								</>
+							)}
+						</div>
+					)}
+
+					{activeSection === 'tags' && (
+						<div className='settings-card'>
+							<h2 className='settings-card-title'>{t('settings.tagsSection')}</h2>
+							<p className='settings-card-description'>{t('settings.tagsSectionDesc')}</p>
+
+							{tagsLoading ? (
+								<p className='settings-card-description'>{t('settings.loading')}</p>
+							) : (
+								<>
+									{tags.length === 0 ? (
+										<p className='settings-card-description'>{t('tags.noTags')}</p>
+									) : (
+										<ul className='thresholds-list'>
+											{tags.map((tag) => (
+												<li key={tag.id} className='thresholds-list__item'>
+													{editingTagId === tag.id ? (
+														<>
+															<input
+																className='form-input form-input-sm'
+																value={editingTagName}
+																onChange={(e) => setEditingTagName(e.target.value)}
+																autoFocus
+																onKeyDown={(e) => {
+																	if (e.key === 'Enter') handleUpdateTag(tag.id)
+																	if (e.key === 'Escape') setEditingTagId(null)
+																}}
+															/>
+															<div className='thresholds-list__actions'>
+																<button
+																	type='button'
+																	className='btn-icon'
+																	onClick={() => handleUpdateTag(tag.id)}>
+																	<HiOutlineCheck />
+																</button>
+																<button
+																	type='button'
+																	className='btn-icon'
+																	onClick={() => setEditingTagId(null)}>
+																	<HiOutlineXMark />
+																</button>
+															</div>
+														</>
+													) : (
+														<>
+															<span className='thresholds-list__name'>
+																{tag.name}
+																{tag.isGlobal && (
+																	<span className='settings-badge'> {t('tags.tagLabel')}</span>
+																)}
+															</span>
+															<div className='thresholds-list__actions'>
+																{!tag.isGlobal && (
+																	<button
+																		type='button'
+																		className='btn-icon'
+																		onClick={() => {
+																			setEditingTagId(tag.id)
+																			setEditingTagName(tag.name)
+																		}}>
+																		<HiOutlinePencil />
+																	</button>
+																)}
+																{!tag.isGlobal && (
+																	<button
+																		type='button'
+																		className='btn-icon btn-icon--danger'
+																		onClick={() => handleDeleteTag(tag.id)}>
+																		<HiOutlineTrash />
+																	</button>
+																)}
+															</div>
+														</>
+													)}
+												</li>
+											))}
+										</ul>
+									)}
+
+									<div className='settings-add-form'>
+										<h4 className='settings-subsection-title'>{t('settings.tagsAdd')}</h4>
+										<div className='form-row' style={{ maxWidth: '24rem' }}>
+											<input
+												type='text'
+												className='form-input'
+												placeholder={t('tags.tagLabel')}
+												value={newTagName}
+												onChange={(e) => setNewTagName(e.target.value)}
+												onKeyDown={(e) => e.key === 'Enter' && handleCreateTag()}
+											/>
+											<button
+												className='btn btn-primary btn-sm'
+												onClick={handleCreateTag}
+												disabled={!newTagName.trim()}>
+												{t('add')}
+											</button>
+										</div>
+									</div>
 								</>
 							)}
 						</div>
