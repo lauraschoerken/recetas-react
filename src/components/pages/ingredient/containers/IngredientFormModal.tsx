@@ -644,6 +644,28 @@ export function IngredientFormModal({
 		}
 	}
 
+	// --- Guardar y cerrar (para autoSaveOnClose) ---
+	const handleAutoSaveClose = async () => {
+		if (!ingredient) {
+			onClose()
+			return
+		}
+		setSavingBasic(true)
+		try {
+			await ingredientService.update(ingredient.id, {
+				name: name.charAt(0).toUpperCase() + name.slice(1),
+				imageUrl: imageUrl || null,
+				defaultLocation: location || null,
+			})
+			onSaved()
+		} catch {
+			// si falla, cerrar igualmente
+		} finally {
+			setSavingBasic(false)
+			onClose()
+		}
+	}
+
 	// --- Variante inline (edicion) ---
 	const cancelEditVariant = () => {
 		setEditingVariantId(null)
@@ -973,7 +995,7 @@ export function IngredientFormModal({
 		<div className='ifm-wrapper'>
 			<Modal
 				isOpen={isOpen}
-				onClose={autoSaveOnClose && isEdit ? handleSaveBasic : onClose}
+				onClose={autoSaveOnClose && isEdit ? handleAutoSaveClose : onClose}
 				title={modalTitle}>
 				{/* Selector modo creacion: uno / varios */}
 				{!isEdit && (
