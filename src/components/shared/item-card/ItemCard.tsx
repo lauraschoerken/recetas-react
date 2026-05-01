@@ -16,6 +16,7 @@ export interface ItemCardData {
 	cookTimeMinutes?: number | null
 	difficulty?: string | null
 	servings?: number | null
+	tags?: { id: number; name: string; color?: string | null }[]
 	type: 'recipe' | 'dish'
 }
 
@@ -106,6 +107,20 @@ export function ItemCard({
 					</>
 				)}
 			</div>
+
+			{/* Tags de ingredientes */}
+			{item.tags && item.tags.length > 0 && (
+				<div className={`item-card-tags${item.imageUrl ? ' item-card-tags--over-image' : ''}`}>
+					{item.tags.slice(0, 4).map((tag) => (
+						<span
+							key={tag.id}
+							className='item-card-tag'
+							style={tag.color ? ({ '--tag-color': tag.color } as React.CSSProperties) : undefined}>
+							{tag.name}
+						</span>
+					))}
+				</div>
+			)}
 		</div>
 	)
 }

@@ -52,6 +52,7 @@ export interface Recipe {
 	userId: number
 	authorName?: string
 	defaultLocation?: string | null
+	tags?: { id: number; name: string; color?: string | null }[]
 	createdAt: string
 	updatedAt: string
 	ingredients: Ingredient[]

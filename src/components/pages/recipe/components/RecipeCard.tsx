@@ -47,6 +47,7 @@ export function RecipeCard({ recipe, currentUserId, onDelete, onAddToWeek }: Rec
 		cookTimeMinutes: recipe.cookTimeMinutes,
 		difficulty: recipe.difficulty,
 		servings: recipe.servings,
+		tags: recipe.tags,
 		type: 'recipe',
 	}
 

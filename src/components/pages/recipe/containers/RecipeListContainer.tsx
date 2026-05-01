@@ -7,6 +7,7 @@ import { Pagination } from '@/components/shared/pagination/Pagination'
 import { authService } from '@/services/auth'
 import { Recipe, recipeService } from '@/services/recipe'
 import { pdfService } from '@/services/pdf'
+import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import { getStoredPageSize } from '@/utils/pagination/usePagination'
 
@@ -26,22 +27,71 @@ export function RecipeListContainer() {
 	const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
 	const [modalOpen, setModalOpen] = useState(false)
 	const [pageSize] = useState(getStoredPageSize)
+	const [availableTags, setAvailableTags] = useState<IngredientTag[]>([])
 	const currentUser = authService.getUser()
 
 	const currentPage = parseInt(searchParams.get('page') || '1', 10)
 	const search = searchParams.get('q') || ''
 	const [filtersOpen, setFiltersOpen] = useState(false)
+
+	// Leer filtros desde URL
 	const [filters, setFilters] = useState<RecipeFilterValues>({
 		visibility: (searchParams.get('visibility') as RecipeFilterValues['visibility']) || 'all',
-		calories: searchParams.get('calories') || '',
-		caloriesOp: (searchParams.get('caloriesOp') as RecipeFilterValues['caloriesOp']) || 'lt',
+		minCalories: searchParams.get('minCal') || '',
+		maxCalories: searchParams.get('maxCal') || '',
+		minProtein: searchParams.get('minProt') || '',
+		maxProtein: searchParams.get('maxProt') || '',
+		minCarbs: searchParams.get('minCarbs') || '',
+		maxCarbs: searchParams.get('maxCarbs') || '',
+		minFat: searchParams.get('minFat') || '',
+		maxFat: searchParams.get('maxFat') || '',
+		difficulty: (searchParams.get('difficulty') as RecipeFilterValues['difficulty']) || '',
+		minCookTime: searchParams.get('minCook') || '',
+		maxCookTime: searchParams.get('maxCook') || '',
 		ingredient: searchParams.get('ingredient') || '',
+		tagIds: searchParams.get('tags')
+			? searchParams
+					.get('tags')!
+					.split(',')
+					.map(Number)
+					.filter((n) => !isNaN(n) && n > 0)
+			: [],
+		excludeTagIds: searchParams.get('exTags')
+			? searchParams
+					.get('exTags')!
+					.split(',')
+					.map(Number)
+					.filter((n) => !isNaN(n) && n > 0)
+			: [],
+		sortBy: (searchParams.get('sortBy') as RecipeFilterValues['sortBy']) || 'createdAt',
+		sortOrder: (searchParams.get('sortOrder') as RecipeFilterValues['sortOrder']) || 'desc',
 	})
 
-	const activeFilterCount =
-		(filters.visibility !== 'all' ? 1 : 0) +
-		(filters.calories ? 1 : 0) +
-		(filters.ingredient ? 1 : 0)
+	const activeFilterCount = [
+		filters.visibility !== 'all',
+		filters.minCalories,
+		filters.maxCalories,
+		filters.minProtein,
+		filters.maxProtein,
+		filters.minCarbs,
+		filters.maxCarbs,
+		filters.minFat,
+		filters.maxFat,
+		filters.difficulty,
+		filters.minCookTime,
+		filters.maxCookTime,
+		filters.ingredient,
+		filters.tagIds.length > 0,
+		filters.excludeTagIds.length > 0,
+	].filter(Boolean).length
+
+	// Cargar tags disponibles
+	useEffect(() => {
+		ingredientTagService
+			.getAll()
+			.catch(() => [])
+			.then(setAvailableTags)
+	}, [])
 
 	const loadRecipes = useCallback(async () => {
 		setLoading(true)
@@ -53,6 +103,13 @@ export function RecipeListContainer() {
 				search,
 				visibility: filters.visibility,
 				ingredient: filters.ingredient,
+				difficulty: filters.difficulty || undefined,
+				minCookTime: filters.minCookTime ? Number(filters.minCookTime) : undefined,
+				maxCookTime: filters.maxCookTime ? Number(filters.maxCookTime) : undefined,
+				tagIds: filters.tagIds,
+				excludeTagIds: filters.excludeTagIds,
+				sortBy: filters.sortBy,
+				sortOrder: filters.sortOrder,
 			})
 			setRecipes(result.data)
 			setTotal(result.total)
@@ -62,7 +119,7 @@ export function RecipeListContainer() {
 			setLoading(false)
 			setInitialLoad(false)
 		}
-	}, [currentPage, pageSize, search, filters.visibility, filters.ingredient, t])
+	}, [currentPage, pageSize, search, filters, t])
 
 	useEffect(() => {
 		loadRecipes()
@@ -105,17 +162,31 @@ export function RecipeListContainer() {
 			(prev) => {
 				const p = new URLSearchParams(prev)
 				p.set('page', '1')
-				if (newFilters.visibility !== 'all') p.set('visibility', newFilters.visibility)
-				else p.delete('visibility')
-				if (newFilters.calories) {
-					p.set('calories', newFilters.calories)
-					p.set('caloriesOp', newFilters.caloriesOp)
-				} else {
-					p.delete('calories')
-					p.delete('caloriesOp')
-				}
-				if (newFilters.ingredient) p.set('ingredient', newFilters.ingredient)
-				else p.delete('ingredient')
+
+				const setOrDel = (key: string, val: string | undefined) =>
+					val ? p.set(key, val) : p.delete(key)
+
+				setOrDel('visibility', newFilters.visibility !== 'all' ? newFilters.visibility : undefined)
+				setOrDel('minCal', newFilters.minCalories || undefined)
+				setOrDel('maxCal', newFilters.maxCalories || undefined)
+				setOrDel('minProt', newFilters.minProtein || undefined)
+				setOrDel('maxProt', newFilters.maxProtein || undefined)
+				setOrDel('minCarbs', newFilters.minCarbs || undefined)
+				setOrDel('maxCarbs', newFilters.maxCarbs || undefined)
+				setOrDel('minFat', newFilters.minFat || undefined)
+				setOrDel('maxFat', newFilters.maxFat || undefined)
+				setOrDel('difficulty', newFilters.difficulty || undefined)
+				setOrDel('minCook', newFilters.minCookTime || undefined)
+				setOrDel('maxCook', newFilters.maxCookTime || undefined)
+				setOrDel('ingredient', newFilters.ingredient || undefined)
+				setOrDel('tags', newFilters.tagIds.length > 0 ? newFilters.tagIds.join(',') : undefined)
+				setOrDel(
+					'exTags',
+					newFilters.excludeTagIds.length > 0 ? newFilters.excludeTagIds.join(',') : undefined
+				)
+				setOrDel('sortBy', newFilters.sortBy !== 'createdAt' ? newFilters.sortBy : undefined)
+				setOrDel('sortOrder', newFilters.sortOrder !== 'desc' ? newFilters.sortOrder : undefined)
+
 				return p
 			},
 			{ replace: true }
@@ -127,10 +198,27 @@ export function RecipeListContainer() {
 		setSearchParams(
 			(prev) => {
 				const p = new URLSearchParams(prev)
-				p.delete('visibility')
-				p.delete('calories')
-				p.delete('caloriesOp')
-				p.delete('ingredient')
+				for (const key of [
+					'visibility',
+					'minCal',
+					'maxCal',
+					'minProt',
+					'maxProt',
+					'minCarbs',
+					'maxCarbs',
+					'minFat',
+					'maxFat',
+					'difficulty',
+					'minCook',
+					'maxCook',
+					'ingredient',
+					'tags',
+					'exTags',
+					'sortBy',
+					'sortOrder',
+				]) {
+					p.delete(key)
+				}
 				p.set('page', '1')
 				return p
 			},
@@ -183,16 +271,27 @@ export function RecipeListContainer() {
 	if (loading && initialLoad) return <div className='loading'>{t('recipes.loading')}</div>
 	if (error) return <div className='error-message'>{error}</div>
 
-	// Filtro client-side de calorías (campo calculado, no almacenado en BD)
-	const calVal = filters.calories ? parseInt(filters.calories, 10) : null
-	const visibleRecipes = calVal
-		? recipes.filter((r) => {
-				if (r.caloriesPerServing == null) return true
-				return filters.caloriesOp === 'lt'
-					? r.caloriesPerServing <= calVal
-					: r.caloriesPerServing >= calVal
-			})
-		: recipes
+	// Filtro client-side de macros (los calcula el servidor pero no filtra por ellos)
+	const applyClientFilters = (list: Recipe[]) => {
+		return list.filter((r) => {
+			const kcal = r.caloriesPerServing ?? r.nutritionPerServing?.calories ?? null
+			const prot = r.nutritionPerServing?.protein ?? null
+			const carbs = r.nutritionPerServing?.carbs ?? null
+			const fat = r.nutritionPerServing?.fat ?? null
+
+			if (filters.minCalories && kcal != null && kcal < Number(filters.minCalories)) return false
+			if (filters.maxCalories && kcal != null && kcal > Number(filters.maxCalories)) return false
+			if (filters.minProtein && prot != null && prot < Number(filters.minProtein)) return false
+			if (filters.maxProtein && prot != null && prot > Number(filters.maxProtein)) return false
+			if (filters.minCarbs && carbs != null && carbs < Number(filters.minCarbs)) return false
+			if (filters.maxCarbs && carbs != null && carbs > Number(filters.maxCarbs)) return false
+			if (filters.minFat && fat != null && fat < Number(filters.minFat)) return false
+			if (filters.maxFat && fat != null && fat > Number(filters.maxFat)) return false
+			return true
+		})
+	}
+
+	const visibleRecipes = applyClientFilters(recipes)
 
 	return (
 		<>
@@ -237,6 +336,7 @@ export function RecipeListContainer() {
 			{filtersOpen && (
 				<RecipeFilters
 					filters={filters}
+					availableTags={availableTags}
 					onChange={handleFiltersChange}
 					onClear={handleFiltersClear}
 					activeCount={activeFilterCount}

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
 import { Pagination } from '@/components/shared/pagination/Pagination'
+import { TagMultiSelect } from '@/components/shared/tag-multi-select/TagMultiSelect'
 import { alertService, IngredientThreshold } from '@/services/alert'
 import { Ingredient, ingredientService, UpdateIngredientData } from '@/services/ingredient'
 import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras'
@@ -669,24 +670,23 @@ export function IngredientListContainer() {
 						{availableTags.length > 0 && (
 							<div className='filter-group filter-group--tags filter-group--full'>
 								<label className='filter-label'>{t('ingredients.filterTags')}</label>
-								<div className='filter-tags-list'>
-									{availableTags.map((tag) => {
-										const active = filterTagIds.includes(tag.id)
-										return (
-											<button
-												key={tag.id}
-												className={`filter-tag-pill${active ? ' active' : ''}`}
-												style={
-													tag.color
-														? ({ '--tag-color': tag.color } as React.CSSProperties)
-														: undefined
-												}
-												onClick={() => handleTagToggle(tag.id)}>
-												{tag.name}
-											</button>
+								<TagMultiSelect
+									tags={availableTags}
+									includedIds={filterTagIds}
+									searchPlaceholder={t('tags.searchPlaceholder')}
+									onChange={(inc) => {
+										setSearchParams(
+											(prev) => {
+												const p = new URLSearchParams(prev)
+												if (inc.length > 0) p.set('tags', inc.join(','))
+												else p.delete('tags')
+												p.set('page', '1')
+												return p
+											},
+											{ replace: true }
 										)
-									})}
-								</div>
+									}}
+								/>
 							</div>
 						)}
 					</div>
