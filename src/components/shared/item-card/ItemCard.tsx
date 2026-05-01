@@ -11,11 +11,11 @@ export interface ItemCardData {
 	title: string
 	description?: string | null
 	imageUrl?: string | null
-	isPublic: boolean
 	userId: number
-	authorName?: string
 	caloriesPerServing?: number | null
-	hasVariants?: boolean
+	cookTimeMinutes?: number | null
+	difficulty?: string | null
+	servings?: number | null
 	type: 'recipe' | 'dish'
 }
 
@@ -42,75 +42,69 @@ export function ItemCard({
 	const isOwner = item.userId === currentUserId
 	const linkPath = detailPath || editPath
 
+	const metaChips: string[] = []
+	if (item.caloriesPerServing != null)
+		metaChips.push(t('recipes.kcalPerServing', { kcal: item.caloriesPerServing }))
+	if (item.cookTimeMinutes != null)
+		metaChips.push(`${item.cookTimeMinutes} ${t('recipes.minuteShort')}`)
+	if (item.difficulty) {
+		const key = `recipes.difficulty${item.difficulty.charAt(0).toUpperCase() + item.difficulty.slice(1).toLowerCase()}`
+		metaChips.push(t(key, item.difficulty))
+	}
+
 	return (
-		<div className={`item-card ${item.type === 'dish' ? 'item-card-dish' : ''}`}>
-			<div className='item-card-header'>
-				<h3 className='item-card-title'>
-					<Link to={linkPath}>{item.title}</Link>
-				</h3>
-				<div className='item-card-badges'>
-					{item.hasVariants && (
-						<span className='badge badge-variants'>{t('recipes.optionsBadge')}</span>
-					)}
-					<span className={`badge ${item.isPublic ? 'badge-public' : 'badge-private'}`}>
-						{item.isPublic ? t('public') : t('private')}
-					</span>
-				</div>
-			</div>
-
-			{item.imageUrl ? (
-				<div className='item-card-image'>
-					<img src={item.imageUrl} alt={item.title} />
-				</div>
-			) : (
-				<>
-					{!isOwner && item.authorName && (
-						<p className='item-card-author'>{t('recipes.byAuthor', { author: item.authorName })}</p>
-					)}
-					{item.description && <p className='item-card-description'>{item.description}</p>}
-				</>
-			)}
-
-			<div className='item-card-footer'>
-				{item.caloriesPerServing != null && (
-					<span className='item-card-calories'>
-						{t('recipes.kcalPerServing', { kcal: item.caloriesPerServing })}
-					</span>
+		<div className={`item-card ${item.type === 'dish' ? 'item-card--dish' : ''}`}>
+			{/* Área clickable principal */}
+			<Link to={linkPath} className='item-card-clickable' tabIndex={0}>
+				{item.imageUrl ? (
+					<div className='item-card-cover' style={{ backgroundImage: `url(${item.imageUrl})` }}>
+						<div className='item-card-overlay'>
+							<span className='item-card-title item-card-title--over-image'>{item.title}</span>
+							{metaChips.length > 0 && (
+								<span className='item-card-meta item-card-meta--over-image'>
+									{metaChips.join(' · ')}
+								</span>
+							)}
+						</div>
+					</div>
+				) : (
+					<div className='item-card-no-image'>
+						<span className='item-card-title'>{item.title}</span>
+						{item.description && <p className='item-card-meta'>{item.description}</p>}
+						{metaChips.length > 0 && <p className='item-card-chips'>{metaChips.join(' · ')}</p>}
+					</div>
 				)}
+			</Link>
 
-				<div className='item-card-actions'>
-					<div className='item-card-actions-left'>
+			{/* Acciones rápidas, visibles al hacer hover */}
+			<div className='item-card-quick-actions'>
+				<button
+					className='item-card-action-btn'
+					onClick={onAddToWeek}
+					title={t('recipes.addToWeekBtn')}>
+					<CalendarAddIcon size={14} aria-hidden='true' />
+				</button>
+				{onDownloadPdf && (
+					<button
+						className='item-card-action-btn'
+						onClick={onDownloadPdf}
+						title={t('recipes.downloadPdf')}>
+						<HiOutlineArrowDownTray size={14} aria-hidden='true' />
+					</button>
+				)}
+				{isOwner && (
+					<>
+						<Link to={editPath} className='item-card-action-btn' title={t('edit')}>
+							<EditIcon size={14} aria-hidden='true' />
+						</Link>
 						<button
-							className='btn-icon btn-icon-primary'
-							onClick={onAddToWeek}
-							title={t('recipes.addToWeekBtn')}>
-							<CalendarAddIcon size={16} aria-hidden='true' />
+							className='item-card-action-btn item-card-action-btn--danger'
+							onClick={() => onDelete(item.id)}
+							title={t('delete')}>
+							<DeleteIcon size={14} aria-hidden='true' />
 						</button>
-						{onDownloadPdf && (
-							<button
-								className='btn-icon btn-icon-outline'
-								onClick={onDownloadPdf}
-								title={t('recipes.downloadPdf')}>
-								<HiOutlineArrowDownTray size={16} aria-hidden='true' />
-							</button>
-						)}
-					</div>
-					<div className='item-card-actions-right'>
-						{isOwner && (
-							<>
-								<Link to={editPath} className='btn-icon btn-icon-outline' title={t('edit')}>
-									<EditIcon size={16} aria-hidden='true' />
-								</Link>
-								<button
-									className='btn-icon btn-icon-danger'
-									onClick={() => onDelete(item.id)}
-									title={t('delete')}>
-									<DeleteIcon size={16} aria-hidden='true' />
-								</button>
-							</>
-						)}
-					</div>
-				</div>
+					</>
+				)}
 			</div>
 		</div>
 	)

@@ -14,6 +14,7 @@ interface RecipeDetailProps {
 	recipe: Recipe
 	onDelete: () => void
 	onAddToWeek: () => void
+	isOwner?: boolean
 }
 
 interface PdfQuestion {
@@ -26,7 +27,12 @@ interface PdfQuestion {
 	options: any[]
 }
 
-export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProps) {
+export function RecipeDetail({
+	recipe,
+	onDelete,
+	onAddToWeek,
+	isOwner = false,
+}: RecipeDetailProps) {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
 	const [minServings, setMinServings] = useState('')
@@ -331,12 +337,16 @@ export function RecipeDetail({ recipe, onDelete, onAddToWeek }: RecipeDetailProp
 					<button className='btn btn-outline' onClick={handleExportPdf}>
 						{t('recipes.downloadPdf')}
 					</button>
-					<Link to={`/recipes/${recipe.id}/edit`} className='btn btn-outline'>
-						{t('edit')}
-					</Link>
-					<button className='btn btn-danger' onClick={onDelete}>
-						{t('delete')}
-					</button>
+					{isOwner && (
+						<>
+							<Link to={`/recipes/${recipe.id}/edit`} className='btn btn-outline'>
+								{t('edit')}
+							</Link>
+							<button className='btn btn-danger' onClick={onDelete}>
+								{t('delete')}
+							</button>
+						</>
+					)}
 				</div>
 			</div>
 

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
+import { authService } from '@/services/auth'
 import { Recipe, recipeService } from '@/services/recipe'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
@@ -63,7 +64,12 @@ export function RecipeDetailContainer() {
 
 	return (
 		<>
-			<RecipeDetail recipe={recipe} onDelete={handleDelete} onAddToWeek={handleAddToWeek} />
+			<RecipeDetail
+				recipe={recipe}
+				onDelete={handleDelete}
+				onAddToWeek={handleAddToWeek}
+				isOwner={recipe.userId === authService.getUser()?.id}
+			/>
 
 			<AddToWeekModal recipe={recipe} isOpen={modalOpen} onClose={() => setModalOpen(false)} />
 		</>

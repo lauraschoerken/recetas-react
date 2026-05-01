@@ -42,11 +42,11 @@ export function RecipeCard({ recipe, currentUserId, onDelete, onAddToWeek }: Rec
 		title: recipe.title,
 		description: recipe.description,
 		imageUrl: recipe.imageUrl,
-		isPublic: recipe.isPublic,
 		userId: recipe.userId,
-		authorName: recipe.authorName,
 		caloriesPerServing: recipe.caloriesPerServing,
-		hasVariants,
+		cookTimeMinutes: recipe.cookTimeMinutes,
+		difficulty: recipe.difficulty,
+		servings: recipe.servings,
 		type: 'recipe',
 	}
 

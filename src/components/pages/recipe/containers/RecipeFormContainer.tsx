@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { alertService } from '@/services/alert'
+import { authService } from '@/services/auth'
 import { CreateRecipeData, Recipe, recipeService } from '@/services/recipe'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
@@ -41,6 +42,11 @@ export function RecipeFormContainer() {
 	const loadRecipe = async () => {
 		try {
 			const data = await recipeService.getById(parseInt(id!))
+			const currentUser = authService.getUser()
+			if (currentUser && data.userId !== currentUser.id) {
+				navigate(`/recipes/${id}`, { replace: true })
+				return
+			}
 			setRecipe(data)
 		} catch {
 			setError(t('recipes.notFound'))
