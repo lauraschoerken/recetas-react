@@ -528,3 +528,56 @@ body {
 		flex-direction: column;
 	}
 }
+/* Recipe selection bar */
+.recipe-selection-bar {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.6rem 1rem;
+	background: var(--primary-light);
+	border: 1px solid var(--primary-color);
+	border-radius: var(--radius-sm);
+	margin-bottom: 0.75rem;
+	flex-wrap: wrap;
+
+	&__count {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--primary-color);
+		margin-right: 0.5rem;
+	}
+}
+
+/* Export dropdown */
+.export-dropdown {
+	position: relative;
+
+	&__menu {
+		position: absolute;
+		top: calc(100% + 0.25rem);
+		right: 0;
+		z-index: 200;
+		background: var(--card-background);
+		border: 1px solid var(--border-color);
+		border-radius: var(--radius-sm);
+		box-shadow: var(--shadow-lg);
+		min-width: 12rem;
+		padding: 0.25rem 0;
+	}
+
+	&__item {
+		display: block;
+		width: 100%;
+		padding: 0.55rem 1rem;
+		text-align: left;
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: 0.875rem;
+		color: var(--text-primary);
+
+		&:hover {
+			background: var(--surface-1);
+		}
+	}
+}

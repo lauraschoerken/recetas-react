@@ -32,6 +32,15 @@ class IngredientTagService {
 		return api.get<IngredientTag[]>('/ingredient-tags')
 	}
 
+	async getBulkTagAssignments(
+		ingredientIds: number[]
+	): Promise<Record<string, { id: number; name: string; color?: string | null }[]>> {
+		if (ingredientIds.length === 0) return {}
+		return api.get<Record<string, { id: number; name: string; color?: string | null }[]>>(
+			`/ingredient-tags/bulk?ids=${ingredientIds.join(',')}`
+		)
+	}
+
 	async create(data: { name: string; color?: string; isGlobal?: boolean }): Promise<IngredientTag> {
 		return api.post<IngredientTag>('/ingredient-tags', data)
 	}

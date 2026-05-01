@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom'
 
 import { ShoppingItem, shoppingService } from '@/services/shopping'
 import { ingredientService, Ingredient } from '@/services/ingredient'
+import { ingredientTagService } from '@/services/ingredientExtras'
 import { api } from '@/services/api'
 import { useDialog } from '@/utils/dialog/DialogContext'
+import { normalizeText } from '@/utils/normalize'
 
 import { ShoppingList } from '../components/ShoppingList'
 
@@ -46,6 +48,10 @@ export function ShoppingListContainer() {
 	const [addSelectedIngredient, setAddSelectedIngredient] = useState<Ingredient | null>(null)
 	const [addQty, setAddQty] = useState<number>(1)
 	const [addUnit, setAddUnit] = useState<string>('g')
+
+	// Export
+	const [exportMenuOpen, setExportMenuOpen] = useState(false)
+	const [exporting, setExporting] = useState(false)
 
 	useEffect(() => {
 		loadShoppingList()
@@ -193,13 +199,80 @@ export function ShoppingListContainer() {
 		addSearch.length >= 2
 			? allIngredients.filter(
 					(i) =>
-						i.name.toLowerCase().includes(addSearch.toLowerCase()) &&
+						normalizeText(i.name).includes(normalizeText(addSearch)) &&
 						i.id !== addSelectedIngredient?.id
 				)
 			: []
 
 	const weekEndDate = getWeekEnd(currentWeekStart)
 	const weekLabel = `${currentWeekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${weekEndDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`
+
+	const handleExportClipboard = async (withCategories: boolean) => {
+		setExportMenuOpen(false)
+		setExporting(true)
+		try {
+			const items = visibleItems
+
+			if (!withCategories) {
+				const lines = items.map((i) => {
+					const qty =
+						i.quantityToBuy % 1 === 0 ? String(i.quantityToBuy) : i.quantityToBuy.toFixed(1)
+					return `- ${i.name}: ${qty} ${i.unit}`
+				})
+				await navigator.clipboard.writeText(
+					`${t('shopping.title')} (${weekLabel})\n\n${lines.join('\n')}`
+				)
+			} else {
+				const ids = items.map((i) => i.ingredientId)
+				const tagMap = await ingredientTagService.getBulkTagAssignments(ids)
+				const noCategory = t('shopping.noCategory')
+
+				const groups: Record<string, typeof items> = {}
+				for (const item of items) {
+					const tags = tagMap[String(item.ingredientId)] || []
+					const groupName = tags.length > 0 ? tags[0].name : noCategory
+					if (!groups[groupName]) groups[groupName] = []
+					groups[groupName].push(item)
+				}
+
+				const lines: string[] = [`${t('shopping.title')} (${weekLabel})`, '']
+				for (const [group, groupItems] of Object.entries(groups)) {
+					lines.push(`${group}:`)
+					for (const i of groupItems) {
+						const qty =
+							i.quantityToBuy % 1 === 0 ? String(i.quantityToBuy) : i.quantityToBuy.toFixed(1)
+						lines.push(`  - ${i.name}: ${qty} ${i.unit}`)
+					}
+					lines.push('')
+				}
+				await navigator.clipboard.writeText(lines.join('\n').trim())
+			}
+			toast.success(t('shopping.copiedToClipboard'))
+		} catch {
+			toast.error(t('shopping.exportError'))
+		} finally {
+			setExporting(false)
+		}
+	}
+
+	const handleExportPdf = async () => {
+		setExportMenuOpen(false)
+		setExporting(true)
+		try {
+			await shoppingService.downloadShoppingPdf(
+				visibleItems.map((i) => ({
+					name: i.name,
+					quantityToBuy: i.quantityToBuy,
+					unit: i.unit,
+				})),
+				weekLabel
+			)
+		} catch {
+			toast.error(t('shopping.exportError'))
+		} finally {
+			setExporting(false)
+		}
+	}
 	const excludedItemsList = allItems.filter((item) => excludedItems.has(item.ingredientId))
 
 	return (
@@ -207,6 +280,31 @@ export function ShoppingListContainer() {
 			<div className='page-header'>
 				<h1 className='page-title'>{t('shopping.title')}</h1>
 				<div className='page-header-actions'>
+					<div className='export-dropdown'>
+						<button
+							className='btn btn-outline'
+							onClick={() => setExportMenuOpen((o) => !o)}
+							disabled={exporting || visibleItems.length === 0}>
+							{t('shopping.exportTitle')}
+						</button>
+						{exportMenuOpen && (
+							<div className='export-dropdown__menu' onMouseLeave={() => setExportMenuOpen(false)}>
+								<button
+									className='export-dropdown__item'
+									onClick={() => handleExportClipboard(false)}>
+									{t('shopping.exportClipboard')}
+								</button>
+								<button
+									className='export-dropdown__item'
+									onClick={() => handleExportClipboard(true)}>
+									{t('shopping.exportClipboardGrouped')}
+								</button>
+								<button className='export-dropdown__item' onClick={handleExportPdf}>
+									{t('shopping.exportPdf')}
+								</button>
+							</div>
+						)}
+					</div>
 					<button className='btn btn-outline' onClick={handleOpenAddItem}>
 						{t('shopping.addItem')}
 					</button>
@@ -278,9 +376,7 @@ export function ShoppingListContainer() {
 								<button
 									className='btn btn-primary btn-sm'
 									onClick={async () => {
-										const itemsToMark = visibleItems.filter((i) =>
-											checkedItems.has(i.ingredientId)
-										)
+										const itemsToMark = visibleItems.filter((i) => checkedItems.has(i.ingredientId))
 										try {
 											await api.post('/shopping-list/mark-purchased', {
 												items: itemsToMark.map((i) => ({

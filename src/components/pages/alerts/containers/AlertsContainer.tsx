@@ -77,6 +77,14 @@ export function AlertsContainer() {
 		CONSUME: t('alerts.triggerConsume'),
 		PLANNING: t('alerts.triggerPlanning'),
 		MANUAL: t('alerts.triggerManual'),
+		THRESHOLD_SET: t('alerts.triggerThresholdSet'),
+	}
+
+	const statusLabels: Record<string, string> = {
+		OPEN: t('alerts.statusOpen'),
+		VIEWED: t('alerts.statusViewed'),
+		SNOOZED: t('alerts.statusSnoozed'),
+		RESOLVED: t('alerts.statusResolved'),
 	}
 
 	if (loading) return <div className='loading'>{t('loading')}</div>
@@ -104,7 +112,7 @@ export function AlertsContainer() {
 						<div key={alert.id} className={`alert-card alert-card--${alert.status.toLowerCase()}`}>
 							<div className='alert-card-header'>
 								<span className={`alert-status alert-status--${alert.status.toLowerCase()}`}>
-									{alert.status}
+									{statusLabels[alert.status] ?? alert.status}
 								</span>
 								<span className='alert-trigger'>
 									{triggerLabels[alert.triggerType] || alert.triggerType}

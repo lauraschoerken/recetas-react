@@ -10,9 +10,90 @@ import { pdfService } from '@/services/pdf'
 import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import { getStoredPageSize } from '@/utils/pagination/usePagination'
+import { normalizeText } from '@/utils/normalize'
 
 import { RecipeList } from '../components/RecipeList'
 import { RecipeFilters, RecipeFilterValues, DEFAULT_FILTERS } from '../components/RecipeFilters'
+
+// ── Tipos para el modal de selección de variantes al exportar PDF ──
+interface MultiPdfQuestion {
+	key: string
+	rootRecipeId: number
+	rootTitle: string
+	recipeId: number
+	recipeTitle: string
+	componentId: number
+	componentName: string
+	depth: number
+	options: any[]
+}
+
+interface MultiPdfModalState {
+	questions: MultiPdfQuestion[]
+	selections: Record<string, number>
+	cache: Record<number, any>
+	rootIds: number[]
+	merge: boolean
+	loading: boolean
+}
+
+const mpKey = (recipeId: number, compId: number) => `${recipeId}:${compId}`
+const mpDefaultOpt = (comp: any) =>
+	(comp.options.find((o: any) => o.isDefault) || comp.options[0])?.id
+
+async function buildMultiPdfQuestions(
+	rootIds: number[],
+	baseSelections: Record<string, number>,
+	baseCache: Record<number, any>
+): Promise<{
+	questions: MultiPdfQuestion[]
+	selections: Record<string, number>
+	cache: Record<number, any>
+}> {
+	const cache = { ...baseCache }
+	const selections = { ...baseSelections }
+	const questions: MultiPdfQuestion[] = []
+
+	const ensure = async (id: number) => {
+		if (!cache[id]) cache[id] = await pdfService.getRecipeData(id)
+		return cache[id]
+	}
+
+	for (const rootId of rootIds) {
+		const rootData = await ensure(rootId)
+		const rootTitle: string = rootData.title
+
+		const walk = async (currentId: number, depth: number, visited: Set<number>) => {
+			if (visited.has(currentId)) return
+			visited.add(currentId)
+			const data = await ensure(currentId)
+			for (const comp of data.components || []) {
+				const key = mpKey(currentId, comp.id)
+				const defaultOptId = mpDefaultOpt(comp)
+				if (!selections[key] && defaultOptId) selections[key] = defaultOptId
+				questions.push({
+					key,
+					rootRecipeId: rootId,
+					rootTitle,
+					recipeId: currentId,
+					recipeTitle: data.title,
+					componentId: comp.id,
+					componentName: comp.name,
+					depth,
+					options: comp.options,
+				})
+				const selectedOptId = selections[key] || defaultOptId
+				const selectedOpt = comp.options.find((o: any) => o.id === selectedOptId)
+				const childId = selectedOpt?.recipe?.id
+				if (childId) await walk(childId, depth + 1, visited)
+			}
+		}
+
+		await walk(rootId, 0, new Set<number>())
+	}
+
+	return { questions, selections, cache }
+}
 
 export function RecipeListContainer() {
 	const { t } = useTranslation()
@@ -28,7 +109,12 @@ export function RecipeListContainer() {
 	const [modalOpen, setModalOpen] = useState(false)
 	const [pageSize] = useState(getStoredPageSize)
 	const [availableTags, setAvailableTags] = useState<IngredientTag[]>([])
+	const [authors, setAuthors] = useState<{ id: number; name: string }[]>([])
 	const currentUser = authService.getUser()
+
+	// Selección múltiple
+	const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+	const [multiPdfModal, setMultiPdfModal] = useState<MultiPdfModalState | null>(null)
 
 	const currentPage = parseInt(searchParams.get('page') || '1', 10)
 	const search = searchParams.get('q') || ''
@@ -65,6 +151,7 @@ export function RecipeListContainer() {
 			: [],
 		sortBy: (searchParams.get('sortBy') as RecipeFilterValues['sortBy']) || 'createdAt',
 		sortOrder: (searchParams.get('sortOrder') as RecipeFilterValues['sortOrder']) || 'desc',
+		authorId: searchParams.get('author') ? Number(searchParams.get('author')) : null,
 	})
 
 	const activeFilterCount = [
@@ -83,6 +170,7 @@ export function RecipeListContainer() {
 		filters.ingredient,
 		filters.tagIds.length > 0,
 		filters.excludeTagIds.length > 0,
+		filters.authorId != null,
 	].filter(Boolean).length
 
 	// Cargar tags disponibles
@@ -91,6 +179,10 @@ export function RecipeListContainer() {
 			.getAll()
 			.catch(() => [])
 			.then(setAvailableTags)
+		recipeService
+			.getAuthors()
+			.catch(() => [])
+			.then(setAuthors)
 	}, [])
 
 	const loadRecipes = useCallback(async () => {
@@ -100,7 +192,7 @@ export function RecipeListContainer() {
 			const result = await recipeService.getAllPaginated({
 				page: currentPage,
 				pageSize,
-				search,
+				search: normalizeText(search),
 				visibility: filters.visibility,
 				ingredient: filters.ingredient,
 				difficulty: filters.difficulty || undefined,
@@ -110,6 +202,7 @@ export function RecipeListContainer() {
 				excludeTagIds: filters.excludeTagIds,
 				sortBy: filters.sortBy,
 				sortOrder: filters.sortOrder,
+				authorId: filters.authorId,
 			})
 			setRecipes(result.data)
 			setTotal(result.total)
@@ -186,6 +279,7 @@ export function RecipeListContainer() {
 				)
 				setOrDel('sortBy', newFilters.sortBy !== 'createdAt' ? newFilters.sortBy : undefined)
 				setOrDel('sortOrder', newFilters.sortOrder !== 'desc' ? newFilters.sortOrder : undefined)
+				setOrDel('author', newFilters.authorId != null ? String(newFilters.authorId) : undefined)
 
 				return p
 			},
@@ -216,6 +310,7 @@ export function RecipeListContainer() {
 					'exTags',
 					'sortBy',
 					'sortOrder',
+					'author',
 				]) {
 					p.delete(key)
 				}
@@ -233,9 +328,173 @@ export function RecipeListContainer() {
 
 	const importFileRef = useRef<HTMLInputElement>(null)
 
-	const handleImportPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0]
-		if (!file) return
+	const handleToggleSelect = (id: number) => {
+		setSelectedIds((prev) => {
+			const next = new Set(prev)
+			if (next.has(id)) next.delete(id)
+			else next.add(id)
+			return next
+		})
+	}
+
+	const handleExportSelectedPdf = async () => {
+		if (selectedIds.size === 0) return
+		try {
+			const rootIds = Array.from(selectedIds)
+			const built = await buildMultiPdfQuestions(rootIds, {}, {})
+
+			if (built.questions.length === 0) {
+				// Sin variantes — descarga directa
+				const pdfOptions = {
+					showAuthor: localStorage.getItem('pdfShowAuthor') === 'true',
+					showVisibility: localStorage.getItem('pdfShowVisibility') === 'true',
+				}
+				await pdfService.downloadCombinedPdf(
+					rootIds.map((id) => ({ recipeId: id, selectedOptions: {} })),
+					pdfOptions
+				)
+				toast.success(t('recipes.pdfDownloaded'))
+				return
+			}
+
+			setMultiPdfModal({
+				questions: built.questions,
+				selections: built.selections,
+				cache: built.cache,
+				rootIds,
+				merge: rootIds.length > 1,
+				loading: false,
+			})
+		} catch {
+			toast.error(t('recipes.pdfError'))
+		}
+	}
+
+	const handleMultiPdfChange = async (question: MultiPdfQuestion, value: number) => {
+		if (!multiPdfModal) return
+		setMultiPdfModal((m) => (m ? { ...m, loading: true } : m))
+		try {
+			const nextSelections = { ...multiPdfModal.selections, [question.key]: value }
+			const built = await buildMultiPdfQuestions(
+				multiPdfModal.rootIds,
+				nextSelections,
+				multiPdfModal.cache
+			)
+			setMultiPdfModal((m) =>
+				m
+					? {
+							...m,
+							questions: built.questions,
+							selections: built.selections,
+							cache: built.cache,
+							loading: false,
+						}
+					: m
+			)
+		} catch {
+			toast.error(t('recipes.pdfError'))
+			setMultiPdfModal((m) => (m ? { ...m, loading: false } : m))
+		}
+	}
+
+	const confirmMultiPdfDownload = async () => {
+		if (!multiPdfModal) return
+		const pdfOptions = {
+			showAuthor: localStorage.getItem('pdfShowAuthor') === 'true',
+			showVisibility: localStorage.getItem('pdfShowVisibility') === 'true',
+		}
+		try {
+			const { cache, selections, rootIds, merge } = multiPdfModal
+
+			const collectEntries = (
+				recipeId: number,
+				visited: Set<number>
+			): { recipeId: number; selectedOptions: Record<number, number> }[] => {
+				if (visited.has(recipeId) || !cache[recipeId]) return []
+				visited.add(recipeId)
+				const data = cache[recipeId]
+				const selectedOptions: Record<number, number> = {}
+				for (const comp of data.components || []) {
+					const key = mpKey(recipeId, comp.id)
+					const val = selections[key] || mpDefaultOpt(comp)
+					if (val) selectedOptions[comp.id] = val
+				}
+				const children: { recipeId: number; selectedOptions: Record<number, number> }[] = []
+				for (const comp of data.components || []) {
+					const selectedOpt = comp.options.find((o: any) => o.id === selectedOptions[comp.id])
+					const childId = selectedOpt?.recipe?.id
+					if (childId && cache[childId]) children.push(...collectEntries(childId, visited))
+				}
+				return [{ recipeId, selectedOptions }, ...children]
+			}
+
+			if (merge) {
+				const visited = new Set<number>()
+				const allEntries = rootIds.flatMap((id) => collectEntries(id, visited))
+				await pdfService.downloadCombinedPdf(allEntries, pdfOptions)
+			} else {
+				for (const rootId of rootIds) {
+					const visited = new Set<number>()
+					const entries = collectEntries(rootId, visited)
+					for (const entry of entries) {
+						await pdfService.downloadRecipePdf(entry.recipeId, {
+							...pdfOptions,
+							selectedOptions: entry.selectedOptions,
+						})
+					}
+				}
+			}
+
+			setMultiPdfModal(null)
+			toast.success(t('recipes.pdfDownloaded'))
+		} catch {
+			toast.error(t('recipes.pdfError'))
+		}
+	}
+
+	const handleExportSelectedCsv = async () => {
+		if (selectedIds.size === 0) return
+		try {
+			await recipeService.exportCsv(Array.from(selectedIds))
+		} catch {
+			toast.error(t('recipes.exportError'))
+		}
+	}
+
+	const handleImportCsv = async (file: File, inputEl: HTMLInputElement) => {
+		try {
+			const result = await recipeService.importFromCsv(file)
+			if (result.importedCount > 0) {
+				toast.success(t('recipes.importedCsv', { count: result.importedCount }))
+			}
+			if (result.skipped.length === 1) {
+				const s = result.skipped[0]
+				const goEdit = await confirm({
+					title: t('recipes.duplicateTitle'),
+					message: t('recipes.duplicateMessage', { title: s.title }),
+					confirmText: t('recipes.duplicateGoEdit'),
+					type: 'info',
+				})
+				if (goEdit) navigate(`/recipes/${s.id}/edit`)
+			} else if (result.skipped.length > 1) {
+				toast.info(
+					t('recipes.skippedMany', {
+						count: result.skipped.length,
+						titles: result.skipped.map((s) => s.title).join(', '),
+					})
+				)
+			} else if (result.importedCount === 0) {
+				toast.info(t('recipes.importedNone'))
+			}
+		} catch (err: unknown) {
+			toast.error(err instanceof Error ? err.message : t('recipes.importCsvError'))
+		} finally {
+			loadRecipes()
+			inputEl.value = ''
+		}
+	}
+
+	const handleImportPdf = async (file: File, inputEl: HTMLInputElement) => {
 		try {
 			const result = await pdfService.importRecipesFromPdf(file)
 			if (result.importedCount > 0) {
@@ -264,7 +523,18 @@ export function RecipeListContainer() {
 			toast.error(err instanceof Error ? err.message : t('recipes.importError'))
 		} finally {
 			loadRecipes()
-			e.target.value = ''
+			inputEl.value = ''
+		}
+	}
+
+	const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (!file) return
+		const isCsv = file.name.endsWith('.csv') || file.type === 'text/csv'
+		if (isCsv) {
+			await handleImportCsv(file, e.target)
+		} else {
+			await handleImportPdf(file, e.target)
 		}
 	}
 
@@ -302,9 +572,9 @@ export function RecipeListContainer() {
 						{t('recipes.import')}
 						<input
 							type='file'
-							accept='.pdf,application/pdf'
+							accept='.pdf,application/pdf,.csv,text/csv'
 							ref={importFileRef}
-							onChange={handleImportPdf}
+							onChange={handleImportFile}
 							style={{ display: 'none' }}
 						/>
 					</label>
@@ -313,6 +583,28 @@ export function RecipeListContainer() {
 					</Link>
 				</div>
 			</div>
+
+			{selectedIds.size > 0 && (
+				<div className='recipe-selection-bar'>
+					<span className='recipe-selection-bar__count'>
+						{t('recipes.selected', { count: selectedIds.size })}
+					</span>
+					<button
+						className='btn btn-outline btn-sm'
+						onClick={() => setSelectedIds(new Set(visibleRecipes.map((r) => r.id)))}>
+						{t('recipes.selectAll')}
+					</button>
+					<button className='btn btn-outline btn-sm' onClick={handleExportSelectedPdf}>
+						{t('recipes.exportPdfSelected')}
+					</button>
+					<button className='btn btn-outline btn-sm' onClick={handleExportSelectedCsv}>
+						{t('recipes.exportCsv')}
+					</button>
+					<button className='btn btn-outline btn-sm' onClick={() => setSelectedIds(new Set())}>
+						{t('recipes.deselectAll')}
+					</button>
+				</div>
+			)}
 
 			<div className='search-bar-container'>
 				<input
@@ -337,6 +629,7 @@ export function RecipeListContainer() {
 				<RecipeFilters
 					filters={filters}
 					availableTags={availableTags}
+					authors={authors}
 					onChange={handleFiltersChange}
 					onClear={handleFiltersClear}
 					activeCount={activeFilterCount}
@@ -348,6 +641,8 @@ export function RecipeListContainer() {
 				currentUserId={currentUser?.id || 0}
 				onDelete={handleDelete}
 				onAddToWeek={handleAddToWeek}
+				selectedIds={selectedIds}
+				onToggleSelect={handleToggleSelect}
 			/>
 
 			<Pagination
@@ -371,6 +666,79 @@ export function RecipeListContainer() {
 				isOpen={modalOpen}
 				onClose={() => setModalOpen(false)}
 			/>
+
+			{multiPdfModal && (
+				<div className='modal-overlay' onClick={() => setMultiPdfModal(null)}>
+					<div className='modal-content recipe-card-pdf-modal' onClick={(e) => e.stopPropagation()}>
+						<div className='recipe-card-pdf-header'>
+							<h3 className='recipe-card-pdf-title'>{t('recipes.pdfSelectVariants')}</h3>
+							<p className='recipe-card-pdf-hint'>{t('recipes.pdfSelectVariantsHint')}</p>
+						</div>
+						{multiPdfModal.loading && <p className='recipe-card-pdf-hint'>{t('loading')}</p>}
+						{multiPdfModal.questions.map((q) => (
+							<div
+								key={q.key}
+								className='recipe-card-pdf-group'
+								style={{ marginLeft: `${q.depth * 14}px` }}>
+								<label className='recipe-card-pdf-label'>
+									{multiPdfModal.rootIds.length > 1 && (
+										<span className='pdf-nested-prefix'>{q.rootTitle} › </span>
+									)}
+									{q.depth > 0 && <span className='pdf-nested-prefix'>{q.recipeTitle} - </span>}
+									{q.componentName}
+								</label>
+								<select
+									className='form-input'
+									value={multiPdfModal.selections[q.key] || ''}
+									onChange={(e) => handleMultiPdfChange(q, parseInt(e.target.value))}
+									disabled={multiPdfModal.loading}>
+									{q.options.map((opt: any) => (
+										<option key={opt.id} value={opt.id}>
+											{opt.recipeId || opt.recipe ? '📖' : '🥬'}{' '}
+											{opt.name || opt.recipe?.title || opt.ingredient?.name}
+											{opt.isDefault ? ` (${t('default')})` : ''}
+										</option>
+									))}
+								</select>
+							</div>
+						))}
+						<div className='recipe-card-pdf-actions'>
+							{multiPdfModal.questions.some((q) => q.depth > 0) && (
+								<div className='pdf-merge-row'>
+									<span className='recipe-card-pdf-label'>{t('recipes.pdfMode')}</span>
+									<label className='pdf-radio-label'>
+										<input
+											type='radio'
+											checked={!multiPdfModal.merge}
+											onChange={() => setMultiPdfModal((m) => (m ? { ...m, merge: false } : m))}
+										/>
+										{t('recipes.pdfModeMultiple')}
+									</label>
+									<label className='pdf-radio-label'>
+										<input
+											type='radio'
+											checked={multiPdfModal.merge}
+											onChange={() => setMultiPdfModal((m) => (m ? { ...m, merge: true } : m))}
+										/>
+										{t('recipes.pdfModeSingle')}
+									</label>
+								</div>
+							)}
+							<div className='flex gap-1'>
+								<button className='btn btn-outline' onClick={() => setMultiPdfModal(null)}>
+									{t('cancel')}
+								</button>
+								<button
+									className='btn btn-primary'
+									onClick={confirmMultiPdfDownload}
+									disabled={multiPdfModal.loading}>
+									{t('recipes.downloadPdf')}
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
 		</>
 	)
 }

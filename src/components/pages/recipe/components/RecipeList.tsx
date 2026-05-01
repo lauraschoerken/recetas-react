@@ -9,9 +9,18 @@ interface RecipeListProps {
 	currentUserId: number
 	onDelete: (id: number) => void
 	onAddToWeek: (recipe: Recipe) => void
+	selectedIds?: Set<number>
+	onToggleSelect?: (id: number) => void
 }
 
-export function RecipeList({ recipes, currentUserId, onDelete, onAddToWeek }: RecipeListProps) {
+export function RecipeList({
+	recipes,
+	currentUserId,
+	onDelete,
+	onAddToWeek,
+	selectedIds,
+	onToggleSelect,
+}: RecipeListProps) {
 	const { t } = useTranslation()
 
 	if (recipes.length === 0) {
@@ -32,6 +41,8 @@ export function RecipeList({ recipes, currentUserId, onDelete, onAddToWeek }: Re
 					currentUserId={currentUserId}
 					onDelete={onDelete}
 					onAddToWeek={onAddToWeek}
+					isSelected={selectedIds?.has(recipe.id)}
+					onSelect={onToggleSelect}
 				/>
 			))}
 		</div>

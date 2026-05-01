@@ -28,6 +28,8 @@ interface ItemCardProps {
 	onDownloadPdf?: () => void
 	editPath: string
 	detailPath?: string
+	isSelected?: boolean
+	onSelect?: () => void
 }
 
 export function ItemCard({
@@ -38,6 +40,8 @@ export function ItemCard({
 	onDownloadPdf,
 	editPath,
 	detailPath,
+	isSelected,
+	onSelect,
 }: ItemCardProps) {
 	const { t } = useTranslation()
 	const isOwner = item.userId === currentUserId
@@ -54,7 +58,22 @@ export function ItemCard({
 	}
 
 	return (
-		<div className={`item-card ${item.type === 'dish' ? 'item-card--dish' : ''}`}>
+		<div
+			className={`item-card ${item.type === 'dish' ? 'item-card--dish' : ''}${isSelected ? ' item-card--selected' : ''}`}>
+			{/* Checkbox de selección — esquina superior derecha */}
+			{onSelect && (
+				<button
+					className={`item-card-select${isSelected ? ' item-card-select--active' : ''}`}
+					onClick={(e) => {
+						e.preventDefault()
+						e.stopPropagation()
+						onSelect()
+					}}
+					aria-label={isSelected ? t('recipes.deselectRecipe') : t('recipes.selectRecipe')}
+					aria-pressed={isSelected}>
+					{isSelected ? '✓' : ''}
+				</button>
+			)}
 			{/* Área clickable principal */}
 			<Link to={linkPath} className='item-card-clickable' tabIndex={0}>
 				{item.imageUrl ? (
@@ -77,41 +96,43 @@ export function ItemCard({
 				)}
 			</Link>
 
-			{/* Acciones rápidas, visibles al hacer hover */}
-			<div className='item-card-quick-actions'>
-				<button
-					className='item-card-action-btn'
-					onClick={onAddToWeek}
-					title={t('recipes.addToWeekBtn')}>
-					<CalendarAddIcon size={14} aria-hidden='true' />
-				</button>
-				{onDownloadPdf && (
+			{/* Acciones rápidas (hover) */}
+			<div className='item-card-bottom-bar'>
+				<div className='item-card-quick-actions'>
 					<button
 						className='item-card-action-btn'
-						onClick={onDownloadPdf}
-						title={t('recipes.downloadPdf')}>
-						<HiOutlineArrowDownTray size={14} aria-hidden='true' />
+						onClick={onAddToWeek}
+						title={t('recipes.addToWeekBtn')}>
+						<CalendarAddIcon size={14} aria-hidden='true' />
 					</button>
-				)}
-				{isOwner && (
-					<>
-						<Link to={editPath} className='item-card-action-btn' title={t('edit')}>
-							<EditIcon size={14} aria-hidden='true' />
-						</Link>
+					{onDownloadPdf && (
 						<button
-							className='item-card-action-btn item-card-action-btn--danger'
-							onClick={() => onDelete(item.id)}
-							title={t('delete')}>
-							<DeleteIcon size={14} aria-hidden='true' />
+							className='item-card-action-btn'
+							onClick={onDownloadPdf}
+							title={t('recipes.downloadPdf')}>
+							<HiOutlineArrowDownTray size={14} aria-hidden='true' />
 						</button>
-					</>
-				)}
+					)}
+					{isOwner && (
+						<>
+							<Link to={editPath} className='item-card-action-btn' title={t('edit')}>
+								<EditIcon size={14} aria-hidden='true' />
+							</Link>
+							<button
+								className='item-card-action-btn item-card-action-btn--danger'
+								onClick={() => onDelete(item.id)}
+								title={t('delete')}>
+								<DeleteIcon size={14} aria-hidden='true' />
+							</button>
+						</>
+					)}
+				</div>
 			</div>
 
 			{/* Tags de ingredientes */}
 			{item.tags && item.tags.length > 0 && (
 				<div className={`item-card-tags${item.imageUrl ? ' item-card-tags--over-image' : ''}`}>
-					{item.tags.slice(0, 4).map((tag) => (
+					{item.tags.slice(0, 2).map((tag) => (
 						<span
 							key={tag.id}
 							className='item-card-tag'
@@ -119,6 +140,9 @@ export function ItemCard({
 							{tag.name}
 						</span>
 					))}
+					{item.tags.length > 2 && (
+						<span className='item-card-tag item-card-tag--more'>+{item.tags.length - 2}</span>
+					)}
 				</div>
 			)}
 		</div>

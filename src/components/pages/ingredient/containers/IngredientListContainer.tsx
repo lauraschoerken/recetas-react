@@ -13,6 +13,7 @@ import { shoppingService } from '@/services/shopping'
 import { storeService, UserStore } from '@/services/store'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import { getStoredPageSize } from '@/utils/pagination/usePagination'
+import { normalizeText } from '@/utils/normalize'
 
 import { IngredientCard } from '../components/IngredientCard'
 import { IngredientFormModal } from './IngredientFormModal'
@@ -143,7 +144,7 @@ export function IngredientListContainer() {
 			const result = await ingredientService.getAllPaginated({
 				page: currentPage,
 				pageSize,
-				search,
+				search: normalizeText(search),
 				sortBy,
 				sortOrder,
 				location: filterLocation || undefined,

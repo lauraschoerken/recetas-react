@@ -8,6 +8,11 @@ import type {
 } from '@/models'
 import { api } from '@/services/api'
 
+const API_MODE = (import.meta.env.VITE_API_MODE as 'mock' | 'api' | 'real' | undefined) ?? 'api'
+const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') ?? ''
+const API_PREFIX = (import.meta.env.VITE_API_PREFIX as string | undefined) ?? '/api'
+const SHOPPING_API_URL = API_MODE === 'mock' ? '' : `${API_BASE}${API_PREFIX}`
+
 export type {
 	AddWeekPlanResult,
 	ConsumeResult,
@@ -55,5 +60,31 @@ export const shoppingService = {
 		items: { ingredientId: number; quantity: number; unit: string }[]
 	): Promise<{ added: number }> {
 		return api.post<{ added: number }>('/shopping-list/add', { items })
+	},
+
+	async downloadShoppingPdf(
+		items: { name: string; quantityToBuy: number; unit: string }[],
+		weekLabel?: string
+	): Promise<void> {
+		const token = localStorage.getItem('token')
+		const response = await fetch(`${SHOPPING_API_URL}/shopping-list/export/pdf`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+			body: JSON.stringify({ items, weekLabel }),
+		})
+		if (!response.ok) throw new Error('Error al generar PDF')
+		const blob = await response.blob()
+		const url = URL.createObjectURL(blob)
+		const a = document.createElement('a')
+		a.href = url
+		a.download = 'lista-compra.pdf'
+		a.style.display = 'none'
+		document.body.appendChild(a)
+		a.click()
+		a.remove()
+		URL.revokeObjectURL(url)
 	},
 }

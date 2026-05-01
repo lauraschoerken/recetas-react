@@ -4,7 +4,51 @@
 }
 
 .home-search {
+	margin-bottom: 0.5rem;
+}
+
+.home-sort-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
 	margin-bottom: 1rem;
+	align-items: center;
+
+	&__group {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		flex-wrap: wrap;
+	}
+
+	&__label {
+		font-size: 0.78rem;
+		color: var(--text-muted);
+		font-weight: 600;
+		white-space: nowrap;
+		margin-right: 0.15rem;
+	}
+}
+
+.home-sort-pill {
+	padding: 0.25rem 0.65rem;
+	border-radius: 999px;
+	border: 1px solid var(--border-color);
+	background: var(--surface-1);
+	color: var(--text-secondary);
+	font-size: 0.78rem;
+	cursor: pointer;
+	transition: all 0.15s;
+
+	&--active {
+		background: var(--primary-color);
+		color: var(--text-inverse);
+		border-color: var(--primary-color);
+	}
+
+	&:hover:not(.home-sort-pill--active) {
+		background: var(--surface-2);
+	}
 }
 
 .home-search-results {

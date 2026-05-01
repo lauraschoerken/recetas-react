@@ -28,11 +28,14 @@ export interface RecipeFilterValues {
 	// Ordenación
 	sortBy: 'createdAt' | 'title' | 'cookTimeMinutes' | 'difficulty'
 	sortOrder: 'asc' | 'desc'
+	// Autor
+	authorId: number | null
 }
 
 interface RecipeFiltersProps {
 	filters: RecipeFilterValues
 	availableTags: IngredientTag[]
+	authors: { id: number; name: string }[]
 	onChange: (filters: RecipeFilterValues) => void
 	onClear: () => void
 	activeCount: number
@@ -56,11 +59,13 @@ export const DEFAULT_FILTERS: RecipeFilterValues = {
 	excludeTagIds: [],
 	sortBy: 'createdAt',
 	sortOrder: 'desc',
+	authorId: null,
 }
 
 export function RecipeFilters({
 	filters,
 	availableTags,
+	authors,
 	onChange,
 	onClear,
 	activeCount,
@@ -440,6 +445,26 @@ export function RecipeFilters({
 				<button type='button' className='btn btn-outline recipe-filters__clear' onClick={onClear}>
 					{t('recipes.filterClear')}
 				</button>
+			)}
+
+			{/* ── Autor ── */}
+			{authors.length > 0 && filters.visibility !== 'mine' && filters.visibility !== 'private' && (
+				<div className='recipe-filters__group'>
+					<label className='recipe-filters__label'>{t('recipes.filterAuthor')}</label>
+					<select
+						className='form-input'
+						value={filters.authorId ?? ''}
+						onChange={(e) =>
+							updateImmediate({ authorId: e.target.value ? Number(e.target.value) : null })
+						}>
+						<option value=''>{t('recipes.authorAll')}</option>
+						{authors.map((a) => (
+							<option key={a.id} value={a.id}>
+								{a.name}
+							</option>
+						))}
+					</select>
+				</div>
 			)}
 		</div>
 	)

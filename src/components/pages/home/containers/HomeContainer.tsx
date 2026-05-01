@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
+import { normalizeText } from '@/utils/normalize'
+
 import { CreateHomeItemData, HomeItem, HomeLocation, homeService } from '@/services/home'
 import { shoppingService } from '@/services/shopping'
 import { alertService } from '@/services/alert'
@@ -164,21 +166,44 @@ export function HomeContainer() {
 		}
 	}
 
+	const [sortBy, setSortBy] = useState<'name' | 'date' | 'quantity'>('name')
+	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+	const [filterType, setFilterType] = useState<'' | 'ingredient' | 'recipe'>('')
+
 	const filteredItems = items
 		.filter((item) => item.location === activeTab)
 		.filter((item) => {
 			if (!searchQuery.trim()) return true
-			const q = searchQuery.toLowerCase()
-			const name = (item.recipe?.title || item.ingredient?.name || '').toLowerCase()
+			const q = normalizeText(searchQuery)
+			const name = normalizeText(item.recipe?.title || item.ingredient?.name || '')
 			return name.includes(q)
+		})
+		.filter((item) => {
+			if (!filterType) return true
+			if (filterType === 'recipe') return !!item.recipe
+			if (filterType === 'ingredient') return !!item.ingredient
+			return true
+		})
+		.sort((a, b) => {
+			let cmp = 0
+			if (sortBy === 'name') {
+				const nameA = normalizeText(a.recipe?.title || a.ingredient?.name || '')
+				const nameB = normalizeText(b.recipe?.title || b.ingredient?.name || '')
+				cmp = nameA.localeCompare(nameB)
+			} else if (sortBy === 'quantity') {
+				cmp = (a.quantity ?? 0) - (b.quantity ?? 0)
+			} else if (sortBy === 'date') {
+				cmp = new Date(a.addedAt ?? 0).getTime() - new Date(b.addedAt ?? 0).getTime()
+			}
+			return sortOrder === 'asc' ? cmp : -cmp
 		})
 	const visibleItems = paginate(filteredItems, currentPage, pageSize)
 
 	const searchAllLocations = (query: string) => {
 		if (!query.trim()) return []
-		const q = query.toLowerCase()
+		const q = normalizeText(query)
 		return items.filter((item) => {
-			const name = (item.recipe?.title || item.ingredient?.name || '').toLowerCase()
+			const name = normalizeText(item.recipe?.title || item.ingredient?.name || '')
 			return name.includes(q)
 		})
 	}
@@ -188,9 +213,9 @@ export function HomeContainer() {
 	const getLocationCount = (location: HomeLocation) => {
 		const locationItems = items.filter((item) => item.location === location)
 		if (!searchQuery.trim()) return locationItems.length
-		const q = searchQuery.toLowerCase()
+		const q = normalizeText(searchQuery)
 		return locationItems.filter((item) => {
-			const name = (item.recipe?.title || item.ingredient?.name || '').toLowerCase()
+			const name = normalizeText(item.recipe?.title || item.ingredient?.name || '')
 			return name.includes(q)
 		}).length
 	}
@@ -223,6 +248,46 @@ export function HomeContainer() {
 						)
 					}}
 				/>
+			</div>
+
+			<div className='home-sort-bar'>
+				<div className='home-sort-bar__group'>
+					<span className='home-sort-bar__label'>{t('homePage.filterType')}</span>
+					{(['', 'ingredient', 'recipe'] as const).map((type) => (
+						<button
+							key={type}
+							className={`home-sort-pill${filterType === type ? ' home-sort-pill--active' : ''}`}
+							onClick={() => setFilterType(type)}>
+							{type === ''
+								? t('homePage.filterAll')
+								: type === 'ingredient'
+									? t('homePage.filterIngredient')
+									: t('homePage.filterRecipe')}
+						</button>
+					))}
+				</div>
+				<div className='home-sort-bar__group'>
+					<span className='home-sort-bar__label'>{t('homePage.sortBy')}</span>
+					{(['name', 'quantity', 'date'] as const).map((by) => (
+						<button
+							key={by}
+							className={`home-sort-pill${sortBy === by ? ' home-sort-pill--active' : ''}`}
+							onClick={() => {
+								if (sortBy === by) setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))
+								else {
+									setSortBy(by)
+									setSortOrder('asc')
+								}
+							}}>
+							{by === 'name'
+								? t('homePage.sortName')
+								: by === 'quantity'
+									? t('homePage.sortQuantity')
+									: t('homePage.sortDate')}
+							{sortBy === by && (sortOrder === 'asc' ? ' ↑' : ' ↓')}
+						</button>
+					))}
+				</div>
 			</div>
 
 			{searchQuery.trim() && crossSectionResults.length > 0 && (
@@ -282,7 +347,7 @@ export function HomeContainer() {
 					/>
 				) : (
 					<button className='btn btn-primary add-item-btn' onClick={() => setShowAddForm(true)}>
-						+ {t('homePage.addTo', { location: LOCATIONS.find((l) => l.id === activeTab)?.label })}
+						{t('homePage.addTo', { location: LOCATIONS.find((l) => l.id === activeTab)?.label })}
 					</button>
 				)}
 

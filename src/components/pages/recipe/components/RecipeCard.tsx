@@ -13,6 +13,8 @@ interface RecipeCardProps {
 	currentUserId: number
 	onDelete: (id: number) => void
 	onAddToWeek: (recipe: Recipe) => void
+	isSelected?: boolean
+	onSelect?: (id: number) => void
 }
 
 interface PdfQuestion {
@@ -25,7 +27,14 @@ interface PdfQuestion {
 	options: any[]
 }
 
-export function RecipeCard({ recipe, currentUserId, onDelete, onAddToWeek }: RecipeCardProps) {
+export function RecipeCard({
+	recipe,
+	currentUserId,
+	onDelete,
+	onAddToWeek,
+	isSelected,
+	onSelect,
+}: RecipeCardProps) {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
 	const [showPdfOptions, setShowPdfOptions] = useState(false)
@@ -245,6 +254,8 @@ export function RecipeCard({ recipe, currentUserId, onDelete, onAddToWeek }: Rec
 				onDownloadPdf={handleDownloadPdf}
 				editPath={`/recipes/${recipe.id}/edit`}
 				detailPath={`/recipes/${recipe.id}`}
+				isSelected={isSelected}
+				onSelect={onSelect ? () => onSelect(recipe.id) : undefined}
 			/>
 
 			{showPdfOptions && pdfQuestions.length > 0 && (
