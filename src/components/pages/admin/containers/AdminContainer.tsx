@@ -5,9 +5,10 @@ import { useTranslation } from 'react-i18next'
 
 import { IngredientFormModal } from '@/components/pages/ingredient/containers/IngredientFormModal'
 import { adminService, AdminUser, PendingIngredient, Proposal } from '@/services/admin'
+import { backupService } from '@/services/backup'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
-type Tab = 'users' | 'pendingIngredients' | 'proposals'
+type Tab = 'users' | 'pendingIngredients' | 'proposals' | 'backup'
 
 export function AdminContainer() {
 	const { t } = useTranslation()
@@ -20,6 +21,13 @@ export function AdminContainer() {
 	const [search, setSearch] = useState('')
 	const [adminNotes, setAdminNotes] = useState<Record<number, string>>({})
 	const [selectedIngredient, setSelectedIngredient] = useState<PendingIngredient | null>(null)
+	const [exportingGlobal, setExportingGlobal] = useState(false)
+	const [importingGlobal, setImportingGlobal] = useState(false)
+	const [adminImportMode, setAdminImportMode] = useState<'overwrite' | 'keep' | 'review'>('keep')
+	const [adminImportResult, setAdminImportResult] = useState<Record<
+		string,
+		{ created: number; skipped: number; updated: number }
+	> | null>(null)
 
 	useEffect(() => {
 		loadData()
@@ -113,12 +121,38 @@ export function AdminContainer() {
 		loadData()
 	}
 
+	const handleDownloadGlobalBackup = async () => {
+		setExportingGlobal(true)
+		try {
+			await backupService.downloadAdminBackupJson()
+		} finally {
+			setExportingGlobal(false)
+		}
+	}
+
+	const handleImportGlobalBackup = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0]
+		if (!file) return
+		e.target.value = ''
+		setImportingGlobal(true)
+		setAdminImportResult(null)
+		try {
+			const result = await backupService.importAdminBackupFile(file, adminImportMode)
+			setAdminImportResult(result.results)
+			toast.success(t('admin.backup.importSuccess'))
+		} catch (err: any) {
+			toast.error(err?.message ?? t('admin.backup.importError'))
+		} finally {
+			setImportingGlobal(false)
+		}
+	}
+
 	return (
 		<div className='admin-container container'>
 			<h1 className='admin-container__title'>{t('admin.title')}</h1>
 
 			<div className='admin-container__tabs'>
-				{(['users', 'pendingIngredients', 'proposals'] as Tab[]).map((t2) => (
+				{(['users', 'pendingIngredients', 'proposals', 'backup'] as Tab[]).map((t2) => (
 					<button
 						key={t2}
 						className={`admin-container__tab${tab === t2 ? ' admin-container__tab--active' : ''}`}
@@ -388,6 +422,72 @@ export function AdminContainer() {
 									})}
 								</div>
 							)}
+						</div>
+					)}
+
+					{tab === 'backup' && (
+						<div className='admin-container__section'>
+							<h2 className='admin-container__section-title'>{t('admin.backup.title')}</h2>
+							<p className='admin-container__desc'>{t('admin.backup.desc')}</p>
+
+							<div className='backup-actions'>
+								<button
+									className='btn btn--primary'
+									onClick={handleDownloadGlobalBackup}
+									disabled={exportingGlobal}>
+									{exportingGlobal ? t('admin.backup.downloading') : t('admin.backup.downloadBtn')}
+								</button>
+
+								<div className='backup-import'>
+									<div className='form-group'>
+										<label className='form-label'>{t('settings.importMode')}</label>
+										<select
+											className='form-input'
+											value={adminImportMode}
+											onChange={(e) => setAdminImportMode(e.target.value as any)}>
+											<option value='keep'>{t('settings.importKeep')}</option>
+											<option value='overwrite'>{t('settings.importOverwrite')}</option>
+											<option value='review'>{t('settings.importReview')}</option>
+										</select>
+									</div>
+									<label className='btn btn--outline' style={{ cursor: 'pointer' }}>
+										{importingGlobal ? t('admin.backup.importing') : t('admin.backup.importBtn')}
+										<input
+											type='file'
+											accept='.json'
+											onChange={handleImportGlobalBackup}
+											style={{ display: 'none' }}
+											disabled={importingGlobal}
+										/>
+									</label>
+								</div>
+
+								{adminImportResult && (
+									<div className='admin-container__import-result'>
+										<h3>{t('admin.backup.importResultTitle')}</h3>
+										<table className='admin-container__result-table'>
+											<thead>
+												<tr>
+													<th>{t('admin.backup.resultEntity')}</th>
+													<th>{t('admin.backup.resultCreated')}</th>
+													<th>{t('admin.backup.resultUpdated')}</th>
+													<th>{t('admin.backup.resultSkipped')}</th>
+												</tr>
+											</thead>
+											<tbody>
+												{Object.entries(adminImportResult).map(([key, val]) => (
+													<tr key={key}>
+														<td>{key}</td>
+														<td>{val.created}</td>
+														<td>{val.updated}</td>
+														<td>{val.skipped}</td>
+													</tr>
+												))}
+											</tbody>
+										</table>
+									</div>
+								)}
+							</div>
 						</div>
 					)}
 				</>

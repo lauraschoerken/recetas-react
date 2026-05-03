@@ -763,7 +763,23 @@
 		"tabs": {
 			"users": "Users",
 			"pendingIngredients": "Pending ingredients",
-			"proposals": "Proposals"
+			"proposals": "Proposals",
+			"backup": "Global backup"
+		},
+		"backup": {
+			"title": "Global system backup",
+			"desc": "Export all system data: users, ingredients, recipes and week plans from all users.",
+			"downloadBtn": "Download global backup (JSON)",
+			"downloading": "Downloading...",
+			"importBtn": "Import global backup (JSON)",
+			"importing": "Importing...",
+			"importSuccess": "Backup imported successfully",
+			"importError": "Error importing backup",
+			"importResultTitle": "Import result",
+			"resultEntity": "Entity",
+			"resultCreated": "Created",
+			"resultUpdated": "Updated",
+			"resultSkipped": "Skipped"
 		}
 	}
 }

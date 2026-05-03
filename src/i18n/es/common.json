@@ -843,7 +843,23 @@
 		"tabs": {
 			"users": "Usuarios",
 			"pendingIngredients": "Ingredientes pendientes",
-			"proposals": "Propuestas"
+			"proposals": "Propuestas",
+			"backup": "Backup global"
+		},
+		"backup": {
+			"title": "Backup global del sistema",
+			"desc": "Exporta todos los datos del sistema: usuarios, ingredientes, recetas y planificaciones de todos los usuarios.",
+			"downloadBtn": "Descargar backup global (JSON)",
+			"downloading": "Descargando...",
+			"importBtn": "Importar backup global (JSON)",
+			"importing": "Importando...",
+			"importSuccess": "Backup importado correctamente",
+			"importError": "Error al importar el backup",
+			"importResultTitle": "Resultado de la importación",
+			"resultEntity": "Entidad",
+			"resultCreated": "Creados",
+			"resultUpdated": "Actualizados",
+			"resultSkipped": "Omitidos"
 		}
 	}
 }

@@ -13,6 +13,10 @@ class BackupService {
 		return api.get<BackupData>('/backup/export')
 	}
 
+	async exportAdminJson(): Promise<BackupData> {
+		return api.get<BackupData>('/backup/admin-export')
+	}
+
 	async exportCsv(): Promise<{
 		exportDate: string
 		version: string
@@ -31,6 +35,16 @@ class BackupService {
 		return api.post('/backup/import', { data, mode })
 	}
 
+	async importAdminData(
+		data: unknown,
+		mode: 'overwrite' | 'keep' | 'review'
+	): Promise<{
+		mode: string
+		results: Record<string, { created: number; skipped: number; updated: number }>
+	}> {
+		return api.post('/backup/admin-import', { data, mode })
+	}
+
 	downloadAsFile(content: string, filename: string, type = 'text/csv') {
 		const blob = new Blob([content], { type })
 		const url = URL.createObjectURL(blob)
@@ -46,6 +60,13 @@ class BackupService {
 		const date = new Date().toISOString().split('T')[0]
 		const content = JSON.stringify(data, null, 2)
 		this.downloadAsFile(content, `recetas-backup-${date}.json`, 'application/json')
+	}
+
+	async downloadAdminBackupJson() {
+		const data = await this.exportAdminJson()
+		const date = new Date().toISOString().split('T')[0]
+		const content = JSON.stringify(data, null, 2)
+		this.downloadAsFile(content, `recetas-backup-global-${date}.json`, 'application/json')
 	}
 
 	async downloadBackupCsv() {
@@ -87,6 +108,21 @@ class BackupService {
 			return this.importData(json.data || json, mode)
 		}
 		throw new Error('Formato no soportado. Usa .json, .csv o .zip')
+	}
+
+	async importAdminBackupFile(
+		file: File,
+		mode: 'overwrite' | 'keep' | 'review'
+	): Promise<{
+		mode: string
+		results: Record<string, { created: number; skipped: number; updated: number }>
+	}> {
+		const text = await file.text()
+		if (!text.trim().startsWith('{')) {
+			throw new Error('El backup global debe ser un archivo .json')
+		}
+		const json = JSON.parse(text)
+		return this.importAdminData(json, mode)
 	}
 
 	private async importSingleCsv(
