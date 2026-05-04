@@ -98,7 +98,11 @@ export function SettingsContainer() {
 	const [editingStoreName, setEditingStoreName] = useState('')
 
 	// Tags state
-	const randomTagColor = () => '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0')
+	const randomTagColor = () =>
+		'#' +
+		Math.floor(Math.random() * 0xffffff)
+			.toString(16)
+			.padStart(6, '0')
 	const [tags, setTags] = useState<IngredientTag[]>([])
 	const [tagsLoading, setTagsLoading] = useState(false)
 	const [newTagName, setNewTagName] = useState('')
