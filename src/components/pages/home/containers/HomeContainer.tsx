@@ -199,17 +199,6 @@ export function HomeContainer() {
 		})
 	const visibleItems = paginate(filteredItems, currentPage, pageSize)
 
-	const searchAllLocations = (query: string) => {
-		if (!query.trim()) return []
-		const q = normalizeText(query)
-		return items.filter((item) => {
-			const name = normalizeText(item.recipe?.title || item.ingredient?.name || '')
-			return name.includes(q)
-		})
-	}
-
-	const crossSectionResults = searchAllLocations(searchQuery)
-
 	const getLocationCount = (location: HomeLocation) => {
 		const locationItems = items.filter((item) => item.location === location)
 		if (!searchQuery.trim()) return locationItems.length
@@ -289,36 +278,6 @@ export function HomeContainer() {
 					))}
 				</div>
 			</div>
-
-			{searchQuery.trim() && crossSectionResults.length > 0 && (
-				<div className='home-search-results'>
-					<p className='search-results-title'>
-						{t('homePage.searchResults')} ({crossSectionResults.length})
-					</p>
-					<div className='home-items-grid'>
-						{crossSectionResults.slice(0, 3).map((item) => (
-							<HomeItemCard
-								key={`search-${item.id}`}
-								item={item}
-								onUpdate={handleUpdate}
-								onDelete={handleDelete}
-								onCook={handleCook}
-								onAddToWeekPlan={handleOpenWeekPlan}
-								showLocation
-								minServings={item.recipe?.id ? recipeThresholds.get(item.recipe.id) : undefined}
-								minQuantity={
-									item.ingredient?.id ? ingredientThresholds.get(item.ingredient.id) : undefined
-								}
-							/>
-						))}
-					</div>
-					{crossSectionResults.length > 3 && (
-						<p className='search-results-more'>
-							y {crossSectionResults.length - 3} {t('homePage.moreResults')}
-						</p>
-					)}
-				</div>
-			)}
 
 			<div className='home-tabs'>
 				{LOCATIONS.map((loc) => (
