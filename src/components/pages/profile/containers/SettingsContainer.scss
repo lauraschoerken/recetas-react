@@ -615,6 +615,25 @@
 	flex: 1;
 }
 
+// Tags: fila de creación (círculo color + input + botón)
+.tags-create-row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	max-width: 28rem;
+
+	.form-input {
+		flex: 1;
+	}
+
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		flex-shrink: 0;
+	}
+}
+
 // Tags: mensaje de error inline
 .tags-inline-error {
 	display: block;

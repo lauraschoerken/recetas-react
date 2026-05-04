@@ -9,6 +9,7 @@ import {
 	HiOutlineXMark,
 	HiOutlineEye,
 	HiOutlineEyeSlash,
+	HiOutlinePlus,
 } from 'react-icons/hi2'
 
 import { householdService, Household } from '@/services/household'
@@ -97,10 +98,11 @@ export function SettingsContainer() {
 	const [editingStoreName, setEditingStoreName] = useState('')
 
 	// Tags state
+	const randomTagColor = () => '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0')
 	const [tags, setTags] = useState<IngredientTag[]>([])
 	const [tagsLoading, setTagsLoading] = useState(false)
 	const [newTagName, setNewTagName] = useState('')
-	const [newTagColor, setNewTagColor] = useState('#6c757d')
+	const [newTagColor, setNewTagColor] = useState(randomTagColor)
 	const [newTagError, setNewTagError] = useState<string | null>(null)
 	const [editingTagId, setEditingTagId] = useState<number | null>(null)
 	const [editingTagName, setEditingTagName] = useState('')
@@ -230,7 +232,7 @@ export function SettingsContainer() {
 			})
 			setTags((prev) => [...prev, created])
 			setNewTagName('')
-			setNewTagColor('#6c757d')
+			setNewTagColor(randomTagColor())
 			toast.success(t('tags.created'))
 		} catch (err: unknown) {
 			const e = err as { httpCode?: number; status?: number }
@@ -286,7 +288,11 @@ export function SettingsContainer() {
 				isHiddenGlobally: !tag.isHiddenGlobally,
 			})
 			toast.success(tag.isHiddenGlobally ? t('tags.unhidden') : t('tags.hidden'))
-			await loadTags()
+			setTags((prev) =>
+				prev.map((tg) =>
+					tg.id === tag.id ? { ...tg, isHiddenGlobally: !tag.isHiddenGlobally } : tg
+				)
+			)
 		} catch {
 			toast.error(t('error'))
 		}
@@ -1376,7 +1382,17 @@ export function SettingsContainer() {
 									{/* Formulario para crear nueva tag personal */}
 									<div className='settings-add-form'>
 										<h4 className='settings-subsection-title'>{t('settings.tagsAdd')}</h4>
-										<div className='form-row' style={{ maxWidth: '28rem' }}>
+										<div className='tags-create-row'>
+											<label
+												className='tags-color-swatch'
+												title={t('tags.color')}
+												style={{ background: newTagColor }}>
+												<input
+													type='color'
+													value={newTagColor}
+													onChange={(e) => setNewTagColor(e.target.value)}
+												/>
+											</label>
 											<input
 												type='text'
 												className='form-input'
@@ -1388,20 +1404,11 @@ export function SettingsContainer() {
 												}}
 												onKeyDown={(e) => e.key === 'Enter' && handleCreateTag()}
 											/>
-											<label
-												className='tags-color-swatch'
-												title={t('tags.color')}
-												style={{ background: newTagColor }}>
-												<input
-													type='color'
-													value={newTagColor}
-													onChange={(e) => setNewTagColor(e.target.value)}
-												/>
-											</label>
 											<button
 												className='btn btn-primary btn-sm'
 												onClick={handleCreateTag}
 												disabled={!newTagName.trim()}>
+												<HiOutlinePlus />
 												{t('add')}
 											</button>
 										</div>
