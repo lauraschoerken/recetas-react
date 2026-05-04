@@ -447,6 +447,7 @@
 		"willConsume": "You'll consume",
 		"addedOn": "Added {{date}}",
 		"expiresOn": "Expires {{date}}",
+		"expiresLabel": "Expiration date",
 		"cookPrepare": "Cook/Prepare",
 		"transformTo": "Transform to:",
 		"noOtherStates": "No other states",

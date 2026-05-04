@@ -22,7 +22,10 @@ interface IngredientVariant {
 
 interface HomeItemCardProps {
 	item: HomeItem
-	onUpdate: (id: number, data: { quantity?: number; location?: HomeLocation }) => void
+	onUpdate: (
+		id: number,
+		data: { quantity?: number; location?: HomeLocation; expiresAt?: string | null }
+	) => void
 	onDelete: (id: number) => void
 	onCook?: (id: number, result: { success: boolean; message: string }) => void
 	onAddToWeekPlan?: (item: HomeItem) => void
@@ -45,6 +48,9 @@ export function HomeItemCard({
 	const [isEditing, setIsEditing] = useState(false)
 	const [quantity, setQuantity] = useState(item.quantity)
 	const [location, setLocation] = useState<HomeLocation>(item.location)
+	const [expiresAt, setExpiresAt] = useState<string>(
+		item.expiresAt ? item.expiresAt.slice(0, 10) : ''
+	)
 	const [showCookMenu, setShowCookMenu] = useState(false)
 	const [variants, setVariants] = useState<IngredientVariant[]>([])
 	const [loadingVariants, setLoadingVariants] = useState(false)
@@ -69,13 +75,14 @@ export function HomeItemCard({
 	const availableTargetVariants = variants.filter((v) => v.id !== item.variantId)
 
 	const handleSave = () => {
-		onUpdate(item.id, { quantity, location })
+		onUpdate(item.id, { quantity, location, expiresAt: expiresAt || null })
 		setIsEditing(false)
 	}
 
 	const handleCancel = () => {
 		setQuantity(item.quantity)
 		setLocation(item.location)
+		setExpiresAt(item.expiresAt ? item.expiresAt.slice(0, 10) : '')
 		setIsEditing(false)
 	}
 
@@ -154,6 +161,13 @@ export function HomeItemCard({
 							<option value='congelador'>{t('homePage.freezer')}</option>
 							<option value='despensa'>{t('homePage.pantry')}</option>
 						</select>
+						<input
+							type='date'
+							value={expiresAt}
+							onChange={(e) => setExpiresAt(e.target.value)}
+							className='form-input home-item-expires-input'
+							title={t('homePage.expiresLabel')}
+						/>
 					</div>
 				) : (
 					<div className='home-item-quantity'>

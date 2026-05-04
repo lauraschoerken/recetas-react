@@ -84,7 +84,10 @@ export function HomeContainer() {
 		}
 	}
 
-	const handleUpdate = async (id: number, data: { quantity?: number; location?: HomeLocation }) => {
+	const handleUpdate = async (
+		id: number,
+		data: { quantity?: number; location?: HomeLocation; expiresAt?: string | null }
+	) => {
 		try {
 			await homeService.update(id, data)
 			await loadItems()

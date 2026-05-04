@@ -451,6 +451,7 @@
 		"willConsume": "Vas a consumir",
 		"addedOn": "Añadido {{date}}",
 		"expiresOn": "Caduca {{date}}",
+		"expiresLabel": "Fecha de caducidad",
 		"cookPrepare": "Cocinar/Preparar",
 		"transformTo": "Transformar a:",
 		"noOtherStates": "No hay otros estados",
