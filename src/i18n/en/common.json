@@ -35,7 +35,12 @@
 		"noTags": "No tags",
 		"personalTags": "Personal tags",
 		"globalTags": "Global tags",
-		"tagLabel": "Global"
+		"tagLabel": "Global",
+		"colorOverride": "Custom color",
+		"hideGlobally": "Hide tag",
+		"unhideGlobally": "Show tag",
+		"duplicateName": "You already have a tag with that name",
+		"globalHiddenHint": "This global tag is hidden for you"
 	},
 	"back": "Back",
 	"error": "Error",
@@ -705,6 +710,24 @@
 	},
 	"footer": {
 		"rights": "All rights reserved"
+	},
+	"products": {
+		"title": "Products",
+		"add": "Add product",
+		"searchPlaceholder": "Search product...",
+		"noProducts": "No products",
+		"name": "Name",
+		"imageUrl": "Image URL",
+		"createTitle": "New product",
+		"editTitle": "Edit product",
+		"created": "Product created",
+		"updated": "Product updated",
+		"deleted": "Product deleted",
+		"saveError": "Error saving product",
+		"deleteError": "Error deleting product",
+		"duplicateName": "A product with that name already exists",
+		"deleteTitle": "Delete product",
+		"deleteConfirm": "Delete product \"{{name}}\"?"
 	},
 	"pagination": {
 		"label": "Pagination",

@@ -14,6 +14,7 @@ import { RecipeListContainer } from '@/components/pages/recipe/containers/Recipe
 import { ShoppingListContainer } from '@/components/pages/shopping/containers/ShoppingListContainer'
 import { WeekPlanContainer } from '@/components/pages/weekplan/containers/WeekPlanContainer'
 import { AdminContainer } from '@/components/pages/admin/containers/AdminContainer'
+import { ProductListContainer } from '@/components/pages/product/containers/ProductListContainer'
 import { IndexLayout } from '@/layouts'
 import { authService } from '@/services/auth'
 
@@ -84,6 +85,7 @@ export const router = createBrowserRouter([
 					{ path: 'ingredients', element: <IngredientListContainer /> },
 					{ path: 'week-plan', element: <WeekPlanContainer /> },
 					{ path: 'shopping-list', element: <ShoppingListContainer /> },
+					{ path: 'products', element: <ProductListContainer /> },
 					{ path: 'settings', element: <SettingsContainer /> },
 					{ path: 'macros', element: <MacrosContainer /> },
 					{ path: 'alerts', element: <AlertsContainer /> },

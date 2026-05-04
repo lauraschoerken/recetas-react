@@ -35,7 +35,12 @@
 		"noTags": "No hay tags",
 		"personalTags": "Tags personales",
 		"globalTags": "Tags globales",
-		"tagLabel": "Global"
+		"tagLabel": "Global",
+		"colorOverride": "Color personalizado",
+		"hideGlobally": "Ocultar tag",
+		"unhideGlobally": "Mostrar tag",
+		"duplicateName": "Ya tienes una tag con ese nombre",
+		"globalHiddenHint": "Esta tag global está oculta para ti"
 	},
 	"back": "Volver",
 	"error": "Error",
@@ -785,6 +790,24 @@
 		"tagsSection": "Tags",
 		"tagsSectionDesc": "Gestiona las etiquetas para clasificar ingredientes.",
 		"tagsAdd": "Nueva tag"
+	},
+	"products": {
+		"title": "Productos",
+		"add": "Añadir producto",
+		"searchPlaceholder": "Buscar producto...",
+		"noProducts": "No hay productos",
+		"name": "Nombre",
+		"imageUrl": "URL de imagen",
+		"createTitle": "Nuevo producto",
+		"editTitle": "Editar producto",
+		"created": "Producto creado",
+		"updated": "Producto actualizado",
+		"deleted": "Producto eliminado",
+		"saveError": "Error al guardar el producto",
+		"deleteError": "Error al eliminar el producto",
+		"duplicateName": "Ya existe un producto con ese nombre",
+		"deleteTitle": "Eliminar producto",
+		"deleteConfirm": "¿Eliminar el producto \"{{name}}\"?"
 	},
 	"pagination": {
 		"label": "Paginación",

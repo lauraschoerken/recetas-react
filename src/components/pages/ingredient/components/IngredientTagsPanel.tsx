@@ -16,7 +16,9 @@ export function IngredientTagsPanel({ ingredientId }: Props) {
 	const [allTags, setAllTags] = useState<IngredientTag[]>([])
 	const [assigned, setAssigned] = useState<TagAssignment[]>([])
 	const [newTagName, setNewTagName] = useState('')
+	const [newTagColor, setNewTagColor] = useState('#6c757d')
 	const [creating, setCreating] = useState(false)
+	const [createError, setCreateError] = useState<string | null>(null)
 
 	useEffect(() => {
 		loadData()
@@ -56,16 +58,45 @@ export function IngredientTagsPanel({ ingredientId }: Props) {
 	const handleCreate = async () => {
 		const name = newTagName.trim()
 		if (!name) return
+		setCreateError(null)
 		try {
-			await ingredientTagService.create({ name })
+			await ingredientTagService.create({ name, color: newTagColor })
 			setNewTagName('')
+			setNewTagColor('#6c757d')
 			setCreating(false)
 			toast.success(t('tags.created'))
 			await loadData()
-		} catch {
-			toast.error(t('tags.createError'))
+		} catch (err: any) {
+			if (err?.status === 409 || err?.httpCode === 409) {
+				setCreateError(t('tags.duplicateName'))
+			} else {
+				toast.error(t('tags.createError'))
+			}
 		}
 	}
+
+	const handleToggleHideGlobal = async (tag: IngredientTag) => {
+		try {
+			await ingredientTagService.saveUserPreference(tag.id, {
+				isHiddenGlobally: !tag.isHiddenGlobally,
+			})
+			toast.success(tag.isHiddenGlobally ? t('tags.unhidden') : t('tags.hidden'))
+			await loadData()
+		} catch {
+			toast.error(t('error'))
+		}
+	}
+
+	const handleColorOverride = async (tag: IngredientTag, color: string) => {
+		try {
+			await ingredientTagService.saveUserPreference(tag.id, { colorOverride: color })
+			await loadData()
+		} catch {
+			toast.error(t('error'))
+		}
+	}
+
+	const effectiveColor = (tag: IngredientTag) => tag.colorOverride ?? tag.color
 
 	return (
 		<div className='ing-tags-panel'>
@@ -74,22 +105,41 @@ export function IngredientTagsPanel({ ingredientId }: Props) {
 					<span className='ing-tags-panel__empty'>{t('tags.noTags')}</span>
 				) : (
 					allTags.map((tag) => (
-						<button
-							key={tag.id}
-							className={`ing-tags-panel__chip${isAssigned(tag.id) ? ' ing-tags-panel__chip--active' : ''}`}
-							style={
-								tag.color
-									? {
-											borderColor: tag.color,
-											...(isAssigned(tag.id) ? { background: tag.color } : {}),
-										}
-									: {}
-							}
-							onClick={() => handleToggle(tag)}
-							title={tag.isGlobal ? t('tags.tagLabel') : ''}>
-							{tag.name}
-							{tag.isGlobal && <span className='ing-tags-panel__chip-badge'>G</span>}
-						</button>
+						<div key={tag.id} className='ing-tags-panel__chip-row'>
+							<button
+								className={`ing-tags-panel__chip${isAssigned(tag.id) ? ' ing-tags-panel__chip--active' : ''}${tag.isHiddenGlobally ? ' ing-tags-panel__chip--hidden' : ''}`}
+								style={
+									effectiveColor(tag)
+										? {
+												borderColor: effectiveColor(tag)!,
+												...(isAssigned(tag.id) ? { background: effectiveColor(tag)! } : {}),
+											}
+										: {}
+								}
+								onClick={() => handleToggle(tag)}
+								title={tag.isGlobal ? t('tags.tagLabel') : ''}>
+								{tag.name}
+								{tag.isGlobal && <span className='ing-tags-panel__chip-badge'>G</span>}
+							</button>
+							{/* Para tags globales: botón ocultar + color override */}
+							{tag.isGlobal && (
+								<>
+									<button
+										className='ing-tags-panel__btn-icon'
+										title={tag.isHiddenGlobally ? t('tags.unhideGlobally') : t('tags.hideGlobally')}
+										onClick={() => handleToggleHideGlobal(tag)}>
+										{tag.isHiddenGlobally ? '👁' : '🚫'}
+									</button>
+									<input
+										type='color'
+										className='ing-tags-panel__color-mini'
+										value={tag.colorOverride ?? tag.color ?? '#6c757d'}
+										title={t('tags.colorOverride')}
+										onChange={(e) => handleColorOverride(tag, e.target.value)}
+									/>
+								</>
+							)}
+						</div>
 					))
 				)}
 			</div>
@@ -98,16 +148,32 @@ export function IngredientTagsPanel({ ingredientId }: Props) {
 					<input
 						type='text'
 						value={newTagName}
-						onChange={(e) => setNewTagName(e.target.value)}
+						onChange={(e) => {
+							setNewTagName(e.target.value)
+							setCreateError(null)
+						}}
 						placeholder={t('tags.name')}
 						className='ing-tags-panel__input'
 						autoFocus
 						onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
 					/>
+					<input
+						type='color'
+						value={newTagColor}
+						onChange={(e) => setNewTagColor(e.target.value)}
+						className='ing-tags-panel__color-picker'
+						title={t('tags.color')}
+					/>
+					{createError && <span className='ing-tags-panel__error'>{createError}</span>}
 					<button className='ing-tags-panel__btn-create' onClick={handleCreate}>
 						{t('save')}
 					</button>
-					<button className='ing-tags-panel__btn-cancel' onClick={() => setCreating(false)}>
+					<button
+						className='ing-tags-panel__btn-cancel'
+						onClick={() => {
+							setCreating(false)
+							setCreateError(null)
+						}}>
 						{t('cancel')}
 					</button>
 				</div>

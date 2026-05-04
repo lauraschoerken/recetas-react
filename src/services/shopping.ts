@@ -40,8 +40,12 @@ export const shoppingService = {
 		return api.put<WeekPlan>(`/week-plan/${id}`, { plannedDate })
 	},
 
-	async getShoppingList(startDate: string, endDate: string): Promise<ShoppingItem[]> {
-		return api.get<ShoppingItem[]>(`/shopping-list?startDate=${startDate}&endDate=${endDate}`)
+	async getShoppingList(startDate?: string, endDate?: string): Promise<ShoppingItem[]> {
+		const params = new URLSearchParams()
+		if (startDate) params.set('startDate', startDate)
+		if (endDate) params.set('endDate', endDate)
+		const query = params.toString()
+		return api.get<ShoppingItem[]>(`/shopping-list${query ? `?${query}` : ''}`)
 	},
 
 	async markAsCooked(

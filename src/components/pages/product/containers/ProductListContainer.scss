@@ -1,0 +1,57 @@
+@use '@/assets/styles/tokens' as *;
+
+.product-list-container {
+	max-width: 900px;
+	margin: 0 auto;
+	padding: 0 $space-2;
+}
+
+.product-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: $space-3;
+}
+
+.product-card {
+	background: var(--card-background);
+	border-radius: 0.5rem;
+	box-shadow: var(--shadow);
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+
+	&__img {
+		width: 100%;
+		height: 120px;
+		object-fit: cover;
+	}
+
+	&__body {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: $space-2;
+		flex: 1;
+	}
+
+	&__name {
+		font-weight: 500;
+		color: var(--text-primary);
+		flex: 1;
+	}
+
+	&__badge {
+		font-size: 0.7rem;
+		font-weight: 700;
+		background: var(--primary-color);
+		color: #fff;
+		border-radius: 999px;
+		padding: 0.1rem 0.4rem;
+	}
+
+	&__actions {
+		display: flex;
+		gap: $space-1;
+		padding: $space-1 $space-2 $space-2;
+	}
+}

@@ -11,25 +11,8 @@ import { normalizeText } from '@/utils/normalize'
 
 import { ShoppingList } from '../components/ShoppingList'
 
-function getWeekStart(date: Date): Date {
-	const d = new Date(date)
-	const day = d.getDay()
-	const diff = d.getDate() - day + (day === 0 ? -6 : 1)
-	d.setDate(diff)
-	d.setHours(0, 0, 0, 0)
-	return d
-}
-
-function getWeekEnd(startDate: Date): Date {
-	const d = new Date(startDate)
-	d.setDate(d.getDate() + 6)
-	d.setHours(23, 59, 59, 999)
-	return d
-}
-
-function getStorageKey(weekStart: Date): string {
-	return `shopping_${weekStart.toISOString().split('T')[0]}`
-}
+const STORAGE_KEY_CHECKED = 'shopping_checked'
+const STORAGE_KEY_EXCLUDED = 'shopping_excluded'
 
 export function ShoppingListContainer() {
 	const { t } = useTranslation()
@@ -39,7 +22,6 @@ export function ShoppingListContainer() {
 	const [checkedItems, setCheckedItems] = useState<Set<number>>(new Set())
 	const [loading, setLoading] = useState(true)
 	const [showReview, setShowReview] = useState(false)
-	const [currentWeekStart, setCurrentWeekStart] = useState(() => getWeekStart(new Date()))
 
 	// Add item form
 	const [showAddItem, setShowAddItem] = useState(false)
@@ -54,37 +36,21 @@ export function ShoppingListContainer() {
 	const [exporting, setExporting] = useState(false)
 
 	useEffect(() => {
+		// Cargar estado persistente de localStorage
+		const savedExcluded = localStorage.getItem(STORAGE_KEY_EXCLUDED)
+		const savedChecked = localStorage.getItem(STORAGE_KEY_CHECKED)
+		if (savedExcluded) setExcludedItems(new Set(JSON.parse(savedExcluded)))
+		if (savedChecked) setCheckedItems(new Set(JSON.parse(savedChecked)))
 		loadShoppingList()
-	}, [currentWeekStart])
-
-	useEffect(() => {
-		const key = getStorageKey(currentWeekStart)
-		const savedExcluded = localStorage.getItem(`${key}_excluded`)
-		const savedChecked = localStorage.getItem(`${key}_checked`)
-
-		if (savedExcluded) {
-			setExcludedItems(new Set(JSON.parse(savedExcluded)))
-		} else {
-			setExcludedItems(new Set())
-		}
-
-		if (savedChecked) {
-			setCheckedItems(new Set(JSON.parse(savedChecked)))
-		} else {
-			setCheckedItems(new Set())
-		}
-	}, [currentWeekStart])
+	}, [])
 
 	const visibleItems = allItems.filter((item) => !excludedItems.has(item.ingredientId))
 
 	const loadShoppingList = async () => {
 		setLoading(true)
 		try {
-			const endDate = getWeekEnd(currentWeekStart)
-			const data = await shoppingService.getShoppingList(
-				currentWeekStart.toISOString(),
-				endDate.toISOString()
-			)
+			// Sin fechas: todos los ítems pendientes desde hoy en adelante
+			const data = await shoppingService.getShoppingList()
 			setAllItems(data)
 		} catch {
 			console.error('Error al cargar la lista de la compra')
@@ -94,7 +60,6 @@ export function ShoppingListContainer() {
 	}
 
 	const handleToggle = (id: number) => {
-		const key = getStorageKey(currentWeekStart)
 		const newChecked = new Set(checkedItems)
 		if (newChecked.has(id)) {
 			newChecked.delete(id)
@@ -102,58 +67,38 @@ export function ShoppingListContainer() {
 			newChecked.add(id)
 		}
 		setCheckedItems(newChecked)
-		localStorage.setItem(`${key}_checked`, JSON.stringify([...newChecked]))
+		localStorage.setItem(STORAGE_KEY_CHECKED, JSON.stringify([...newChecked]))
 	}
 
 	const handleExclude = (id: number) => {
-		const key = getStorageKey(currentWeekStart)
 		const newExcluded = new Set(excludedItems)
 		newExcluded.add(id)
 		setExcludedItems(newExcluded)
-		localStorage.setItem(`${key}_excluded`, JSON.stringify([...newExcluded]))
+		localStorage.setItem(STORAGE_KEY_EXCLUDED, JSON.stringify([...newExcluded]))
 
 		const newChecked = new Set(checkedItems)
 		if (newChecked.has(id)) {
 			newChecked.delete(id)
 			setCheckedItems(newChecked)
-			localStorage.setItem(`${key}_checked`, JSON.stringify([...newChecked]))
+			localStorage.setItem(STORAGE_KEY_CHECKED, JSON.stringify([...newChecked]))
 		}
 	}
 
 	const handleRestoreItem = (id: number) => {
-		const key = getStorageKey(currentWeekStart)
 		const newExcluded = new Set(excludedItems)
 		newExcluded.delete(id)
 		setExcludedItems(newExcluded)
-		localStorage.setItem(`${key}_excluded`, JSON.stringify([...newExcluded]))
+		localStorage.setItem(STORAGE_KEY_EXCLUDED, JSON.stringify([...newExcluded]))
 	}
 
 	const clearChecked = () => {
-		const key = getStorageKey(currentWeekStart)
 		setCheckedItems(new Set())
-		localStorage.removeItem(`${key}_checked`)
+		localStorage.removeItem(STORAGE_KEY_CHECKED)
 	}
 
 	const resetAll = () => {
-		const key = getStorageKey(currentWeekStart)
 		setCheckedItems(new Set())
-		localStorage.removeItem(`${key}_checked`)
-	}
-
-	const goToPreviousWeek = () => {
-		const prev = new Date(currentWeekStart)
-		prev.setDate(prev.getDate() - 7)
-		setCurrentWeekStart(prev)
-	}
-
-	const goToNextWeek = () => {
-		const next = new Date(currentWeekStart)
-		next.setDate(next.getDate() + 7)
-		setCurrentWeekStart(next)
-	}
-
-	const goToCurrentWeek = () => {
-		setCurrentWeekStart(getWeekStart(new Date()))
+		localStorage.removeItem(STORAGE_KEY_CHECKED)
 	}
 
 	const handleOpenAddItem = async () => {
@@ -204,8 +149,11 @@ export function ShoppingListContainer() {
 				)
 			: []
 
-	const weekEndDate = getWeekEnd(currentWeekStart)
-	const weekLabel = `${currentWeekStart.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${weekEndDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`
+	const weekLabel = new Date().toLocaleDateString('es-ES', {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric',
+	})
 
 	const handleExportClipboard = async (withCategories: boolean) => {
 		setExportMenuOpen(false)
@@ -338,26 +286,6 @@ export function ShoppingListContainer() {
 					</div>
 				</div>
 			)}
-
-			<div className='card mb-2'>
-				<div className='flex flex-between flex-center'>
-					<button className='btn btn-outline btn-sm' onClick={goToPreviousWeek}>
-						&larr; {t('shopping.prev')}
-					</button>
-					<div className='text-center'>
-						<strong>{weekLabel}</strong>
-						<button
-							className='btn btn-outline btn-sm'
-							onClick={goToCurrentWeek}
-							style={{ marginLeft: '1rem' }}>
-							{t('shopping.today')}
-						</button>
-					</div>
-					<button className='btn btn-outline btn-sm' onClick={goToNextWeek}>
-						{t('shopping.next')} &rarr;
-					</button>
-				</div>
-			</div>
 
 			{loading ? (
 				<div className='loading'>{t('shopping.loading')}</div>

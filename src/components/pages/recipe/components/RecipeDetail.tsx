@@ -388,6 +388,19 @@ export function RecipeDetail({
 
 			{recipe.description && <p className='recipe-detail-description'>{recipe.description}</p>}
 
+			{recipe.tags && recipe.tags.length > 0 && (
+				<div className='recipe-detail-tags'>
+					{recipe.tags.map((tag) => (
+						<span
+							key={tag.id}
+							className='recipe-detail-tag'
+							style={tag.color ? { borderColor: tag.color, color: tag.color } : {}}>
+							{tag.name}
+						</span>
+					))}
+				</div>
+			)}
+
 			{hasNutrition && recipe.nutritionPerServing && (
 				<div className='recipe-nutrition-card'>
 					<h3>

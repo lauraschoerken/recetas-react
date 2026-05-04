@@ -98,6 +98,17 @@ export function HomeItemCard({
 		})
 	}
 
+	const getExpiryClass = (expiresAt: string) => {
+		const now = new Date()
+		now.setHours(0, 0, 0, 0)
+		const expiry = new Date(expiresAt)
+		expiry.setHours(0, 0, 0, 0)
+		const diffDays = Math.floor((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+		if (diffDays < 0) return ' home-item-expires--expired'
+		if (diffDays <= 3) return ' home-item-expires--soon'
+		return ''
+	}
+
 	return (
 		<div className={`home-item-card ${isRecipe ? 'is-recipe' : ''}`}>
 			{/* Below-minimum indicator — top-right corner icon with tooltip */}
@@ -176,7 +187,7 @@ export function HomeItemCard({
 					{t('homePage.addedOn', { date: formatDate(item.addedAt) })}
 				</span>
 				{item.expiresAt && (
-					<span className='home-item-expires'>
+					<span className={`home-item-expires${getExpiryClass(item.expiresAt)}`}>
 						{t('homePage.expiresOn', { date: formatDate(item.expiresAt) })}
 					</span>
 				)}

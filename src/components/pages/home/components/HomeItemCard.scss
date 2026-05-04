@@ -130,6 +130,16 @@
 
 .home-item-expires {
 	color: var(--warning-color);
+
+	&--expired {
+		color: var(--danger-color);
+		font-weight: 600;
+	}
+
+	&--soon {
+		color: var(--warning-color);
+		font-weight: 600;
+	}
 }
 
 /* Compact planning indicators */

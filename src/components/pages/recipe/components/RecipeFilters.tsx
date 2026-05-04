@@ -7,7 +7,7 @@ import { TagMultiSelect } from '@/components/shared/tag-multi-select/TagMultiSel
 import { IngredientTag } from '@/services/ingredientExtras'
 
 export interface RecipeFilterValues {
-	visibility: 'all' | 'mine' | 'public' | 'private'
+	visibility: 'all' | 'public' | 'private'
 	// Calorías (client-side)
 	minCalories: string
 	maxCalories: string
@@ -201,7 +201,7 @@ export function RecipeFilters({
 			<div className='recipe-filters__group'>
 				<label className='recipe-filters__label'>{t('recipes.filterVisibility')}</label>
 				<div className='recipe-filters__radio-group'>
-					{(['all', 'mine', 'public', 'private'] as const).map((v) => (
+					{(['all', 'public', 'private'] as const).map((v) => (
 						<label
 							key={v}
 							className={`recipe-filters__radio${filters.visibility === v ? ' active' : ''}`}>
@@ -448,7 +448,7 @@ export function RecipeFilters({
 			)}
 
 			{/* ── Autor ── */}
-			{authors.length > 0 && filters.visibility !== 'mine' && filters.visibility !== 'private' && (
+			{authors.length > 0 && filters.visibility === 'public' && (
 				<div className='recipe-filters__group'>
 					<label className='recipe-filters__label'>{t('recipes.filterAuthor')}</label>
 					<select

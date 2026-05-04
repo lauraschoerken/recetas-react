@@ -57,6 +57,7 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 	const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null)
 	const [quantity, setQuantity] = useState(1)
 	const [unit, setUnit] = useState('unidad')
+	const [expiresAt, setExpiresAt] = useState('')
 	const [selectedIngredient, setSelectedIngredient] = useState<IngredientSuggestion | null>(null)
 	const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null)
 
@@ -83,7 +84,7 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 			const results = await api.get<IngredientSuggestion[]>(
 				`/ingredients/search?q=${encodeURIComponent(query)}`
 			)
-			setSuggestions(results)
+			setSuggestions(results.slice(0, 5))
 		} catch {
 			setSuggestions([])
 		}
@@ -156,6 +157,10 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 			}
 		} else {
 			return
+		}
+
+		if (expiresAt) {
+			data.expiresAt = expiresAt
 		}
 
 		onSubmit(data)
@@ -263,6 +268,18 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 						</option>
 					))}
 				</select>
+			</div>
+
+			<div className='form-row'>
+				<label className='form-label'>
+					{t('homePage.expiresOn', { date: '' }).replace(': ', '')}
+				</label>
+				<input
+					type='date'
+					className='form-input'
+					value={expiresAt}
+					onChange={(e) => setExpiresAt(e.target.value)}
+				/>
 			</div>
 
 			<div className='form-row form-actions'>

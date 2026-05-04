@@ -4,6 +4,8 @@ export interface IngredientTag {
 	id: number
 	name: string
 	color?: string
+	colorOverride?: string | null
+	isHiddenGlobally?: boolean
 	isGlobal: boolean
 	createdByUserId?: number
 }
@@ -74,6 +76,13 @@ class IngredientTagService {
 
 	async unhide(ingredientId: number, tagId: number): Promise<void> {
 		return api.delete(`/ingredient-tags/ingredients/${ingredientId}/unhide/${tagId}`)
+	}
+
+	async saveUserPreference(
+		tagId: number,
+		data: { colorOverride?: string | null; isHiddenGlobally?: boolean }
+	): Promise<void> {
+		return api.put(`/ingredient-tags/${tagId}/user-preference`, data)
 	}
 }
 
