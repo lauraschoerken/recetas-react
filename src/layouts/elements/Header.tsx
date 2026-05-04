@@ -47,6 +47,9 @@ export const Header = () => {
 							className={({ isActive }) => (isActive ? activeClass : 'link')}>
 							{t('nav.ingredients')}
 						</NavLink>
+						<NavLink to='/products' className={({ isActive }) => (isActive ? activeClass : 'link')}>
+							{t('products.title')}
+						</NavLink>
 						<NavLink
 							to='/week-plan'
 							className={({ isActive }) => (isActive ? activeClass : 'link')}>
@@ -56,9 +59,6 @@ export const Header = () => {
 							to='/shopping-list'
 							className={({ isActive }) => (isActive ? activeClass : 'link')}>
 							{t('nav.shopping')}
-						</NavLink>
-						<NavLink to='/products' className={({ isActive }) => (isActive ? activeClass : 'link')}>
-							{t('products.title')}
 						</NavLink>
 						{isAdmin && (
 							<NavLink to='/admin' className={({ isActive }) => (isActive ? activeClass : 'link')}>

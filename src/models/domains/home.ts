@@ -9,6 +9,7 @@ export interface HomeItem {
 	expiresAt?: string | null
 	ingredientId?: number | null
 	variantId?: number | null
+	productId?: number | null
 	ingredient?: {
 		id: number
 		name: string
@@ -21,6 +22,10 @@ export interface HomeItem {
 		id: number
 		name: string
 		weightFactor: number
+	} | null
+	product?: {
+		id: number
+		name: string
 	} | null
 	plannedMealServings?: number
 	pendingPrepServings?: number
@@ -36,6 +41,7 @@ export interface CreateHomeItemData {
 	recipeId?: number
 	ingredientName?: string
 	variantId?: number
+	productId?: number
 }
 
 export interface UpdateHomeItemData {

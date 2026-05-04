@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '@/services/api'
 import { CreateHomeItemData, HomeLocation } from '@/services/home'
 import { Recipe } from '@/services/recipe'
+import { Product } from '@/services/product'
 
 interface AddHomeItemFormProps {
 	location: HomeLocation
@@ -13,7 +14,7 @@ interface AddHomeItemFormProps {
 	onCancel: () => void
 }
 
-type ItemType = 'ingredient' | 'recipe'
+type ItemType = 'ingredient' | 'recipe' | 'product'
 
 interface IngredientVariant {
 	id: number
@@ -55,6 +56,10 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 	const [itemType, setItemType] = useState<ItemType>('ingredient')
 	const [ingredientName, setIngredientName] = useState('')
 	const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null)
+	const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+	const [productSearch, setProductSearch] = useState('')
+	const [productSuggestions, setProductSuggestions] = useState<Product[]>([])
+	const [showProductSuggestions, setShowProductSuggestions] = useState(false)
 	const [quantity, setQuantity] = useState(1)
 	const [unit, setUnit] = useState('unidad')
 	const [expiresAt, setExpiresAt] = useState('')
@@ -139,6 +144,35 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 		return Array.from(units)
 	}
 
+	const searchProducts = async (query: string) => {
+		if (query.length < 2) {
+			setProductSuggestions([])
+			return
+		}
+		try {
+			const results = await api.get<Product[]>(`/products/search?q=${encodeURIComponent(query)}`)
+			setProductSuggestions(results.slice(0, 5))
+		} catch {
+			setProductSuggestions([])
+		}
+	}
+
+	const handleProductSearchChange = (value: string) => {
+		setProductSearch(value)
+		if (selectedProduct && value.toLowerCase() !== selectedProduct.name.toLowerCase()) {
+			setSelectedProduct(null)
+		}
+		if (debounceRef.current) clearTimeout(debounceRef.current)
+		debounceRef.current = setTimeout(() => searchProducts(value), 300)
+	}
+
+	const handleProductClick = (p: Product) => {
+		setSelectedProduct(p)
+		setProductSearch(p.name.charAt(0).toUpperCase() + p.name.slice(1))
+		setProductSuggestions([])
+		setShowProductSuggestions(false)
+	}
+
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
 
@@ -155,6 +189,8 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 			if (selectedVariantId) {
 				data.variantId = selectedVariantId
 			}
+		} else if (itemType === 'product' && selectedProduct) {
+			data.productId = selectedProduct.id
 		} else {
 			return
 		}
@@ -182,8 +218,44 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 						onClick={() => setItemType('recipe')}>
 						{t('homePage.preparedRecipe')}
 					</button>
+					<button
+						type='button'
+						className={`item-type-btn ${itemType === 'product' ? 'active' : ''}`}
+						onClick={() => setItemType('product')}>
+						{t('homePage.productType')}
+					</button>
 				</div>
 			</div>
+
+			{itemType === 'product' && (
+				<div className='form-row ingredient-input-row'>
+					<div className='ingredient-autocomplete'>
+						<input
+							type='text'
+							className='form-input'
+							placeholder={t('products.searchPlaceholder')}
+							value={productSearch}
+							onChange={(e) => handleProductSearchChange(e.target.value)}
+							onFocus={() => setShowProductSuggestions(true)}
+							onBlur={() => setTimeout(() => setShowProductSuggestions(false), 200)}
+							autoComplete='off'
+							required
+						/>
+						{showProductSuggestions && productSuggestions.length > 0 && (
+							<ul className='ingredient-suggestions'>
+								{productSuggestions.map((p) => (
+									<li
+										key={p.id}
+										className='ingredient-suggestion-item'
+										onMouseDown={() => handleProductClick(p)}>
+										<span>{p.name.charAt(0).toUpperCase() + p.name.slice(1)}</span>
+									</li>
+								))}
+							</ul>
+						)}
+					</div>
+				</div>
+			)}
 
 			{itemType === 'ingredient' ? (
 				<>
@@ -231,7 +303,7 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 						</div>
 					)}
 				</>
-			) : (
+			) : itemType === 'recipe' ? (
 				<div className='form-row'>
 					<select
 						className='form-input'
@@ -246,7 +318,7 @@ export function AddHomeItemForm({ location, onSubmit, onCancel }: AddHomeItemFor
 						))}
 					</select>
 				</div>
-			)}
+			) : null}
 
 			<div className='form-row quantity-row'>
 				<input

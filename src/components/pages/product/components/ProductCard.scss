@@ -1,0 +1,17 @@
+// Badge específico para productos (GLOBAL)
+.product-badge {
+	position: absolute;
+	top: 0.35rem;
+	right: 0.35rem;
+	font-size: 0.65rem;
+	font-weight: 700;
+	border-radius: 999px;
+	padding: 0.1rem 0.45rem;
+	line-height: 1.4;
+	pointer-events: none;
+
+	&--global {
+		background: var(--primary-color);
+		color: #fff;
+	}
+}

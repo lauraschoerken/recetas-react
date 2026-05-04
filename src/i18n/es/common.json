@@ -444,6 +444,7 @@
 		"recipe": "Receta",
 		"recipeBadge": "Receta",
 		"preparedRecipe": "Receta preparada",
+		"productType": "Producto",
 		"selectRecipe": "Selecciona una receta",
 		"toPrep": "A preparar",
 		"unknownItem": "Item desconocido",
@@ -822,7 +823,17 @@
 		"deleteError": "Error al eliminar el producto",
 		"duplicateName": "Ya existe un producto con ese nombre",
 		"deleteTitle": "Eliminar producto",
-		"deleteConfirm": "¿Eliminar el producto \"{{name}}\"?"
+		"deleteConfirm": "¿Eliminar el producto \"{{name}}\"?",
+		"globalBadge": "Global",
+		"privateBadge": "Mío",
+		"addToShopping": "Añadir a la compra",
+		"addedToShopping": "Producto añadido a la lista de la compra",
+		"addToHome": "Añadir a casa",
+		"addedToHome": "Producto añadido",
+		"addToHomeTitle": "Añadir \"{{name}}\" a casa",
+		"addToShoppingTitle": "Añadir \"{{name}}\" a la compra",
+		"selectUnit": "Unidad",
+		"productType": "Producto"
 	},
 	"pagination": {
 		"label": "Paginación",

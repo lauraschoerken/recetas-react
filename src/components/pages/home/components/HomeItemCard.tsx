@@ -55,7 +55,8 @@ export function HomeItemCard({
 	const [variants, setVariants] = useState<IngredientVariant[]>([])
 	const [loadingVariants, setLoadingVariants] = useState(false)
 
-	const rawName = item.recipe?.title || item.ingredient?.name || t('homePage.unknownItem')
+	const rawName =
+		item.product?.name || item.recipe?.title || item.ingredient?.name || t('homePage.unknownItem')
 	const name = rawName.charAt(0).toUpperCase() + rawName.slice(1)
 	const isRecipe = !!item.recipe
 	const isIngredient = !!item.ingredient

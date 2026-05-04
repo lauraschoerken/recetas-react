@@ -440,6 +440,7 @@
 		"recipe": "Recipe",
 		"recipeBadge": "Recipe",
 		"preparedRecipe": "Prepared recipe",
+		"productType": "Product",
 		"selectRecipe": "Select a recipe",
 		"toPrep": "To prepare",
 		"unknownItem": "Unknown item",
@@ -742,7 +743,17 @@
 		"deleteError": "Error deleting product",
 		"duplicateName": "A product with that name already exists",
 		"deleteTitle": "Delete product",
-		"deleteConfirm": "Delete product \"{{name}}\"?"
+		"deleteConfirm": "Delete product \"{{name}}\"?",
+		"globalBadge": "Global",
+		"privateBadge": "Mine",
+		"addToShopping": "Add to shopping",
+		"addedToShopping": "Product added to shopping list",
+		"addToHome": "Add to home",
+		"addedToHome": "Product added",
+		"addToHomeTitle": "Add \"{{name}}\" to home",
+		"addToShoppingTitle": "Add \"{{name}}\" to shopping",
+		"selectUnit": "Unit",
+		"productType": "Product"
 	},
 	"pagination": {
 		"label": "Pagination",

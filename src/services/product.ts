@@ -42,6 +42,21 @@ class ProductService {
 	async getThresholds(): Promise<ProductThreshold[]> {
 		return api.get<ProductThreshold[]>('/products/thresholds')
 	}
+
+	async addToShoppingList(id: number, quantity: number, unit: string): Promise<{ added: number }> {
+		return api.post<{ added: number }>('/shopping-list/add-product', {
+			productId: id,
+			quantity,
+			unit,
+		})
+	}
+
+	async addToHome(
+		id: number,
+		data: { location: string; quantity: number; unit: string; expiresAt?: string }
+	): Promise<unknown> {
+		return api.post('/home', { productId: id, ...data })
+	}
 }
 
 export const productService = new ProductService()
