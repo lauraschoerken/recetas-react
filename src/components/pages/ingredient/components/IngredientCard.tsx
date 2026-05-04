@@ -1,5 +1,6 @@
 ﻿import './IngredientCard.scss'
 
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { CalendarAddIcon, DeleteIcon, EditIcon } from '@/components/shared/icons'
@@ -11,6 +12,7 @@ interface IngredientCardProps {
 	ingredient: Ingredient
 	thresholdData?: IngredientThreshold | null
 	stores?: UserStore[]
+	tags?: { id: number; name: string; color?: string | null }[]
 	onUpdate: (id: number, data: { preferredUnit?: string | null }) => void
 	onDelete: (id: number) => void
 	onEdit?: (ingredient: Ingredient) => void
@@ -24,6 +26,7 @@ export function IngredientCard({
 	ingredient,
 	thresholdData,
 	stores = [],
+	tags = [],
 	onDelete,
 	onEdit,
 	onAddToShopping,
@@ -130,6 +133,21 @@ export function IngredientCard({
 					<DeleteIcon size={13} aria-hidden='true' />
 				</button>
 			</div>
+
+			{/* Tags del ingrediente (igual que en recetas) */}
+			{tags.length > 0 && (
+				<div className={`card-tags${ingredient.imageUrl ? ' card-tags--over-image' : ''}`}>
+					{tags.slice(0, 2).map((tag) => (
+						<span
+							key={tag.id}
+							className='card-tag'
+							style={tag.color ? ({ '--tag-color': tag.color } as React.CSSProperties) : undefined}>
+							{tag.name}
+						</span>
+					))}
+					{tags.length > 2 && <span className='card-tag card-tag--more'>+{tags.length - 2}</span>}
+				</div>
+			)}
 		</div>
 	)
 }

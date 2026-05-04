@@ -156,6 +156,72 @@
 	color: #fff;
 }
 
+// ── Tags del ingrediente (visible en hover, igual que en recetas) ─────────────
+.card-tags {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	display: flex;
+	gap: 0.2rem;
+	padding: 0.3rem 0.45rem;
+	max-width: calc(100% - 4.5rem);
+	overflow: hidden;
+	pointer-events: none;
+	align-items: center;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+
+.ingredient-card:hover .card-tags,
+.ingredient-card:focus-within .card-tags {
+	opacity: 1;
+}
+
+.card-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2rem;
+	font-size: 0.62rem;
+	font-weight: 600;
+	padding: 0.12rem 0.42rem;
+	border-radius: 0.75rem;
+	white-space: nowrap;
+	border: 1px solid color-mix(in srgb, var(--tag-color, var(--border-color)) 60%, transparent);
+	background: color-mix(in srgb, var(--tag-color, var(--border-color)) 12%, var(--surface-0));
+	color: var(--tag-color, var(--text-secondary));
+
+	&::before {
+		content: '';
+		display: inline-block;
+		width: 0.4rem;
+		height: 0.4rem;
+		border-radius: 50%;
+		background: var(--tag-color, var(--text-muted));
+		flex-shrink: 0;
+	}
+
+	&--more {
+		background: var(--surface-2);
+		border-color: var(--border-color);
+		color: var(--text-muted);
+
+		&::before {
+			display: none;
+		}
+	}
+}
+
+.card-tags--over-image .card-tag {
+	background: rgba(0, 0, 0, 0.6);
+	border-color: rgba(255, 255, 255, 0.2);
+	color: #fff;
+	text-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+
+	&::before {
+		background: var(--tag-color, rgba(255, 255, 255, 0.7));
+	}
+}
+
 // ── Badge pendiente de revisión ───────────────────────────────
 .card-pending-badge {
 	position: absolute;

@@ -2,7 +2,14 @@ import './SettingsContainer.scss'
 
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { HiOutlineTrash, HiOutlinePencil, HiOutlineCheck, HiOutlineXMark } from 'react-icons/hi2'
+import {
+	HiOutlineTrash,
+	HiOutlinePencil,
+	HiOutlineCheck,
+	HiOutlineXMark,
+	HiOutlineEye,
+	HiOutlineEyeSlash,
+} from 'react-icons/hi2'
 
 import { householdService, Household } from '@/services/household'
 import { backupService } from '@/services/backup'
@@ -93,8 +100,12 @@ export function SettingsContainer() {
 	const [tags, setTags] = useState<IngredientTag[]>([])
 	const [tagsLoading, setTagsLoading] = useState(false)
 	const [newTagName, setNewTagName] = useState('')
+	const [newTagColor, setNewTagColor] = useState('#6c757d')
+	const [newTagError, setNewTagError] = useState<string | null>(null)
 	const [editingTagId, setEditingTagId] = useState<number | null>(null)
 	const [editingTagName, setEditingTagName] = useState('')
+	const [editingTagColor, setEditingTagColor] = useState('#6c757d')
+	const [editingTagError, setEditingTagError] = useState<string | null>(null)
 
 	// PDF settings state (stored in localStorage)
 	const [pdfShowAuthor, setPdfShowAuthor] = useState(
@@ -200,7 +211,7 @@ export function SettingsContainer() {
 	const loadTags = async () => {
 		setTagsLoading(true)
 		try {
-			const data = await ingredientTagService.getAll()
+			const data = await ingredientTagService.getAll(true) // incluir ocultas para poder gestionarlas
 			setTags(data)
 		} catch {
 			console.error('Error loading tags')
@@ -211,25 +222,44 @@ export function SettingsContainer() {
 
 	const handleCreateTag = async () => {
 		if (!newTagName.trim()) return
+		setNewTagError(null)
 		try {
-			const created = await ingredientTagService.create({ name: newTagName.trim() })
+			const created = await ingredientTagService.create({
+				name: newTagName.trim(),
+				color: newTagColor,
+			})
 			setTags((prev) => [...prev, created])
 			setNewTagName('')
+			setNewTagColor('#6c757d')
 			toast.success(t('tags.created'))
-		} catch {
-			toast.error(t('tags.createError'))
+		} catch (err: unknown) {
+			const e = err as { httpCode?: number; status?: number }
+			if (e?.httpCode === 409 || e?.status === 409) {
+				setNewTagError(t('tags.duplicateName'))
+			} else {
+				toast.error(t('tags.createError'))
+			}
 		}
 	}
 
 	const handleUpdateTag = async (id: number) => {
 		if (!editingTagName.trim()) return
+		setEditingTagError(null)
 		try {
-			const updated = await ingredientTagService.update(id, { name: editingTagName.trim() })
+			const updated = await ingredientTagService.update(id, {
+				name: editingTagName.trim(),
+				color: editingTagColor,
+			})
 			setTags((prev) => prev.map((tg) => (tg.id === id ? updated : tg)))
 			setEditingTagId(null)
 			toast.success(t('tags.updated'))
-		} catch {
-			toast.error(t('tags.updateError'))
+		} catch (err: unknown) {
+			const e = err as { httpCode?: number; status?: number }
+			if (e?.httpCode === 409 || e?.status === 409) {
+				setEditingTagError(t('tags.duplicateName'))
+			} else {
+				toast.error(t('tags.updateError'))
+			}
 		}
 	}
 
@@ -247,6 +277,27 @@ export function SettingsContainer() {
 			toast.success(t('tags.deleted'))
 		} catch {
 			toast.error(t('tags.deleteError'))
+		}
+	}
+
+	const handleToggleHideGlobal = async (tag: IngredientTag) => {
+		try {
+			await ingredientTagService.saveUserPreference(tag.id, {
+				isHiddenGlobally: !tag.isHiddenGlobally,
+			})
+			toast.success(tag.isHiddenGlobally ? t('tags.unhidden') : t('tags.hidden'))
+			await loadTags()
+		} catch {
+			toast.error(t('error'))
+		}
+	}
+
+	const handleColorOverride = async (tag: IngredientTag, color: string) => {
+		try {
+			await ingredientTagService.saveUserPreference(tag.id, { colorOverride: color })
+			setTags((prev) => prev.map((tg) => (tg.id === tag.id ? { ...tg, colorOverride: color } : tg)))
+		} catch {
+			toast.error(t('error'))
 		}
 	}
 
@@ -1175,86 +1226,178 @@ export function SettingsContainer() {
 								<p className='settings-card-description'>{t('settings.loading')}</p>
 							) : (
 								<>
-									{tags.length === 0 ? (
-										<p className='settings-card-description'>{t('tags.noTags')}</p>
-									) : (
-										<ul className='thresholds-list'>
-											{tags.map((tag) => (
-												<li key={tag.id} className='thresholds-list__item'>
-													{editingTagId === tag.id ? (
-														<>
-															<input
-																className='form-input form-input-sm'
-																value={editingTagName}
-																onChange={(e) => setEditingTagName(e.target.value)}
-																autoFocus
-																onKeyDown={(e) => {
-																	if (e.key === 'Enter') handleUpdateTag(tag.id)
-																	if (e.key === 'Escape') setEditingTagId(null)
-																}}
-															/>
-															<div className='thresholds-list__actions'>
-																<button
-																	type='button'
-																	className='btn-icon'
-																	onClick={() => handleUpdateTag(tag.id)}>
-																	<HiOutlineCheck />
-																</button>
-																<button
-																	type='button'
-																	className='btn-icon'
-																	onClick={() => setEditingTagId(null)}>
-																	<HiOutlineXMark />
-																</button>
-															</div>
-														</>
-													) : (
-														<>
+									{/* Tags globales: el usuario puede cambiar su color y ocultarlas */}
+									{tags.filter((tg) => tg.isGlobal).length > 0 && (
+										<>
+											<h4 className='settings-subsection-title'>{t('tags.globalTags')}</h4>
+											<ul className='thresholds-list'>
+												{tags
+													.filter((tg) => tg.isGlobal)
+													.map((tag) => (
+														<li
+															key={tag.id}
+															className={`thresholds-list__item${tag.isHiddenGlobally ? ' tags-list__item--hidden' : ''}`}>
 															<span className='thresholds-list__name'>
+																<span
+																	className='tags-color-dot'
+																	style={{
+																		background: tag.colorOverride ?? tag.color ?? '#6c757d',
+																	}}
+																/>
 																{tag.name}
-																{tag.isGlobal && (
-																	<span className='settings-badge'> {t('tags.tagLabel')}</span>
+																{tag.isHiddenGlobally && (
+																	<span className='settings-badge settings-badge--muted'>
+																		{' '}
+																		{t('tags.globalHiddenHint')}
+																	</span>
 																)}
 															</span>
 															<div className='thresholds-list__actions'>
-																{!tag.isGlobal && (
+																<label
+																	className='tags-color-swatch'
+																	title={t('tags.colorOverride')}
+																	style={{
+																		background: tag.colorOverride ?? tag.color ?? '#6c757d',
+																	}}>
+																	<input
+																		type='color'
+																		value={tag.colorOverride ?? tag.color ?? '#6c757d'}
+																		onChange={(e) => handleColorOverride(tag, e.target.value)}
+																	/>
+																</label>
+																<button
+																	type='button'
+																	className='btn-icon'
+																	title={
+																		tag.isHiddenGlobally
+																			? t('tags.unhideGlobally')
+																			: t('tags.hideGlobally')
+																	}
+																	onClick={() => handleToggleHideGlobal(tag)}>
+																	{tag.isHiddenGlobally ? <HiOutlineEyeSlash /> : <HiOutlineEye />}
+																</button>
+															</div>
+														</li>
+													))}
+											</ul>
+										</>
+									)}
+
+									{/* Tags personales: el usuario puede crear, editar nombre+color y eliminar */}
+									<h4 className='settings-subsection-title'>{t('tags.personalTags')}</h4>
+									{tags.filter((tg) => !tg.isGlobal).length === 0 ? (
+										<p className='settings-card-description'>{t('tags.noTags')}</p>
+									) : (
+										<ul className='thresholds-list'>
+											{tags
+												.filter((tg) => !tg.isGlobal)
+												.map((tag) => (
+													<li key={tag.id} className='thresholds-list__item'>
+														{editingTagId === tag.id ? (
+															<>
+																<div className='tags-edit-row'>
+																	<input
+																		className='form-input form-input-sm'
+																		value={editingTagName}
+																		onChange={(e) => {
+																			setEditingTagName(e.target.value)
+																			setEditingTagError(null)
+																		}}
+																		autoFocus
+																		onKeyDown={(e) => {
+																			if (e.key === 'Enter') handleUpdateTag(tag.id)
+																			if (e.key === 'Escape') setEditingTagId(null)
+																		}}
+																	/>
+																	<label
+																		className='tags-color-swatch'
+																		title={t('tags.color')}
+																		style={{ background: editingTagColor }}>
+																		<input
+																			type='color'
+																			value={editingTagColor}
+																			onChange={(e) => setEditingTagColor(e.target.value)}
+																		/>
+																	</label>
+																</div>
+																{editingTagError && (
+																	<span className='tags-inline-error'>{editingTagError}</span>
+																)}
+																<div className='thresholds-list__actions'>
+																	<button
+																		type='button'
+																		className='btn-icon'
+																		onClick={() => handleUpdateTag(tag.id)}>
+																		<HiOutlineCheck />
+																	</button>
+																	<button
+																		type='button'
+																		className='btn-icon'
+																		onClick={() => setEditingTagId(null)}>
+																		<HiOutlineXMark />
+																	</button>
+																</div>
+															</>
+														) : (
+															<>
+																<span className='thresholds-list__name'>
+																	<span
+																		className='tags-color-dot'
+																		style={{ background: tag.color ?? '#6c757d' }}
+																	/>
+																	{tag.name}
+																</span>
+																<div className='thresholds-list__actions'>
 																	<button
 																		type='button'
 																		className='btn-icon'
 																		onClick={() => {
 																			setEditingTagId(tag.id)
 																			setEditingTagName(tag.name)
+																			setEditingTagColor(tag.color ?? '#6c757d')
+																			setEditingTagError(null)
 																		}}>
 																		<HiOutlinePencil />
 																	</button>
-																)}
-																{!tag.isGlobal && (
 																	<button
 																		type='button'
 																		className='btn-icon btn-icon--danger'
 																		onClick={() => handleDeleteTag(tag.id)}>
 																		<HiOutlineTrash />
 																	</button>
-																)}
-															</div>
-														</>
-													)}
-												</li>
-											))}
+																</div>
+															</>
+														)}
+													</li>
+												))}
 										</ul>
 									)}
 
+									{/* Formulario para crear nueva tag personal */}
 									<div className='settings-add-form'>
 										<h4 className='settings-subsection-title'>{t('settings.tagsAdd')}</h4>
-										<div className='form-row' style={{ maxWidth: '24rem' }}>
+										<div className='form-row' style={{ maxWidth: '28rem' }}>
 											<input
 												type='text'
 												className='form-input'
-												placeholder={t('tags.tagLabel')}
+												placeholder={t('tags.name')}
 												value={newTagName}
-												onChange={(e) => setNewTagName(e.target.value)}
+												onChange={(e) => {
+													setNewTagName(e.target.value)
+													setNewTagError(null)
+												}}
 												onKeyDown={(e) => e.key === 'Enter' && handleCreateTag()}
 											/>
+											<label
+												className='tags-color-swatch'
+												title={t('tags.color')}
+												style={{ background: newTagColor }}>
+												<input
+													type='color'
+													value={newTagColor}
+													onChange={(e) => setNewTagColor(e.target.value)}
+												/>
+											</label>
 											<button
 												className='btn btn-primary btn-sm'
 												onClick={handleCreateTag}
@@ -1262,6 +1405,7 @@ export function SettingsContainer() {
 												{t('add')}
 											</button>
 										</div>
+										{newTagError && <span className='tags-inline-error'>{newTagError}</span>}
 									</div>
 								</>
 							)}

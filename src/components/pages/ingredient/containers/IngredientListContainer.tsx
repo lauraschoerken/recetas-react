@@ -34,6 +34,9 @@ export function IngredientListContainer() {
 	const [stores, setStores] = useState<UserStore[]>([])
 	const [filtersOpen, setFiltersOpen] = useState(false)
 	const [availableTags, setAvailableTags] = useState<IngredientTag[]>([])
+	const [tagMap, setTagMap] = useState<
+		Record<string, { id: number; name: string; color?: string | null }[]>
+	>({})
 
 	// Modales
 	const [showCreateModal, setShowCreateModal] = useState(false)
@@ -162,6 +165,15 @@ export function IngredientListContainer() {
 			})
 			setIngredients(result.data)
 			setTotal(result.total)
+			// Cargar tags de los ingredientes visibles
+			if (result.data.length > 0) {
+				ingredientTagService
+					.getBulkTagAssignments(result.data.map((i) => i.id))
+					.then(setTagMap)
+					.catch(() => {})
+			} else {
+				setTagMap({})
+			}
 		} catch (error) {
 			console.error('Error loading ingredients:', error)
 		} finally {
@@ -729,6 +741,7 @@ export function IngredientListContainer() {
 							<IngredientCard
 								key={ingredient.id}
 								ingredient={ingredient}
+								tags={tagMap[String(ingredient.id)] ?? []}
 								thresholdData={
 									allThresholds.find((th) => th.ingredientId === ingredient.id) ?? null
 								}

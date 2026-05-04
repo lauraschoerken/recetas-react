@@ -30,8 +30,8 @@ export interface IngredientOverride {
 }
 
 class IngredientTagService {
-	async getAll(): Promise<IngredientTag[]> {
-		return api.get<IngredientTag[]>('/ingredient-tags')
+	async getAll(includeHidden = false): Promise<IngredientTag[]> {
+		return api.get<IngredientTag[]>(`/ingredient-tags${includeHidden ? '?includeHidden=true' : ''}`)
 	}
 
 	async getBulkTagAssignments(
