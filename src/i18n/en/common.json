@@ -586,7 +586,21 @@
 		"exportPdf": "Download PDF",
 		"copiedToClipboard": "List copied to clipboard",
 		"exportError": "Error exporting list",
-		"noCategory": "Uncategorized"
+		"noCategory": "Uncategorized",
+		"noStore": "No store",
+		"filterPlaceholder": "Search in list...",
+		"filterAllTags": "All tags",
+		"filterAllStores": "All stores",
+		"exportSortLabel": "Sort by",
+		"exportFilterTagLabel": "Filter by tag",
+		"exportFilterStoreLabel": "Filter by store",
+		"exportItemCount": "{{count}} item(s) will be exported",
+		"sortNameAsc": "Name A-Z",
+		"sortNameDesc": "Name Z-A",
+		"sortQtyDesc": "Most quantity",
+		"sortQtyAsc": "Least quantity",
+		"sortTagAsc": "By tag (A-Z)",
+		"sortStoreAsc": "By store (A-Z)"
 	},
 	"alerts": {
 		"title": "Stock Alerts",

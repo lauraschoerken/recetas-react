@@ -13,6 +13,16 @@
 	border-bottom: 1px solid var(--border-color);
 }
 
+.shopping-list-group-label {
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.shopping-list-count {
+	color: var(--text-secondary);
+	font-weight: 400;
+}
+
 .shopping-list-items {
 	list-style: none;
 }

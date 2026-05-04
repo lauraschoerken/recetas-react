@@ -11,9 +11,16 @@ interface ShoppingListProps {
 	checkedItems: Set<number>
 	onToggle: (id: number) => void
 	onExclude?: (id: number) => void
+	sectionTitle?: string
 }
 
-export function ShoppingList({ items, checkedItems, onToggle, onExclude }: ShoppingListProps) {
+export function ShoppingList({
+	items,
+	checkedItems,
+	onToggle,
+	onExclude,
+	sectionTitle,
+}: ShoppingListProps) {
 	const { t } = useTranslation()
 
 	if (items.length === 0) {
@@ -33,7 +40,16 @@ export function ShoppingList({ items, checkedItems, onToggle, onExclude }: Shopp
 			{uncheckedItems.length > 0 && (
 				<div className='shopping-list-section'>
 					<h3 className='shopping-list-title'>
-						{t('shopping.toBuy')} ({uncheckedItems.length})
+						{sectionTitle ? (
+							<>
+								<span className='shopping-list-group-label'>{sectionTitle}</span>{' '}
+								<span className='shopping-list-count'>({uncheckedItems.length})</span>
+							</>
+						) : (
+							<>
+								{t('shopping.toBuy')} ({uncheckedItems.length})
+							</>
+						)}
 					</h3>
 					<ul className='shopping-list-items'>
 						{uncheckedItems.map((item) => (

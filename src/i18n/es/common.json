@@ -590,7 +590,21 @@
 		"exportPdf": "Descargar PDF",
 		"copiedToClipboard": "Lista copiada al portapapeles",
 		"exportError": "Error al exportar la lista",
-		"noCategory": "Sin categoría"
+		"noCategory": "Sin categoría",
+		"noStore": "Sin supermercado",
+		"filterPlaceholder": "Buscar en la lista...",
+		"filterAllTags": "Todas las etiquetas",
+		"filterAllStores": "Todos los supermercados",
+		"exportSortLabel": "Ordenar por",
+		"exportFilterTagLabel": "Filtrar por etiqueta",
+		"exportFilterStoreLabel": "Filtrar por supermercado",
+		"exportItemCount": "{{count}} producto(s) se exportarán",
+		"sortNameAsc": "Nombre A-Z",
+		"sortNameDesc": "Nombre Z-A",
+		"sortQtyDesc": "Mayor cantidad",
+		"sortQtyAsc": "Menor cantidad",
+		"sortTagAsc": "Por etiqueta (A-Z)",
+		"sortStoreAsc": "Por supermercado (A-Z)"
 	},
 	"alerts": {
 		"title": "Alertas de Stock",
