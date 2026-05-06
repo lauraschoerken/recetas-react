@@ -9,6 +9,7 @@ interface ProductCardProps {
 	product: Product
 	onEdit?: (product: Product) => void
 	onDelete?: (product: Product) => void
+	onOverride?: (product: Product) => void
 	onAddToShopping?: (product: Product) => void
 	onAddToHome?: (product: Product) => void
 }
@@ -17,6 +18,7 @@ export function ProductCard({
 	product,
 	onEdit,
 	onDelete,
+	onOverride,
 	onAddToShopping,
 	onAddToHome,
 }: ProductCardProps) {
@@ -25,14 +27,19 @@ export function ProductCard({
 	const capitalizedName = product.name.charAt(0).toUpperCase() + product.name.slice(1)
 	const isGlobal = product.status === 'GLOBAL'
 
+	const handleCardClick = () => {
+		if (isGlobal) onOverride?.(product)
+		else onEdit?.(product)
+	}
+
 	return (
 		<div className='ingredient-card'>
 			<div
 				className='card-clickable'
-				onClick={() => !isGlobal && onEdit?.(product)}
+				onClick={handleCardClick}
 				role='button'
 				tabIndex={0}
-				onKeyDown={(e) => e.key === 'Enter' && !isGlobal && onEdit?.(product)}>
+				onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}>
 				{product.imageUrl ? (
 					<div className='card-cover' style={{ backgroundImage: `url(${product.imageUrl})` }}>
 						<div className='card-info-overlay'>
@@ -78,7 +85,17 @@ export function ProductCard({
 						🏠
 					</button>
 				)}
-				{!isGlobal && (
+				{isGlobal ? (
+					<button
+						className='card-action-btn card-action-btn--override'
+						onClick={(e) => {
+							e.stopPropagation()
+							onOverride?.(product)
+						}}
+						title={t('products.customizeTitle')}>
+						<EditIcon size={13} aria-hidden='true' />
+					</button>
+				) : (
 					<>
 						<button
 							className='card-action-btn'

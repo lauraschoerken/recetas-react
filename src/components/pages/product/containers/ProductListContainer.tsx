@@ -3,7 +3,8 @@ import './ProductListContainer.scss'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Product, productService } from '@/services/product'
+import { Product, ProductOverride, productService } from '@/services/product'
+import { authService } from '@/services/auth'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import { normalizeText } from '@/utils/normalize'
 import { ProductCard } from '../components/ProductCard'
@@ -18,7 +19,9 @@ export function ProductListContainer() {
 	const [loading, setLoading] = useState(true)
 	const [search, setSearch] = useState('')
 
-	// Modal crear/editar
+	const isAdmin = authService.isAdmin()
+
+	// Modal crear/editar (productos privados)
 	const [showForm, setShowForm] = useState(false)
 	const [editProduct, setEditProduct] = useState<Product | null>(null)
 	const [formName, setFormName] = useState('')
@@ -26,13 +29,24 @@ export function ProductListContainer() {
 	const [formError, setFormError] = useState<string | null>(null)
 	const [saving, setSaving] = useState(false)
 
-	// Modal añadir a compra
+	// Modal override/personalizaciÃ³n (productos globales)
+	const [overrideProduct, setOverrideProduct] = useState<Product | null>(null)
+	const [overrideName, setOverrideName] = useState('')
+	const [overrideImageUrl, setOverrideImageUrl] = useState('')
+	const [overrideLoading, setOverrideLoading] = useState(false)
+	const [overrideSaving, setOverrideSaving] = useState(false)
+	const [existingOverride, setExistingOverride] = useState<ProductOverride | null>(null)
+	// Vista: 'edit' (admin edita global) | 'override' (usuario personaliza) | 'propose' (usuario propone)
+	const [overrideMode, setOverrideMode] = useState<'edit' | 'override' | 'propose'>('override')
+	const [proposeField, setProposeField] = useState<'name' | 'imageUrl'>('name')
+
+	// Modal aÃ±adir a compra
 	const [shoppingProduct, setShoppingProduct] = useState<Product | null>(null)
 	const [shoppingQty, setShoppingQty] = useState(1)
 	const [shoppingUnit, setShoppingUnit] = useState('unidad')
 	const [shoppingAdding, setShoppingAdding] = useState(false)
 
-	// Modal añadir a casa
+	// Modal aÃ±adir a casa
 	const [homeProduct, setHomeProduct] = useState<Product | null>(null)
 	const [homeLocation, setHomeLocation] = useState<(typeof LOCATIONS)[number]>('nevera')
 	const [homeQty, setHomeQty] = useState(1)
@@ -115,6 +129,108 @@ export function ProductListContainer() {
 		}
 	}
 
+	// Abrir modal para producto global (admin edita / user personaliza o propone)
+	const openOverride = async (p: Product) => {
+		setOverrideProduct(p)
+		setOverrideMode(isAdmin ? 'edit' : 'override')
+		setOverrideName(p.name)
+		setOverrideImageUrl(p.imageUrl ?? '')
+		setExistingOverride(null)
+		setOverrideLoading(true)
+		try {
+			if (!isAdmin) {
+				const ov = await productService.getOverride(p.id)
+				if (ov) {
+					setExistingOverride(ov)
+					setOverrideName(ov.name ?? p.name)
+					setOverrideImageUrl(ov.imageUrl ?? p.imageUrl ?? '')
+				}
+			}
+		} catch {
+			// sin override previo
+		} finally {
+			setOverrideLoading(false)
+		}
+	}
+
+	const closeOverrideModal = () => {
+		setOverrideProduct(null)
+		setExistingOverride(null)
+		setOverrideMode('override')
+	}
+
+	const handleSaveOverride = async () => {
+		if (!overrideProduct) return
+		setOverrideSaving(true)
+		try {
+			if (isAdmin) {
+				// Admin edita el producto global directamente
+				await productService.update(overrideProduct.id, {
+					name: overrideName.trim() || undefined,
+					imageUrl: overrideImageUrl || undefined,
+				})
+				toast.success(t('products.updated'))
+				loadProducts()
+			} else {
+				// Usuario guarda override personal
+				await productService.upsertOverride(overrideProduct.id, {
+					name: overrideName.trim() !== overrideProduct.name ? overrideName.trim() : undefined,
+					imageUrl: overrideImageUrl !== (overrideProduct.imageUrl ?? '') ? overrideImageUrl || null : undefined,
+				})
+				toast.success(t('products.overrideSaved'))
+			}
+			closeOverrideModal()
+		} catch {
+			toast.error(t('products.saveError'))
+		} finally {
+			setOverrideSaving(false)
+		}
+	}
+
+	const handleDeleteOverride = async () => {
+		if (!overrideProduct) return
+		const confirmed = await confirm({
+			title: t('products.deleteOverrideTitle'),
+			message: t('products.deleteOverrideConfirm'),
+			confirmText: t('delete'),
+			type: 'danger',
+		})
+		if (!confirmed) return
+		try {
+			await productService.deleteOverride(overrideProduct.id)
+			toast.success(t('products.overrideDeleted'))
+			closeOverrideModal()
+		} catch {
+			toast.error(t('error'))
+		}
+	}
+
+	const handlePropose = async () => {
+		if (!overrideProduct) return
+		const proposedValue = proposeField === 'name' ? overrideName.trim() : overrideImageUrl
+		const currentValue = proposeField === 'name' ? overrideProduct.name : (overrideProduct.imageUrl ?? '')
+		if (!proposedValue || proposedValue === currentValue) return
+		setOverrideSaving(true)
+		try {
+			await productService.propose(overrideProduct.id, {
+				fieldName: proposeField,
+				currentValue,
+				proposedValue,
+			})
+			toast.success(t('products.proposeSent'))
+			closeOverrideModal()
+		} catch (err: unknown) {
+			const e = err as { status?: number; httpCode?: number }
+			if (e?.status === 409 || e?.httpCode === 409) {
+				toast.error(t('products.proposeDuplicate'))
+			} else {
+				toast.error(t('error'))
+			}
+		} finally {
+			setOverrideSaving(false)
+		}
+	}
+
 	const openAddToShopping = (p: Product) => {
 		setShoppingProduct(p)
 		setShoppingQty(1)
@@ -193,6 +309,7 @@ export function ProductListContainer() {
 							product={p}
 							onEdit={openEdit}
 							onDelete={handleDelete}
+							onOverride={openOverride}
 							onAddToShopping={openAddToShopping}
 							onAddToHome={openAddToHome}
 						/>
@@ -200,7 +317,7 @@ export function ProductListContainer() {
 				</div>
 			)}
 
-			{/* Modal crear/editar */}
+			{/* Modal crear/editar productos privados */}
 			{showForm && (
 				<div className='modal-overlay' onClick={() => setShowForm(false)}>
 					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
@@ -242,7 +359,155 @@ export function ProductListContainer() {
 				</div>
 			)}
 
-			{/* Modal añadir a lista de la compra */}
+			{/* Modal override/propuesta para productos globales */}
+			{overrideProduct && (
+				<div className='modal-overlay' onClick={closeOverrideModal}>
+					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
+						{overrideLoading ? (
+							<p className='text-muted'>{t('loading')}</p>
+						) : (
+							<>
+								<h3>
+									{isAdmin
+										? t('products.editTitle')
+										: overrideMode === 'propose'
+										? t('products.proposeTitle')
+										: t('products.customizeTitle')}
+								</h3>
+								<p className='text-muted' style={{ fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+									{overrideProduct.name}
+								</p>
+
+								{/* Tabs para usuario no-admin */}
+								{!isAdmin && (
+									<div className='modal-tabs'>
+										<button
+											className={`modal-tab ${overrideMode === 'override' ? 'modal-tab--active' : ''}`}
+											onClick={() => setOverrideMode('override')}>
+											{t('products.tabPersonal')}
+										</button>
+										<button
+											className={`modal-tab ${overrideMode === 'propose' ? 'modal-tab--active' : ''}`}
+											onClick={() => setOverrideMode('propose')}>
+											{t('products.tabPropose')}
+										</button>
+									</div>
+								)}
+
+								{/* Contenido segÃºn modo */}
+								{overrideMode === 'edit' && (
+									<>
+										<div className='form-group'>
+											<label>{t('products.name')}</label>
+											<input
+												type='text'
+												className='form-input'
+												value={overrideName}
+												onChange={(e) => setOverrideName(e.target.value)}
+												autoFocus
+											/>
+										</div>
+										<div className='form-group'>
+											<label>{t('products.imageUrl')}</label>
+											<input
+												type='text'
+												className='form-input'
+												value={overrideImageUrl}
+												onChange={(e) => setOverrideImageUrl(e.target.value)}
+												placeholder='https://...'
+											/>
+										</div>
+										<div className='modal-actions'>
+											<button className='btn btn-outline' onClick={closeOverrideModal}>{t('cancel')}</button>
+											<button className='btn btn-primary' onClick={handleSaveOverride} disabled={overrideSaving}>
+												{overrideSaving ? t('saving') : t('save')}
+											</button>
+										</div>
+									</>
+								)}
+
+								{overrideMode === 'override' && (
+									<>
+										<p className='text-muted' style={{ fontSize: '0.8rem' }}>
+											{t('products.overrideDesc')}
+										</p>
+										<div className='form-group'>
+											<label>{t('products.name')}</label>
+											<input
+												type='text'
+												className='form-input'
+												value={overrideName}
+												onChange={(e) => setOverrideName(e.target.value)}
+												autoFocus
+											/>
+										</div>
+										<div className='form-group'>
+											<label>{t('products.imageUrl')}</label>
+											<input
+												type='text'
+												className='form-input'
+												value={overrideImageUrl}
+												onChange={(e) => setOverrideImageUrl(e.target.value)}
+												placeholder='https://...'
+											/>
+										</div>
+										<div className='modal-actions'>
+											{existingOverride && (
+												<button className='btn btn-outline btn-outline--danger' onClick={handleDeleteOverride}>
+													{t('products.deleteOverride')}
+												</button>
+											)}
+											<button className='btn btn-outline' onClick={closeOverrideModal}>{t('cancel')}</button>
+											<button className='btn btn-primary' onClick={handleSaveOverride} disabled={overrideSaving}>
+												{overrideSaving ? t('saving') : t('products.savePersonal')}
+											</button>
+										</div>
+									</>
+								)}
+
+								{overrideMode === 'propose' && (
+									<>
+										<p className='text-muted' style={{ fontSize: '0.8rem' }}>
+											{t('products.proposeDesc')}
+										</p>
+										<div className='form-group'>
+											<label>{t('products.proposeField')}</label>
+											<select
+												className='form-input'
+												value={proposeField}
+												onChange={(e) => setProposeField(e.target.value as 'name' | 'imageUrl')}>
+												<option value='name'>{t('products.name')}</option>
+												<option value='imageUrl'>{t('products.imageUrl')}</option>
+											</select>
+										</div>
+										<div className='form-group'>
+											<label>{t('products.proposeValue')}</label>
+											<input
+												type='text'
+												className='form-input'
+												value={proposeField === 'name' ? overrideName : overrideImageUrl}
+												onChange={(e) =>
+													proposeField === 'name'
+														? setOverrideName(e.target.value)
+														: setOverrideImageUrl(e.target.value)
+												}
+											/>
+										</div>
+										<div className='modal-actions'>
+											<button className='btn btn-outline' onClick={closeOverrideModal}>{t('cancel')}</button>
+											<button className='btn btn-primary' onClick={handlePropose} disabled={overrideSaving}>
+												{overrideSaving ? t('saving') : t('products.sendProposal')}
+											</button>
+										</div>
+									</>
+								)}
+							</>
+						)}
+					</div>
+				</div>
+			)}
+
+			{/* Modal aÃ±adir a lista de la compra */}
 			{shoppingProduct && (
 				<div className='modal-overlay' onClick={() => setShoppingProduct(null)}>
 					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
@@ -282,7 +547,7 @@ export function ProductListContainer() {
 				</div>
 			)}
 
-			{/* Modal añadir a casa */}
+			{/* Modal aÃ±adir a casa */}
 			{homeProduct && (
 				<div className='modal-overlay' onClick={() => setHomeProduct(null)}>
 					<div className='modal-card' onClick={(e) => e.stopPropagation()}>

@@ -28,3 +28,33 @@
 		grid-template-columns: repeat(2, 1fr);
 	}
 }
+
+// Tabs del modal override/propuesta
+.modal-tabs {
+	display: flex;
+	gap: $space-1;
+	margin-bottom: $space-3;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.modal-tab {
+	background: none;
+	border: none;
+	padding: $space-1 $space-2;
+	cursor: pointer;
+	color: var(--text-secondary);
+	font-size: 0.9rem;
+	border-bottom: 2px solid transparent;
+	margin-bottom: -1px;
+
+	&--active {
+		color: var(--primary-color);
+		border-bottom-color: var(--primary-color);
+		font-weight: 600;
+	}
+
+	&:hover:not(.modal-tab--active) {
+		color: var(--text-primary);
+	}
+}
+

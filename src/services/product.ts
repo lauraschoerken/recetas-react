@@ -1,7 +1,7 @@
 import { api } from '@/services/api'
-import { Product, ProductThreshold } from '@/models/domains/product'
+import { Product, ProductThreshold, ProductOverride, ProductProposal } from '@/models/domains/product'
 
-export type { Product, ProductThreshold }
+export type { Product, ProductThreshold, ProductOverride, ProductProposal }
 
 class ProductService {
 	async getAll(): Promise<Product[]> {
@@ -56,6 +56,40 @@ class ProductService {
 		data: { location: string; quantity: number; unit: string; expiresAt?: string }
 	): Promise<unknown> {
 		return api.post('/home', { productId: id, ...data })
+	}
+
+	// ── Override personal ──────────────────────────────────────────────
+
+	async getOverride(id: number): Promise<ProductOverride | null> {
+		return api.get<ProductOverride | null>(`/products/${id}/override`)
+	}
+
+	async upsertOverride(id: number, data: { name?: string; imageUrl?: string | null }): Promise<ProductOverride> {
+		return api.put<ProductOverride>(`/products/${id}/override`, data)
+	}
+
+	async deleteOverride(id: number): Promise<void> {
+		return api.delete(`/products/${id}/override`)
+	}
+
+	// ── Propuestas ────────────────────────────────────────────────────
+
+	async propose(
+		id: number,
+		data: { fieldName: 'name' | 'imageUrl'; currentValue: string; proposedValue: string }
+	): Promise<ProductProposal> {
+		return api.post<ProductProposal>(`/products/${id}/propose`, data)
+	}
+
+	async getProposals(): Promise<ProductProposal[]> {
+		return api.get<ProductProposal[]>('/products/proposals')
+	}
+
+	async reviewProposal(
+		id: number,
+		data: { decision: 'ACCEPTED' | 'REJECTED'; adminNote?: string }
+	): Promise<ProductProposal> {
+		return api.put<ProductProposal>(`/products/proposals/${id}/review`, data)
 	}
 }
 
