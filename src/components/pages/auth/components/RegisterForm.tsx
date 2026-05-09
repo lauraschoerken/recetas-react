@@ -54,6 +54,7 @@ export function RegisterForm({ onSubmit, error, loading }: RegisterFormProps) {
 							value={name}
 							onChange={(e) => setName(e.target.value)}
 							placeholder={t('auth.yourName')}
+							autoComplete='name'
 							required
 						/>
 					</div>
@@ -66,6 +67,7 @@ export function RegisterForm({ onSubmit, error, loading }: RegisterFormProps) {
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							placeholder='tu@email.com'
+							autoComplete='email'
 							required
 						/>
 					</div>
@@ -78,6 +80,7 @@ export function RegisterForm({ onSubmit, error, loading }: RegisterFormProps) {
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
 							placeholder='••••••••'
+							autoComplete='new-password'
 							required
 						/>
 					</div>
@@ -90,6 +93,7 @@ export function RegisterForm({ onSubmit, error, loading }: RegisterFormProps) {
 							value={confirmPassword}
 							onChange={(e) => setConfirmPassword(e.target.value)}
 							placeholder='••••••••'
+							autoComplete='new-password'
 							required
 						/>
 					</div>
