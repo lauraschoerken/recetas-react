@@ -850,7 +850,13 @@
 		"proposeValue": "Nuevo valor",
 		"sendProposal": "Enviar propuesta",
 		"proposeSent": "Propuesta enviada",
-		"proposeDuplicate": "Ya tienes una propuesta pendiente para este campo"
+		"proposeDuplicate": "Ya tienes una propuesta pendiente para este campo",
+		"hide": "Ocultar producto",
+		"hidden": "Producto ocultado",
+		"unhide": "Mostrar",
+		"unhidden": "Producto visible de nuevo",
+		"showHiddenList": "Ver productos ocultos ({{count}})",
+		"hideHiddenList": "Cerrar productos ocultos"
 	},
 	"pagination": {
 		"label": "Paginación",

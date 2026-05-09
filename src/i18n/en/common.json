@@ -769,6 +769,12 @@
 		"sendProposal": "Send proposal",
 		"proposeSent": "Proposal sent",
 		"proposeDuplicate": "You already have a pending proposal for this field",
+		"hide": "Hide product",
+		"hidden": "Product hidden",
+		"unhide": "Show",
+		"unhidden": "Product visible again",
+		"showHiddenList": "View hidden products ({{count}})",
+		"hideHiddenList": "Close hidden products",
 		"selectUnit": "Unit",
 		"productType": "Product"
 	},

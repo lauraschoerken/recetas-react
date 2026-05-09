@@ -2,23 +2,27 @@ import './ProductCard.scss'
 
 import { useTranslation } from 'react-i18next'
 
-import { DeleteIcon, EditIcon } from '@/components/shared/icons'
+import { DeleteIcon, EditIcon, HideIcon } from '@/components/shared/icons'
 import { Product } from '@/services/product'
 
 interface ProductCardProps {
 	product: Product
+	isAdmin?: boolean
 	onEdit?: (product: Product) => void
 	onDelete?: (product: Product) => void
 	onOverride?: (product: Product) => void
+	onHide?: (product: Product) => void
 	onAddToShopping?: (product: Product) => void
 	onAddToHome?: (product: Product) => void
 }
 
 export function ProductCard({
 	product,
+	isAdmin,
 	onEdit,
 	onDelete,
 	onOverride,
+	onHide,
 	onAddToShopping,
 	onAddToHome,
 }: ProductCardProps) {
@@ -86,15 +90,38 @@ export function ProductCard({
 					</button>
 				)}
 				{isGlobal ? (
-					<button
-						className='card-action-btn card-action-btn--override'
-						onClick={(e) => {
-							e.stopPropagation()
-							onOverride?.(product)
-						}}
-						title={t('products.customizeTitle')}>
-						<EditIcon size={13} aria-hidden='true' />
-					</button>
+					<>
+						<button
+							className='card-action-btn card-action-btn--override'
+							onClick={(e) => {
+								e.stopPropagation()
+								onOverride?.(product)
+							}}
+							title={t('products.customizeTitle')}>
+							<EditIcon size={13} aria-hidden='true' />
+						</button>
+						{isAdmin ? (
+							<button
+								className='card-action-btn card-action-btn--danger'
+								onClick={(e) => {
+									e.stopPropagation()
+									onDelete?.(product)
+								}}
+								title={t('delete')}>
+								<DeleteIcon size={13} aria-hidden='true' />
+							</button>
+						) : (
+							<button
+								className='card-action-btn card-action-btn--muted'
+								onClick={(e) => {
+									e.stopPropagation()
+									onHide?.(product)
+								}}
+								title={t('products.hide')}>
+								<HideIcon size={13} aria-hidden='true' />
+							</button>
+						)}
+					</>
 				) : (
 					<>
 						<button

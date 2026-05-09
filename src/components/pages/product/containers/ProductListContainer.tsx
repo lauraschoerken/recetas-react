@@ -21,6 +21,10 @@ export function ProductListContainer() {
 
 	const isAdmin = authService.isAdmin()
 
+	// Productos ocultos
+	const [hiddenProducts, setHiddenProducts] = useState<Product[]>([])
+	const [showHidden, setShowHidden] = useState(false)
+
 	// Modal crear/editar (productos privados)
 	const [showForm, setShowForm] = useState(false)
 	const [editProduct, setEditProduct] = useState<Product | null>(null)
@@ -56,6 +60,7 @@ export function ProductListContainer() {
 
 	useEffect(() => {
 		loadProducts()
+		if (!isAdmin) loadHiddenProducts()
 	}, [])
 
 	const loadProducts = async () => {
@@ -66,6 +71,15 @@ export function ProductListContainer() {
 			console.error('Error loading products')
 		} finally {
 			setLoading(false)
+		}
+	}
+
+	const loadHiddenProducts = async () => {
+		try {
+			const data = await productService.getHidden()
+			setHiddenProducts(data)
+		} catch {
+			console.error('Error loading hidden products')
 		}
 	}
 
@@ -129,6 +143,28 @@ export function ProductListContainer() {
 		}
 	}
 
+	const handleHide = async (p: Product) => {
+		try {
+			await productService.hide(p.id)
+			toast.success(t('products.hidden'))
+			loadProducts()
+			loadHiddenProducts()
+		} catch {
+			toast.error(t('error'))
+		}
+	}
+
+	const handleUnhide = async (p: Product) => {
+		try {
+			await productService.unhide(p.id)
+			toast.success(t('products.unhidden'))
+			loadProducts()
+			loadHiddenProducts()
+		} catch {
+			toast.error(t('error'))
+		}
+	}
+
 	// Abrir modal para producto global (admin edita / user personaliza o propone)
 	const openOverride = async (p: Product) => {
 		setOverrideProduct(p)
@@ -175,7 +211,10 @@ export function ProductListContainer() {
 				// Usuario guarda override personal
 				await productService.upsertOverride(overrideProduct.id, {
 					name: overrideName.trim() !== overrideProduct.name ? overrideName.trim() : undefined,
-					imageUrl: overrideImageUrl !== (overrideProduct.imageUrl ?? '') ? overrideImageUrl || null : undefined,
+					imageUrl:
+						overrideImageUrl !== (overrideProduct.imageUrl ?? '')
+							? overrideImageUrl || null
+							: undefined,
 				})
 				toast.success(t('products.overrideSaved'))
 			}
@@ -208,7 +247,8 @@ export function ProductListContainer() {
 	const handlePropose = async () => {
 		if (!overrideProduct) return
 		const proposedValue = proposeField === 'name' ? overrideName.trim() : overrideImageUrl
-		const currentValue = proposeField === 'name' ? overrideProduct.name : (overrideProduct.imageUrl ?? '')
+		const currentValue =
+			proposeField === 'name' ? overrideProduct.name : (overrideProduct.imageUrl ?? '')
 		if (!proposedValue || proposedValue === currentValue) return
 		setOverrideSaving(true)
 		try {
@@ -307,13 +347,40 @@ export function ProductListContainer() {
 						<ProductCard
 							key={p.id}
 							product={p}
+							isAdmin={isAdmin}
 							onEdit={openEdit}
 							onDelete={handleDelete}
 							onOverride={openOverride}
+							onHide={handleHide}
 							onAddToShopping={openAddToShopping}
 							onAddToHome={openAddToHome}
 						/>
 					))}
+				</div>
+			)}
+
+			{/* Sección de productos ocultos (solo usuarios no-admin) */}
+			{!isAdmin && hiddenProducts.length > 0 && (
+				<div className='hidden-products-section'>
+					<button
+						className='btn btn-outline hidden-products-toggle'
+						onClick={() => setShowHidden((v) => !v)}>
+						{showHidden
+							? t('products.hideHiddenList')
+							: t('products.showHiddenList', { count: hiddenProducts.length })}
+					</button>
+					{showHidden && (
+						<div className='products-grid products-grid--hidden'>
+							{hiddenProducts.map((p) => (
+								<div key={p.id} className='hidden-product-row'>
+									<span className='hidden-product-name'>{p.name}</span>
+									<button className='btn btn-outline btn-sm' onClick={() => handleUnhide(p)}>
+										{t('products.unhide')}
+									</button>
+								</div>
+							))}
+						</div>
+					)}
 				</div>
 			)}
 
@@ -371,8 +438,8 @@ export function ProductListContainer() {
 									{isAdmin
 										? t('products.editTitle')
 										: overrideMode === 'propose'
-										? t('products.proposeTitle')
-										: t('products.customizeTitle')}
+											? t('products.proposeTitle')
+											: t('products.customizeTitle')}
 								</h3>
 								<p className='text-muted' style={{ fontSize: '0.85rem', marginBottom: '0.75rem' }}>
 									{overrideProduct.name}
@@ -418,8 +485,13 @@ export function ProductListContainer() {
 											/>
 										</div>
 										<div className='modal-actions'>
-											<button className='btn btn-outline' onClick={closeOverrideModal}>{t('cancel')}</button>
-											<button className='btn btn-primary' onClick={handleSaveOverride} disabled={overrideSaving}>
+											<button className='btn btn-outline' onClick={closeOverrideModal}>
+												{t('cancel')}
+											</button>
+											<button
+												className='btn btn-primary'
+												onClick={handleSaveOverride}
+												disabled={overrideSaving}>
 												{overrideSaving ? t('saving') : t('save')}
 											</button>
 										</div>
@@ -453,12 +525,19 @@ export function ProductListContainer() {
 										</div>
 										<div className='modal-actions'>
 											{existingOverride && (
-												<button className='btn btn-outline btn-outline--danger' onClick={handleDeleteOverride}>
+												<button
+													className='btn btn-outline btn-outline--danger'
+													onClick={handleDeleteOverride}>
 													{t('products.deleteOverride')}
 												</button>
 											)}
-											<button className='btn btn-outline' onClick={closeOverrideModal}>{t('cancel')}</button>
-											<button className='btn btn-primary' onClick={handleSaveOverride} disabled={overrideSaving}>
+											<button className='btn btn-outline' onClick={closeOverrideModal}>
+												{t('cancel')}
+											</button>
+											<button
+												className='btn btn-primary'
+												onClick={handleSaveOverride}
+												disabled={overrideSaving}>
 												{overrideSaving ? t('saving') : t('products.savePersonal')}
 											</button>
 										</div>
@@ -494,8 +573,13 @@ export function ProductListContainer() {
 											/>
 										</div>
 										<div className='modal-actions'>
-											<button className='btn btn-outline' onClick={closeOverrideModal}>{t('cancel')}</button>
-											<button className='btn btn-primary' onClick={handlePropose} disabled={overrideSaving}>
+											<button className='btn btn-outline' onClick={closeOverrideModal}>
+												{t('cancel')}
+											</button>
+											<button
+												className='btn btn-primary'
+												onClick={handlePropose}
+												disabled={overrideSaving}>
 												{overrideSaving ? t('saving') : t('products.sendProposal')}
 											</button>
 										</div>

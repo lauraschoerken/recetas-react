@@ -1,7 +1,12 @@
+import {
+	Product,
+	ProductOverride,
+	ProductProposal,
+	ProductThreshold,
+} from '@/models/domains/product'
 import { api } from '@/services/api'
-import { Product, ProductThreshold, ProductOverride, ProductProposal } from '@/models/domains/product'
 
-export type { Product, ProductThreshold, ProductOverride, ProductProposal }
+export type { Product, ProductOverride, ProductProposal, ProductThreshold }
 
 class ProductService {
 	async getAll(): Promise<Product[]> {
@@ -64,12 +69,29 @@ class ProductService {
 		return api.get<ProductOverride | null>(`/products/${id}/override`)
 	}
 
-	async upsertOverride(id: number, data: { name?: string; imageUrl?: string | null }): Promise<ProductOverride> {
+	async upsertOverride(
+		id: number,
+		data: { name?: string; imageUrl?: string | null }
+	): Promise<ProductOverride> {
 		return api.put<ProductOverride>(`/products/${id}/override`, data)
 	}
 
 	async deleteOverride(id: number): Promise<void> {
 		return api.delete(`/products/${id}/override`)
+	}
+
+	// ── Ocultación personal ────────────────────────────────────────────────
+
+	async hide(id: number): Promise<void> {
+		return api.post(`/products/${id}/hide`, {})
+	}
+
+	async unhide(id: number): Promise<void> {
+		return api.delete(`/products/${id}/hide`)
+	}
+
+	async getHidden(): Promise<Product[]> {
+		return api.get<Product[]>('/products/hidden')
 	}
 
 	// ── Propuestas ────────────────────────────────────────────────────
