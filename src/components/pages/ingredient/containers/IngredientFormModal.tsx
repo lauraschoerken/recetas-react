@@ -179,13 +179,19 @@ function StoresSection({
 	const { t } = useTranslation()
 	const [dragOverId, setDragOverId] = useState<number | null>(null)
 	const dragId = useRef<number | null>(null)
+	const currentUserId = authService.getUser()?.id
 
-	if (allStores.length === 0) return <p className='ifm-hint'>{t('ingredients.storesNone')}</p>
+	// Solo mostrar propias + compartidas de otros
+	const visibleStores = allStores.filter(
+		(s) => s.userId === currentUserId || (s.userId !== currentUserId && s.isShared)
+	)
+
+	if (visibleStores.length === 0) return <p className='ifm-hint'>{t('ingredients.storesNone')}</p>
 
 	const activeStores = activeStoreIds
-		.map((id) => allStores.find((s) => s.id === id))
+		.map((id) => visibleStores.find((s) => s.id === id))
 		.filter(Boolean) as UserStore[]
-	const inactiveStores = allStores.filter((s) => !activeStoreIds.includes(s.id))
+	const inactiveStores = visibleStores.filter((s) => !activeStoreIds.includes(s.id))
 
 	const handleDragOver = (e: React.DragEvent, storeId: number) => {
 		e.preventDefault()
@@ -246,7 +252,11 @@ function StoresSection({
 							{!indifferent && <span className='ifm-store-drag-order'>{index + 1}</span>}
 							<span className='ifm-store-drag-name'>
 								{store.name}
-								{store.isShared && <span className='ifm-store-badge'>{t('stores.shared')}</span>}
+								{store.userId !== currentUserId && store.isShared && (
+									<span className='ifm-store-badge' title={store.user?.name || store.user?.email}>
+										🏠
+									</span>
+								)}
 							</span>
 							<button
 								type='button'
@@ -270,7 +280,11 @@ function StoresSection({
 							className='ifm-store-add-btn'
 							onClick={() => onToggleStore(store.id)}>
 							+ {store.name}
-							{store.isShared && <span className='ifm-store-badge'>{t('stores.shared')}</span>}
+							{store.userId !== currentUserId && store.isShared && (
+								<span className='ifm-store-badge' title={store.user?.name || store.user?.email}>
+									🏠
+								</span>
+							)}
 						</button>
 					))}
 				</div>

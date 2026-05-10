@@ -720,6 +720,9 @@
 		"shareInventory": "Compartir inventario",
 		"shareShopping": "Compartir lista de compra",
 		"shareAlerts": "Compartir alertas",
+		"sharedStores": "Tiendas compartidas",
+		"householdSharedStores": "Tiendas compartidas del hogar",
+		"sharedStoresDesc": "Activa qué tiendas son visibles para todos los miembros del hogar.",
 		"members": "Miembros",
 		"removeMember": "Eliminar miembro",
 		"confirmRemove": "¿Estás seguro de que quieres eliminar a este miembro?",
@@ -864,7 +867,16 @@
 		"url": "URL de la tienda",
 		"logoUrl": "URL del logo",
 		"shared": "Compartida con el hogar",
-		"add": "Añadir tienda"
+		"add": "Añadir tienda",
+		"created": "Tienda creada",
+		"createError": "Error al crear la tienda",
+		"updated": "Tienda actualizada",
+		"updateError": "Error al actualizar la tienda",
+		"deleted": "Tienda eliminada",
+		"deleteError": "Error al eliminar la tienda",
+		"deleteConfirm": "¿Eliminar la tienda {{name}}?",
+		"indifferentOrder": "El orden me es indiferente",
+		"notHere": "Quitar de esta tienda"
 	},
 	"pagination": {
 		"label": "Paginación",

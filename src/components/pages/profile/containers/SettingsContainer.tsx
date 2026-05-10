@@ -1,28 +1,29 @@
-import './SettingsContainer.scss'
+﻿import './SettingsContainer.scss'
 
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-	HiOutlineTrash,
-	HiOutlinePencil,
 	HiOutlineCheck,
-	HiOutlineXMark,
 	HiOutlineEye,
 	HiOutlineEyeSlash,
+	HiOutlinePencil,
 	HiOutlinePlus,
+	HiOutlineTrash,
+	HiOutlineXMark,
 } from 'react-icons/hi2'
 
-import { householdService, Household } from '@/services/household'
-import { backupService } from '@/services/backup'
 import { alertService, IngredientThreshold, RecipeThreshold } from '@/services/alert'
+import { authService } from '@/services/auth'
+import { backupService } from '@/services/backup'
+import { Household, householdService } from '@/services/household'
+import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras'
 import { storeService, UserStore } from '@/services/store'
-import { ingredientTagService, IngredientTag } from '@/services/ingredientExtras'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import {
 	getStoredPageSize,
-	setStoredPageSize,
-	PAGE_SIZE_OPTIONS,
 	getStoredSnoozeDuration,
+	PAGE_SIZE_OPTIONS,
+	setStoredPageSize,
 	setStoredSnoozeDuration,
 	SNOOZE_OPTIONS,
 } from '@/utils/pagination/usePagination'
@@ -88,14 +89,18 @@ export function SettingsContainer() {
 	const [importMode, setImportMode] = useState<'overwrite' | 'keep' | 'review'>('keep')
 
 	// Stores state
+	const currentUserId = authService.getUser()?.id ?? null
 	const [stores, setStores] = useState<UserStore[]>([])
 	const [storesLoading, setStoresLoading] = useState(false)
+	const [showStoresSharing, setShowStoresSharing] = useState(false)
 	const [newStoreName, setNewStoreName] = useState('')
 	const [newStoreUrl, setNewStoreUrl] = useState('')
 	const [newStoreLogoUrl, setNewStoreLogoUrl] = useState('')
 	const [newStoreShared, setNewStoreShared] = useState(false)
 	const [editingStoreId, setEditingStoreId] = useState<number | null>(null)
 	const [editingStoreName, setEditingStoreName] = useState('')
+	const [editingStoreUrl, setEditingStoreUrl] = useState('')
+	const [editingStoreLogoUrl, setEditingStoreLogoUrl] = useState('')
 
 	// Tags state
 	const randomTagColor = () =>
@@ -129,7 +134,7 @@ export function SettingsContainer() {
 		if (activeSection === 'thresholds') {
 			loadThresholds()
 		}
-		if (activeSection === 'stores') {
+		if (activeSection === 'stores' || activeSection === 'household') {
 			loadStores()
 		}
 		if (activeSection === 'tags') {
@@ -158,6 +163,7 @@ export function SettingsContainer() {
 		try {
 			const data = await storeService.getAll()
 			setStores(data)
+			if (data.some((s) => s.isShared)) setShowStoresSharing(true)
 		} catch {
 			console.error('Error loading stores')
 		} finally {
@@ -188,10 +194,23 @@ export function SettingsContainer() {
 	const handleUpdateStore = async (id: number) => {
 		if (!editingStoreName.trim()) return
 		try {
-			const updated = await storeService.update(id, { name: editingStoreName.trim() })
+			const updated = await storeService.update(id, {
+				name: editingStoreName.trim(),
+				url: editingStoreUrl.trim() || undefined,
+				logoUrl: editingStoreLogoUrl.trim() || undefined,
+			})
 			setStores((prev) => prev.map((s) => (s.id === id ? updated : s)))
 			setEditingStoreId(null)
 			toast.success(t('stores.updated'))
+		} catch {
+			toast.error(t('stores.updateError'))
+		}
+	}
+
+	const handleToggleStoreShared = async (id: number, isShared: boolean) => {
+		try {
+			const updated = await storeService.update(id, { isShared })
+			setStores((prev) => prev.map((s) => (s.id === id ? updated : s)))
 		} catch {
 			toast.error(t('stores.updateError'))
 		}
@@ -728,7 +747,50 @@ export function SettingsContainer() {
 											/>
 											<span>{t('settings.shareAlerts')}</span>
 										</label>
+										{!storesLoading && stores.length > 0 && (
+											<label className='toggle-label'>
+												<input
+													type='checkbox'
+													checked={showStoresSharing}
+													onChange={(e) => setShowStoresSharing(e.target.checked)}
+												/>
+												<span>{t('settings.sharedStores')}</span>
+											</label>
+										)}
 									</div>
+									{!storesLoading && showStoresSharing && stores.length > 0 && (
+										<div
+											style={{
+												marginLeft: '1.75rem',
+												marginTop: '0.5rem',
+												display: 'flex',
+												flexDirection: 'column',
+												gap: '0.35rem',
+											}}>
+											{stores.map((store) => (
+												<label key={store.id} className='toggle-label'>
+													<input
+														type='checkbox'
+														checked={store.isShared}
+														onChange={(e) => handleToggleStoreShared(store.id, e.target.checked)}
+													/>
+													<span>
+														{store.name}
+														{store.user && (
+															<span
+																style={{
+																	color: 'var(--text-muted)',
+																	fontSize: '0.8em',
+																	marginLeft: '0.4em',
+																}}>
+																({store.user.name || store.user.email})
+															</span>
+														)}
+													</span>
+												</label>
+											))}
+										</div>
+									)}
 
 									<div className='household-members'>
 										<h4>{t('settings.members')}</h4>
@@ -1103,79 +1165,157 @@ export function SettingsContainer() {
 								<p className='settings-card-description'>{t('settings.loading')}</p>
 							) : (
 								<>
-									{stores.length === 0 ? (
+									{/* Tiendas propias */}
+									{stores.filter((s) => s.userId === currentUserId).length === 0 ? (
 										<p className='settings-card-description'>{t('stores.noStores')}</p>
 									) : (
 										<ul className='thresholds-list'>
-											{stores.map((store) => (
-												<li key={store.id} className='thresholds-list__item'>
-													{editingStoreId === store.id ? (
-														<>
-															<input
-																className='form-input form-input-sm'
-																value={editingStoreName}
-																onChange={(e) => setEditingStoreName(e.target.value)}
-																autoFocus
-																onKeyDown={(e) => {
-																	if (e.key === 'Enter') handleUpdateStore(store.id)
-																	if (e.key === 'Escape') setEditingStoreId(null)
-																}}
-															/>
-															<div className='thresholds-list__actions'>
-																<button
-																	type='button'
-																	className='btn-icon'
-																	onClick={() => handleUpdateStore(store.id)}>
-																	<HiOutlineCheck />
-																</button>
-																<button
-																	type='button'
-																	className='btn-icon'
-																	onClick={() => setEditingStoreId(null)}>
-																	<HiOutlineXMark />
-																</button>
-															</div>
-														</>
-													) : (
-														<>
-															<span className='thresholds-list__name'>
-																{store.name}
-																{store.isShared && (
-																	<span className='settings-badge'> {t('stores.shared')}</span>
-																)}
-															</span>
-															{store.url && (
-																<a
-																	href={store.url}
-																	target='_blank'
-																	rel='noopener noreferrer'
-																	className='thresholds-list__meta'>
-																	{store.url}
-																</a>
-															)}
-															<div className='thresholds-list__actions'>
-																<button
-																	type='button'
-																	className='btn-icon'
-																	onClick={() => {
-																		setEditingStoreId(store.id)
-																		setEditingStoreName(store.name)
+											{stores
+												.filter((s) => s.userId === currentUserId)
+												.map((store) => (
+													<li key={store.id} className='thresholds-list__item'>
+														{editingStoreId === store.id ? (
+															<>
+																<div
+																	style={{
+																		display: 'flex',
+																		flexDirection: 'column',
+																		gap: '0.4rem',
+																		flex: 1,
 																	}}>
-																	<HiOutlinePencil />
-																</button>
-																<button
-																	type='button'
-																	className='btn-icon btn-icon--danger'
-																	onClick={() => handleDeleteStore(store.id)}>
-																	<HiOutlineTrash />
-																</button>
-															</div>
-														</>
-													)}
-												</li>
-											))}
+																	<input
+																		className='form-input form-input-sm'
+																		value={editingStoreName}
+																		onChange={(e) => setEditingStoreName(e.target.value)}
+																		autoFocus
+																		placeholder={t('stores.name')}
+																		onKeyDown={(e) => {
+																			if (e.key === 'Enter') handleUpdateStore(store.id)
+																			if (e.key === 'Escape') setEditingStoreId(null)
+																		}}
+																	/>
+																	<input
+																		className='form-input form-input-sm'
+																		type='url'
+																		value={editingStoreUrl}
+																		onChange={(e) => setEditingStoreUrl(e.target.value)}
+																		placeholder={t('stores.url')}
+																	/>
+																	<input
+																		className='form-input form-input-sm'
+																		type='url'
+																		value={editingStoreLogoUrl}
+																		onChange={(e) => setEditingStoreLogoUrl(e.target.value)}
+																		placeholder={t('stores.logoUrl')}
+																	/>
+																</div>
+																<div className='thresholds-list__actions'>
+																	<button
+																		type='button'
+																		className='btn-icon'
+																		onClick={() => handleUpdateStore(store.id)}>
+																		<HiOutlineCheck />
+																	</button>
+																	<button
+																		type='button'
+																		className='btn-icon'
+																		onClick={() => setEditingStoreId(null)}>
+																		<HiOutlineXMark />
+																	</button>
+																</div>
+															</>
+														) : (
+															<>
+																<span className='thresholds-list__name'>
+																	{store.logoUrl && (
+																		<img
+																			src={store.logoUrl}
+																			alt=''
+																			style={{
+																				width: '1.2rem',
+																				height: '1.2rem',
+																				objectFit: 'contain',
+																				marginRight: '0.4rem',
+																				verticalAlign: 'middle',
+																			}}
+																		/>
+																	)}
+																	{store.name}
+																	{household && store.isShared && (
+																		<span className='settings-badge'> {t('stores.shared')}</span>
+																	)}
+																</span>
+																{store.url && (
+																	<a
+																		href={store.url}
+																		target='_blank'
+																		rel='noopener noreferrer'
+																		className='thresholds-list__meta'>
+																		{store.url}
+																	</a>
+																)}
+																<div className='thresholds-list__actions'>
+																	<button
+																		type='button'
+																		className='btn-icon'
+																		onClick={() => {
+																			setEditingStoreId(store.id)
+																			setEditingStoreName(store.name)
+																			setEditingStoreUrl(store.url ?? '')
+																			setEditingStoreLogoUrl(store.logoUrl ?? '')
+																		}}>
+																		<HiOutlinePencil />
+																	</button>
+																	<button
+																		type='button'
+																		className='btn-icon btn-icon--danger'
+																		onClick={() => handleDeleteStore(store.id)}>
+																		<HiOutlineTrash />
+																	</button>
+																</div>
+															</>
+														)}
+													</li>
+												))}
 										</ul>
 									)}
+
+									{/* Tiendas compartidas del hogar (de otros miembros) */}
+									{household &&
+										stores.filter((s) => s.userId !== currentUserId && s.isShared).length > 0 && (
+											<>
+												<h4 className='settings-subsection-title' style={{ marginTop: '1.5rem' }}>
+													{t('settings.householdSharedStores')}
+												</h4>
+												<ul className='thresholds-list'>
+													{stores
+														.filter((s) => s.userId !== currentUserId && s.isShared)
+														.map((store) => (
+															<li key={store.id} className='thresholds-list__item'>
+																<span className='thresholds-list__name'>
+																	{store.name}
+																	{store.user && (
+																		<span
+																			className='thresholds-list__meta'
+																			style={{ marginLeft: '0.5rem' }}>
+																			{store.user.name || store.user.email}
+																		</span>
+																	)}
+																</span>
+																{store.url && (
+																	<a
+																		href={store.url}
+																		target='_blank'
+																		rel='noopener noreferrer'
+																		className='thresholds-list__meta'>
+																		{store.url}
+																	</a>
+																)}
+															</li>
+														))}
+												</ul>
+											</>
+										)}
 
 									<div className='settings-add-form'>
 										<h4 className='settings-subsection-title'>{t('settings.storesAdd')}</h4>
@@ -1207,14 +1347,16 @@ export function SettingsContainer() {
 												onChange={(e) => setNewStoreLogoUrl(e.target.value)}
 											/>
 										</div>
-										<label className='toggle-label' style={{ marginBottom: '0.75rem' }}>
-											<input
-												type='checkbox'
-												checked={newStoreShared}
-												onChange={(e) => setNewStoreShared(e.target.checked)}
-											/>
-											<span>{t('stores.shared')}</span>
-										</label>
+										{household && (
+											<label className='toggle-label' style={{ marginBottom: '0.75rem' }}>
+												<input
+													type='checkbox'
+													checked={newStoreShared}
+													onChange={(e) => setNewStoreShared(e.target.checked)}
+												/>
+												<span>{t('stores.shared')}</span>
+											</label>
+										)}
 										<button
 											className='btn btn-primary btn-sm'
 											onClick={handleCreateStore}

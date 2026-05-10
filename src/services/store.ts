@@ -2,10 +2,12 @@ import { api } from '@/services/api'
 
 export interface UserStore {
 	id: number
+	userId: number
 	name: string
 	url?: string | null
 	logoUrl?: string | null
 	isShared: boolean
+	user?: { id: number; name: string; email: string }
 	ingredients?: StoreIngredient[]
 }
 

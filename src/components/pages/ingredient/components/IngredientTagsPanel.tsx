@@ -15,6 +15,7 @@ export function IngredientTagsPanel({ ingredientId }: Props) {
 	const { toast } = useDialog()
 	const [allTags, setAllTags] = useState<IngredientTag[]>([])
 	const [assigned, setAssigned] = useState<TagAssignment[]>([])
+	const [search, setSearch] = useState('')
 	const [newTagName, setNewTagName] = useState('')
 	const [newTagColor, setNewTagColor] = useState('#6c757d')
 	const [creating, setCreating] = useState(false)
@@ -75,74 +76,66 @@ export function IngredientTagsPanel({ ingredientId }: Props) {
 		}
 	}
 
-	const handleToggleHideGlobal = async (tag: IngredientTag) => {
-		try {
-			await ingredientTagService.saveUserPreference(tag.id, {
-				isHiddenGlobally: !tag.isHiddenGlobally,
-			})
-			toast.success(tag.isHiddenGlobally ? t('tags.unhidden') : t('tags.hidden'))
-			await loadData()
-		} catch {
-			toast.error(t('error'))
-		}
-	}
-
-	const handleColorOverride = async (tag: IngredientTag, color: string) => {
-		try {
-			await ingredientTagService.saveUserPreference(tag.id, { colorOverride: color })
-			await loadData()
-		} catch {
-			toast.error(t('error'))
-		}
-	}
-
 	const effectiveColor = (tag: IngredientTag) => tag.colorOverride ?? tag.color
+
+	// Tags asignados siempre visibles; el resto solo si hay búsqueda y coinciden
+	const q = search.trim().toLowerCase()
+	const assignedTags = allTags.filter((t) => isAssigned(t.id))
+	const searchResults = q
+		? allTags.filter((t) => !isAssigned(t.id) && t.name.toLowerCase().includes(q))
+		: []
 
 	return (
 		<div className='ing-tags-panel'>
-			<div className='ing-tags-panel__list'>
-				{allTags.length === 0 ? (
-					<span className='ing-tags-panel__empty'>{t('tags.noTags')}</span>
-				) : (
-					allTags.map((tag) => (
-						<div key={tag.id} className='ing-tags-panel__chip-row'>
+			{/* Tags asignados */}
+			{assignedTags.length > 0 && (
+				<div className='ing-tags-panel__list'>
+					{assignedTags.map((tag) => (
+						<button
+							key={tag.id}
+							className='ing-tags-panel__chip ing-tags-panel__chip--active'
+							style={
+								effectiveColor(tag)
+									? { borderColor: effectiveColor(tag)!, background: effectiveColor(tag)! }
+									: {}
+							}
+							onClick={() => handleToggle(tag)}>
+							{tag.name}
+							{tag.isGlobal && <span className='ing-tags-panel__chip-badge'>G</span>}
+						</button>
+					))}
+				</div>
+			)}
+
+			{/* Buscador */}
+			<input
+				type='text'
+				className='ing-tags-panel__input'
+				placeholder={t('tags.searchPlaceholder')}
+				value={search}
+				onChange={(e) => setSearch(e.target.value)}
+			/>
+
+			{/* Resultados de búsqueda */}
+			{q && (
+				<div className='ing-tags-panel__list'>
+					{searchResults.length === 0 ? (
+						<span className='ing-tags-panel__empty'>{t('tags.noResults')}</span>
+					) : (
+						searchResults.map((tag) => (
 							<button
-								className={`ing-tags-panel__chip${isAssigned(tag.id) ? ' ing-tags-panel__chip--active' : ''}${tag.isHiddenGlobally ? ' ing-tags-panel__chip--hidden' : ''}`}
-								style={
-									effectiveColor(tag)
-										? {
-												borderColor: effectiveColor(tag)!,
-												...(isAssigned(tag.id) ? { background: effectiveColor(tag)! } : {}),
-											}
-										: {}
-								}
-								onClick={() => handleToggle(tag)}
-								title={tag.isGlobal ? t('tags.tagLabel') : ''}>
+								key={tag.id}
+								className='ing-tags-panel__chip'
+								style={effectiveColor(tag) ? { borderColor: effectiveColor(tag)! } : {}}
+								onClick={() => handleToggle(tag)}>
 								{tag.name}
 								{tag.isGlobal && <span className='ing-tags-panel__chip-badge'>G</span>}
 							</button>
-							{/* Para tags globales: botón ocultar + color override */}
-							{tag.isGlobal && (
-								<>
-									<button
-										className='ing-tags-panel__btn-icon'
-										title={tag.isHiddenGlobally ? t('tags.unhideGlobally') : t('tags.hideGlobally')}
-										onClick={() => handleToggleHideGlobal(tag)}>
-										{tag.isHiddenGlobally ? '👁' : '🚫'}
-									</button>
-									<input
-										type='color'
-										className='ing-tags-panel__color-mini'
-										value={tag.colorOverride ?? tag.color ?? '#6c757d'}
-										title={t('tags.colorOverride')}
-										onChange={(e) => handleColorOverride(tag, e.target.value)}
-									/>
-								</>
-							)}
-						</div>
-					))
-				)}
-			</div>
+						))
+					)}
+				</div>
+			)}
+
 			{creating ? (
 				<div className='ing-tags-panel__create'>
 					<input

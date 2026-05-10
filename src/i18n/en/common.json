@@ -706,6 +706,9 @@
 		"storesSection": "Stores",
 		"storesSectionDesc": "Manage the stores where you buy your ingredients.",
 		"storesAdd": "Add store",
+		"sharedStores": "Shared stores",
+		"householdSharedStores": "Household shared stores",
+		"sharedStoresDesc": "Enable which stores are visible to all household members.",
 		"tagsSection": "Tags",
 		"tagsSectionDesc": "Manage labels to classify ingredients.",
 		"tagsAdd": "New tag"
@@ -784,7 +787,16 @@
 		"url": "Store URL",
 		"logoUrl": "Logo URL",
 		"shared": "Shared with household",
-		"add": "Add store"
+		"add": "Add store",
+		"created": "Store created",
+		"createError": "Error creating store",
+		"updated": "Store updated",
+		"updateError": "Error updating store",
+		"deleted": "Store deleted",
+		"deleteError": "Error deleting store",
+		"deleteConfirm": "Delete store {{name}}?",
+		"indifferentOrder": "Order doesn't matter to me",
+		"notHere": "Remove from this store"
 	},
 	"pagination": {
 		"label": "Pagination",
