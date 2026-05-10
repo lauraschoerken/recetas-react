@@ -1060,6 +1060,25 @@ export function SettingsContainer() {
 							<p className='settings-card-description' style={{ marginTop: '1rem' }}>
 								{t('settings.thresholdsConfigHint')}
 							</p>
+
+							<div className='form-group' style={{ marginTop: '1.5rem' }}>
+								<label className='form-label'>{t('settings.snoozeDuration')}</label>
+								<div className='page-size-options'>
+									{SNOOZE_OPTIONS.map((opt) => (
+										<button
+											key={opt.value}
+											type='button'
+											className={`page-size-btn ${snoozeDuration === opt.value ? 'active' : ''}`}
+											onClick={() => {
+												setStoredSnoozeDuration(opt.value)
+												setSnoozeDurationState(opt.value)
+												toast.success(t('settings.configSaved'))
+											}}>
+											{t(opt.labelKey)}
+										</button>
+									))}
+								</div>
+							</div>
 						</div>
 					)}
 
@@ -1805,25 +1824,6 @@ export function SettingsContainer() {
 												toast.success(t('settings.configSaved'))
 											}}>
 											{size}
-										</button>
-									))}
-								</div>
-							</div>
-
-							<div className='form-group' style={{ marginTop: '1.5rem' }}>
-								<label className='form-label'>{t('settings.snoozeDuration')}</label>
-								<div className='page-size-options'>
-									{SNOOZE_OPTIONS.map((opt) => (
-										<button
-											key={opt.value}
-											type='button'
-											className={`page-size-btn ${snoozeDuration === opt.value ? 'active' : ''}`}
-											onClick={() => {
-												setStoredSnoozeDuration(opt.value)
-												setSnoozeDurationState(opt.value)
-												toast.success(t('settings.configSaved'))
-											}}>
-											{t(opt.labelKey)}
 										</button>
 									))}
 								</div>

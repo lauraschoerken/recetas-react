@@ -1,6 +1,6 @@
 const PAGE_SIZE_KEY = 'pagination_pageSize'
-export const PAGE_SIZE_OPTIONS = [6, 12, 24, 48] as const
-export const DEFAULT_PAGE_SIZE = 12
+export const PAGE_SIZE_OPTIONS = [50, 100, 150] as const
+export const DEFAULT_PAGE_SIZE = 50
 
 export function getStoredPageSize(): number {
 	const stored = parseInt(localStorage.getItem(PAGE_SIZE_KEY) || '', 10)
