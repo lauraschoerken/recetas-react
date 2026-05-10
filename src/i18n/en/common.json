@@ -778,6 +778,14 @@
 		"selectUnit": "Unit",
 		"productType": "Product"
 	},
+	"stores": {
+		"noStores": "You have no stores configured yet.",
+		"name": "Store name",
+		"url": "Store URL",
+		"logoUrl": "Logo URL",
+		"shared": "Shared with household",
+		"add": "Add store"
+	},
 	"pagination": {
 		"label": "Pagination",
 		"prev": "Previous page",

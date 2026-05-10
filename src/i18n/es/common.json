@@ -858,6 +858,14 @@
 		"showHiddenList": "Ver productos ocultos ({{count}})",
 		"hideHiddenList": "Cerrar productos ocultos"
 	},
+	"stores": {
+		"noStores": "No tienes tiendas configuradas todavía.",
+		"name": "Nombre de la tienda",
+		"url": "URL de la tienda",
+		"logoUrl": "URL del logo",
+		"shared": "Compartida con el hogar",
+		"add": "Añadir tienda"
+	},
 	"pagination": {
 		"label": "Paginación",
 		"prev": "Página anterior",
