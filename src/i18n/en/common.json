@@ -711,7 +711,17 @@
 		"sharedStoresDesc": "Enable which stores are visible to all household members.",
 		"tagsSection": "Tags",
 		"tagsSectionDesc": "Manage labels to classify ingredients.",
-		"tagsAdd": "New tag"
+		"tagsAdd": "New tag",
+		"leaveAdminTitle": "You are the household administrator",
+		"leaveAdminMsg": "Before leaving, you must transfer the admin role to another member or dissolve the household.",
+		"transferAdmin": "Transfer admin to:",
+		"selectNewAdmin": "Select a member...",
+		"transferAdminConfirm": "Transfer and leave household",
+		"dissolveHousehold": "Dissolve household",
+		"confirmDissolve": "Are you sure you want to dissolve the household? All members will be removed and the household will be permanently deleted.",
+		"dissolveConfirm": "Yes, dissolve",
+		"dissolved": "The household has been dissolved",
+		"adminTransferred": "Admin role transferred. You have left the household"
 	},
 	"units": {
 		"unit": "unit",

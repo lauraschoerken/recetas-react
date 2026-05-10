@@ -112,6 +112,11 @@ export function SettingsContainer() {
 	} | null>(null)
 	const [unshareLoading, setUnshareLoading] = useState(false)
 
+	// Modal: admin intentando salir con otros miembros
+	const [leaveAdminModal, setLeaveAdminModal] = useState(false)
+	const [selectedNewAdmin, setSelectedNewAdmin] = useState<number | ''>('')
+	const [leaveAdminLoading, setLeaveAdminLoading] = useState(false)
+
 	// Modal: fusionar tienda con misma nombre del hogar
 	const [mergeModal, setMergeModal] = useState<{
 		sourceStoreId: number
@@ -637,6 +642,15 @@ export function SettingsContainer() {
 
 	const handleLeave = async () => {
 		if (!household) return
+		// Si es admin con otros miembros → abrir modal especial
+		if (
+			household.myRole === 'ADMIN' &&
+			household.members.filter((m) => m.userId !== currentUserId).length > 0
+		) {
+			setSelectedNewAdmin('')
+			setLeaveAdminModal(true)
+			return
+		}
 		const ok = await confirm({
 			title: t('settings.leaveHousehold'),
 			message: t('settings.confirmLeave'),
@@ -650,6 +664,43 @@ export function SettingsContainer() {
 			toast.success(t('settings.leftHousehold'))
 		} catch (e: any) {
 			toast.error(e.message || 'Error')
+		}
+	}
+
+	const handleTransferAdmin = async () => {
+		if (!household || !selectedNewAdmin) return
+		setLeaveAdminLoading(true)
+		try {
+			await householdService.transferAdmin(household.id, Number(selectedNewAdmin))
+			setLeaveAdminModal(false)
+			setHousehold(null)
+			toast.success(t('settings.adminTransferred'))
+		} catch (e: any) {
+			toast.error(e.message || 'Error')
+		} finally {
+			setLeaveAdminLoading(false)
+		}
+	}
+
+	const handleDissolve = async () => {
+		if (!household) return
+		const ok = await confirm({
+			title: t('settings.dissolveHousehold'),
+			message: t('settings.confirmDissolve'),
+			type: 'danger',
+			confirmText: t('settings.dissolveConfirm'),
+		})
+		if (!ok) return
+		setLeaveAdminLoading(true)
+		try {
+			await householdService.dissolve(household.id)
+			setLeaveAdminModal(false)
+			setHousehold(null)
+			toast.success(t('settings.dissolved'))
+		} catch (e: any) {
+			toast.error(e.message || 'Error')
+		} finally {
+			setLeaveAdminLoading(false)
 		}
 	}
 
@@ -818,9 +869,22 @@ export function SettingsContainer() {
 											<button
 												className='btn btn-outline btn-sm'
 												style={{ marginLeft: '0.5rem' }}
-												onClick={() => {
-													navigator.clipboard.writeText(household.joinCode!)
-													toast.success(t('settings.codeCopied'))
+												onClick={async () => {
+													try {
+														await navigator.clipboard.writeText(household.joinCode!)
+														toast.success(t('settings.codeCopied'))
+													} catch {
+														// Fallback para contextos sin permisos de clipboard
+														const el = document.createElement('textarea')
+														el.value = household.joinCode!
+														el.style.position = 'fixed'
+														el.style.opacity = '0'
+														document.body.appendChild(el)
+														el.select()
+														document.execCommand('copy')
+														document.body.removeChild(el)
+														toast.success(t('settings.codeCopied'))
+													}
 												}}>
 												{t('settings.copyCode')}
 											</button>
@@ -1831,6 +1895,75 @@ export function SettingsContainer() {
 								disabled={mergeLoading}
 								onClick={handleMergeDecline}>
 								{t('stores.mergeNo')}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* Modal: admin intentando salir con otros miembros */}
+			{leaveAdminModal && household && (
+				<div className='confirm-dialog-overlay'>
+					<div className='confirm-dialog' onClick={(e) => e.stopPropagation()}>
+						<h3 className='confirm-dialog-title'>{t('settings.leaveAdminTitle')}</h3>
+						<p className='confirm-dialog-message'>{t('settings.leaveAdminMsg')}</p>
+
+						<div style={{ marginBottom: '1rem' }}>
+							<p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>
+								{t('settings.transferAdmin')}
+							</p>
+							<select
+								className='form-input'
+								value={selectedNewAdmin}
+								onChange={(e) =>
+									setSelectedNewAdmin(e.target.value === '' ? '' : Number(e.target.value))
+								}>
+								<option value=''>{t('settings.selectNewAdmin')}</option>
+								{household.members
+									.filter((m) => m.userId !== currentUserId)
+									.map((m) => (
+										<option key={m.userId} value={m.userId}>
+											{m.user?.name ?? m.user?.email ?? `#${m.userId}`}
+										</option>
+									))}
+							</select>
+							<button
+								type='button'
+								className='btn btn-primary'
+								style={{ marginTop: '0.5rem', width: '100%' }}
+								disabled={leaveAdminLoading || selectedNewAdmin === ''}
+								onClick={handleTransferAdmin}>
+								{t('settings.transferAdminConfirm')}
+							</button>
+						</div>
+
+						<hr
+							style={{
+								border: 'none',
+								borderTop: '1px solid var(--border-color)',
+								margin: '1rem 0',
+							}}
+						/>
+
+						<div>
+							<button
+								type='button'
+								className='btn btn-danger'
+								style={{ width: '100%' }}
+								disabled={leaveAdminLoading}
+								onClick={handleDissolve}>
+								{t('settings.dissolveHousehold')}
+							</button>
+						</div>
+
+						<div style={{ marginTop: '0.75rem' }}>
+							<button
+								type='button'
+								className='btn btn-neutral'
+								style={{ width: '100%' }}
+								disabled={leaveAdminLoading}
+								onClick={() => setLeaveAdminModal(false)}>
+								{t('cancel')}
 							</button>
 						</div>
 					</div>

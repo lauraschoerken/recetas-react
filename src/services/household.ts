@@ -68,6 +68,14 @@ class HouseholdService {
 		await api.post(`/household/${householdId}/leave`, {})
 	}
 
+	async transferAdmin(householdId: number, newAdminUserId: number): Promise<void> {
+		await api.post(`/household/${householdId}/transfer-admin`, { newAdminUserId })
+	}
+
+	async dissolve(householdId: number): Promise<void> {
+		await api.post(`/household/${householdId}/dissolve`, {})
+	}
+
 	async updatePlanningScope(scope: 'own' | 'all'): Promise<void> {
 		await api.put('/household/planning-scope', { scope })
 	}

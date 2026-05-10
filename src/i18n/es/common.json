@@ -808,7 +808,17 @@
 		"storesAdd": "Añadir tienda",
 		"tagsSection": "Tags",
 		"tagsSectionDesc": "Gestiona las etiquetas para clasificar ingredientes.",
-		"tagsAdd": "Nueva tag"
+		"tagsAdd": "Nueva tag",
+		"leaveAdminTitle": "Eres el administrador del hogar",
+		"leaveAdminMsg": "Antes de salir, debes transferir el rol de administrador a otro miembro o disolver el hogar.",
+		"transferAdmin": "Transferir administrador a:",
+		"selectNewAdmin": "Selecciona un miembro...",
+		"transferAdminConfirm": "Transferir y salir del hogar",
+		"dissolveHousehold": "Disolver el hogar",
+		"confirmDissolve": "¿Seguro que quieres disolver el hogar? Todos los miembros serán expulsados y el hogar se eliminará permanentemente.",
+		"dissolveConfirm": "Sí, disolver",
+		"dissolved": "El hogar ha sido disuelto",
+		"adminTransferred": "Rol de administrador transferido. Has salido del hogar"
 	},
 	"products": {
 		"title": "Productos",
