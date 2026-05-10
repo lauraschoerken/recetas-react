@@ -33,6 +33,12 @@ class ApiClient {
 		})
 
 		if (!response.ok) {
+			if (response.status === 401) {
+				localStorage.removeItem('token')
+				localStorage.removeItem('user')
+				window.location.href = '/login'
+				return {} as T
+			}
 			const error = await response.json().catch(() => ({ error: 'Error de conexión' }))
 			throw new Error(error.error || 'Error en la petición')
 		}
