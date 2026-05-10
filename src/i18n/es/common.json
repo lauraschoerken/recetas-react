@@ -876,7 +876,21 @@
 		"deleteError": "Error al eliminar la tienda",
 		"deleteConfirm": "¿Eliminar la tienda {{name}}?",
 		"indifferentOrder": "El orden me es indiferente",
-		"notHere": "Quitar de esta tienda"
+		"notHere": "Quitar de esta tienda",
+		"unshareTitle": "Dejar de compartir tienda",
+		"unshareUsedBy": "{{names}} tienen ingredientes en esta tienda.",
+		"unshareOptionDelete": "Sí, borrar sus listas",
+		"unshareOptionDuplicate": "Sí, crear una copia para cada uno",
+		"unshareCancel": "No, mantener compartida",
+		"unshareSuccess": "Tienda dejada de compartir",
+		"unshareError": "Error al dejar de compartir",
+		"mergeTitle": "Misma tienda detectada",
+		"mergeDesc": "{{other}} también tiene una tienda llamada \"{{name}}\". ¿Quieres unificarlas?",
+		"mergeYes": "Sí, unificar",
+		"mergeNo": "No, son tiendas distintas",
+		"mergeSuccess": "Tiendas unificadas",
+		"mergeError": "Error al unificar tiendas",
+		"unify": "Unificar tiendas"
 	},
 	"pagination": {
 		"label": "Paginación",

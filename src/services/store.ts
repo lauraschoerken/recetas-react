@@ -50,6 +50,18 @@ class StoreService {
 		return api.delete(`/stores/${id}`)
 	}
 
+	async unshare(id: number, mode: 'delete' | 'duplicate'): Promise<UserStore> {
+		return api.post<UserStore>(`/stores/${id}/unshare`, { mode })
+	}
+
+	async checkOtherUsers(id: number): Promise<{ count: number; userNames: string[] }> {
+		return api.get<{ count: number; userNames: string[] }>(`/stores/${id}/check-other-users`)
+	}
+
+	async mergeStores(sourceStoreId: number, targetStoreId: number): Promise<UserStore> {
+		return api.post<UserStore>(`/stores/${sourceStoreId}/merge`, { targetStoreId })
+	}
+
 	async addIngredient(
 		storeId: number,
 		data: {

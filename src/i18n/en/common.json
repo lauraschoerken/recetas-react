@@ -796,7 +796,21 @@
 		"deleteError": "Error deleting store",
 		"deleteConfirm": "Delete store {{name}}?",
 		"indifferentOrder": "Order doesn't matter to me",
-		"notHere": "Remove from this store"
+		"notHere": "Remove from this store",
+		"unshareTitle": "Stop sharing store",
+		"unshareUsedBy": "{{names}} have ingredients in this store.",
+		"unshareOptionDelete": "Yes, delete their lists",
+		"unshareOptionDuplicate": "Yes, create a copy for each of them",
+		"unshareCancel": "No, keep sharing",
+		"unshareSuccess": "Store is no longer shared",
+		"unshareError": "Error unsharing store",
+		"mergeTitle": "Same store detected",
+		"mergeDesc": "{{other}} also has a store named \"{{name}}\". Do you want to merge them?",
+		"mergeYes": "Yes, merge",
+		"mergeNo": "No, keep them separate",
+		"mergeSuccess": "Stores merged",
+		"mergeError": "Error merging stores",
+		"unify": "Merge stores"
 	},
 	"pagination": {
 		"label": "Pagination",

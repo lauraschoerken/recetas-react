@@ -1,4 +1,5 @@
 ﻿import './SettingsContainer.scss'
+import '@/components/shared/confirm-dialog/ConfirmDialog.scss'
 
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -6,6 +7,7 @@ import {
 	HiOutlineCheck,
 	HiOutlineEye,
 	HiOutlineEyeSlash,
+	HiOutlineLink,
 	HiOutlinePencil,
 	HiOutlinePlus,
 	HiOutlineTrash,
@@ -102,6 +104,23 @@ export function SettingsContainer() {
 	const [editingStoreUrl, setEditingStoreUrl] = useState('')
 	const [editingStoreLogoUrl, setEditingStoreLogoUrl] = useState('')
 
+	// Modal: dejar de compartir tienda
+	const [unshareModal, setUnshareModal] = useState<{
+		storeId: number
+		storeName: string
+		userNames: string[]
+	} | null>(null)
+	const [unshareLoading, setUnshareLoading] = useState(false)
+
+	// Modal: fusionar tienda con misma nombre del hogar
+	const [mergeModal, setMergeModal] = useState<{
+		sourceStoreId: number
+		targetStoreId: number
+		storeName: string
+		otherUserName: string
+	} | null>(null)
+	const [mergeLoading, setMergeLoading] = useState(false)
+
 	// Tags state
 	const randomTagColor = () =>
 		'#' +
@@ -141,6 +160,14 @@ export function SettingsContainer() {
 			loadTags()
 		}
 	}, [activeSection])
+
+	useEffect(() => {
+		const isOpen = !!unshareModal || !!mergeModal
+		document.body.style.overflow = isOpen ? 'hidden' : ''
+		return () => {
+			document.body.style.overflow = ''
+		}
+	}, [unshareModal, mergeModal])
 
 	const loadThresholds = async () => {
 		setThresholdsLoading(true)
@@ -208,12 +235,90 @@ export function SettingsContainer() {
 	}
 
 	const handleToggleStoreShared = async (id: number, isShared: boolean) => {
+		if (!isShared) {
+			// Comprobar si otros usuarios tienen ingredientes en esta tienda
+			try {
+				const { count, userNames } = await storeService.checkOtherUsers(id)
+				if (count > 0) {
+					// Mostrar modal de confirmación
+					const store = stores.find((s) => s.id === id)
+					setUnshareModal({ storeId: id, storeName: store?.name ?? '', userNames })
+					return
+				}
+			} catch {
+				toast.error(t('stores.updateError'))
+				return
+			}
+		} else {
+			// Al compartir: comprobar si hay otra tienda con el mismo nombre en el hogar
+			const thisStore = stores.find((s) => s.id === id)
+			if (thisStore && household) {
+				const sameName = stores.find(
+					(s) =>
+						s.id !== id &&
+						s.userId !== currentUserId &&
+						s.isShared &&
+						s.name.toLowerCase() === thisStore.name.toLowerCase()
+				)
+				if (sameName) {
+					setMergeModal({
+						sourceStoreId: id,
+						targetStoreId: sameName.id,
+						storeName: thisStore.name,
+						otherUserName: sameName.user?.name || sameName.user?.email || '?',
+					})
+					return
+				}
+			}
+		}
 		try {
 			const updated = await storeService.update(id, { isShared })
 			setStores((prev) => prev.map((s) => (s.id === id ? updated : s)))
 		} catch {
 			toast.error(t('stores.updateError'))
 		}
+	}
+
+	const handleUnshare = async (mode: 'delete' | 'duplicate') => {
+		if (!unshareModal) return
+		setUnshareLoading(true)
+		try {
+			await storeService.unshare(unshareModal.storeId, mode)
+			toast.success(t('stores.unshareSuccess'))
+			setUnshareModal(null)
+			await loadStores()
+		} catch {
+			toast.error(t('stores.unshareError'))
+		} finally {
+			setUnshareLoading(false)
+		}
+	}
+
+	const handleMerge = async () => {
+		if (!mergeModal) return
+		setMergeLoading(true)
+		try {
+			await storeService.mergeStores(mergeModal.sourceStoreId, mergeModal.targetStoreId)
+			toast.success(t('stores.mergeSuccess'))
+			setMergeModal(null)
+			await loadStores()
+		} catch {
+			toast.error(t('stores.mergeError'))
+		} finally {
+			setMergeLoading(false)
+		}
+	}
+
+	const handleMergeDecline = async () => {
+		if (!mergeModal) return
+		// Compartir sin fusionar
+		try {
+			const updated = await storeService.update(mergeModal.sourceStoreId, { isShared: true })
+			setStores((prev) => prev.map((s) => (s.id === mergeModal.sourceStoreId ? updated : s)))
+		} catch {
+			toast.error(t('stores.updateError'))
+		}
+		setMergeModal(null)
 	}
 
 	const handleDeleteStore = async (id: number) => {
@@ -1255,6 +1360,32 @@ export function SettingsContainer() {
 																	</a>
 																)}
 																<div className='thresholds-list__actions'>
+																	{household &&
+																		(() => {
+																			const dup = stores.find(
+																				(s) =>
+																					s.userId !== currentUserId &&
+																					s.name.toLowerCase() === store.name.toLowerCase()
+																			)
+																			if (!dup) return null
+																			return (
+																				<button
+																					type='button'
+																					className='btn-icon'
+																					title={t('stores.unify')}
+																					onClick={() =>
+																						setMergeModal({
+																							sourceStoreId: store.id,
+																							targetStoreId: dup.id,
+																							storeName: store.name,
+																							otherUserName:
+																								dup.user?.name || dup.user?.email || '?',
+																						})
+																					}>
+																					<HiOutlineLink />
+																				</button>
+																			)
+																		})()}
 																	<button
 																		type='button'
 																		className='btn-icon'
@@ -1290,29 +1421,55 @@ export function SettingsContainer() {
 												<ul className='thresholds-list'>
 													{stores
 														.filter((s) => s.userId !== currentUserId && s.isShared)
-														.map((store) => (
-															<li key={store.id} className='thresholds-list__item'>
-																<span className='thresholds-list__name'>
-																	{store.name}
-																	{store.user && (
-																		<span
-																			className='thresholds-list__meta'
-																			style={{ marginLeft: '0.5rem' }}>
-																			{store.user.name || store.user.email}
-																		</span>
+														.map((store) => {
+															const ownMatch = stores.find(
+																(s) =>
+																	s.userId === currentUserId &&
+																	s.name.toLowerCase() === store.name.toLowerCase()
+															)
+															return (
+																<li key={store.id} className='thresholds-list__item'>
+																	<span className='thresholds-list__name'>
+																		{store.name}
+																		{store.user && (
+																			<span
+																				className='thresholds-list__meta'
+																				style={{ marginLeft: '0.5rem' }}>
+																				{store.user.name || store.user.email}
+																			</span>
+																		)}
+																	</span>
+																	{store.url && (
+																		<a
+																			href={store.url}
+																			target='_blank'
+																			rel='noopener noreferrer'
+																			className='thresholds-list__meta'>
+																			{store.url}
+																		</a>
 																	)}
-																</span>
-																{store.url && (
-																	<a
-																		href={store.url}
-																		target='_blank'
-																		rel='noopener noreferrer'
-																		className='thresholds-list__meta'>
-																		{store.url}
-																	</a>
-																)}
-															</li>
-														))}
+																	{ownMatch && (
+																		<div className='thresholds-list__actions'>
+																			<button
+																				type='button'
+																				className='btn-icon'
+																				title={t('stores.unify')}
+																				onClick={() =>
+																					setMergeModal({
+																						sourceStoreId: ownMatch.id,
+																						targetStoreId: store.id,
+																						storeName: store.name,
+																						otherUserName:
+																							store.user?.name || store.user?.email || '?',
+																					})
+																				}>
+																				<HiOutlineLink />
+																			</button>
+																		</div>
+																	)}
+																</li>
+															)
+														})}
 												</ul>
 											</>
 										)}
@@ -1611,6 +1768,74 @@ export function SettingsContainer() {
 					)}
 				</div>
 			</div>
+
+			{/* Modal: dejar de compartir tienda */}
+			{unshareModal && (
+				<div className='confirm-dialog-overlay' onClick={() => setUnshareModal(null)}>
+					<div className='confirm-dialog' onClick={(e) => e.stopPropagation()}>
+						<h3 className='confirm-dialog-title'>{t('stores.unshareTitle')}</h3>
+						<p className='confirm-dialog-message'>
+							{t('stores.unshareUsedBy', { names: unshareModal.userNames.join(', ') })}
+						</p>
+						<div
+							className='confirm-dialog-actions'
+							style={{ flexDirection: 'column', gap: '0.5rem' }}>
+							<button
+								type='button'
+								className='btn btn-danger'
+								disabled={unshareLoading}
+								onClick={() => handleUnshare('duplicate')}>
+								{t('stores.unshareOptionDuplicate')}
+							</button>
+							<button
+								type='button'
+								className='btn btn-danger'
+								disabled={unshareLoading}
+								onClick={() => handleUnshare('delete')}>
+								{t('stores.unshareOptionDelete')}
+							</button>
+							<button
+								type='button'
+								className='btn btn-neutral'
+								disabled={unshareLoading}
+								onClick={() => setUnshareModal(null)}>
+								{t('stores.unshareCancel')}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* Modal: fusionar tiendas con mismo nombre */}
+			{mergeModal && (
+				<div className='confirm-dialog-overlay' onClick={() => setMergeModal(null)}>
+					<div className='confirm-dialog' onClick={(e) => e.stopPropagation()}>
+						<h3 className='confirm-dialog-title'>{t('stores.mergeTitle')}</h3>
+						<p className='confirm-dialog-message'>
+							{t('stores.mergeDesc', {
+								other: mergeModal.otherUserName,
+								name: mergeModal.storeName,
+							})}
+						</p>
+						<div className='confirm-dialog-actions'>
+							<button
+								type='button'
+								className='btn btn-primary'
+								disabled={mergeLoading}
+								onClick={handleMerge}>
+								{t('stores.mergeYes')}
+							</button>
+							<button
+								type='button'
+								className='btn btn-neutral'
+								disabled={mergeLoading}
+								onClick={handleMergeDecline}>
+								{t('stores.mergeNo')}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }
