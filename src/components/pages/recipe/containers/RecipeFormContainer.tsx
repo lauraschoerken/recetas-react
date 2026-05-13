@@ -20,6 +20,7 @@ export function RecipeFormContainer() {
 	const [error, setError] = useState<string | null>(null)
 	const [minServings, setMinServings] = useState('')
 	const [hasThreshold, setHasThreshold] = useState(false)
+	const [createMinServings, setCreateMinServings] = useState('')
 
 	const isEditing = !!id
 
@@ -88,7 +89,19 @@ export function RecipeFormContainer() {
 				await recipeService.update(parseInt(id), data)
 				toast.success(t('recipes.updated'))
 			} else {
-				await recipeService.create(data)
+				const created = await recipeService.create(data)
+				// If user provided a min servings value while creating, save threshold
+				if (createMinServings && Number(createMinServings) > 0) {
+					try {
+						await alertService.setRecipeThreshold({
+							recipeId: created.id,
+							minServings: Number(createMinServings),
+						})
+						toast.success(t('recipes.thresholdSaved'))
+					} catch {
+						// ignore threshold save error
+					}
+				}
 				toast.success(t('recipes.created'))
 			}
 			navigate('/recipes')
@@ -131,6 +144,8 @@ export function RecipeFormContainer() {
 								}
 							: undefined
 					}
+					createMinServings={createMinServings}
+					onChangeCreateMinServings={setCreateMinServings}
 				/>
 			</div>
 		</>

@@ -60,6 +60,9 @@ interface RecipeFormProps {
 		onSave: () => void
 		onDelete: () => void
 	}
+	// Props used when creating a recipe: allow entering a minServings value
+	createMinServings?: string
+	onChangeCreateMinServings?: (value: string) => void
 }
 
 export function RecipeForm({
@@ -69,6 +72,8 @@ export function RecipeForm({
 	loading,
 	error,
 	thresholdConfig,
+	createMinServings,
+	onChangeCreateMinServings,
 }: RecipeFormProps) {
 	const { t } = useTranslation()
 	const [activeTab, setActiveTab] = useState<TabId>('recipe')
@@ -637,6 +642,28 @@ export function RecipeForm({
 										{t('recipes.removeThreshold')}
 									</button>
 								)}
+							</div>
+						</div>
+					)}
+
+					{/* Create-mode threshold input: simple input stored in parent via props */}
+					{!thresholdConfig && typeof createMinServings !== 'undefined' && (
+						<div className='form-group'>
+							<label className='form-label'>{t('recipes.minStock')}</label>
+							<p className='form-hint' style={{ marginBottom: '0.4rem' }}>
+								{t('recipes.minStockHint')}
+							</p>
+							<div className='threshold-form'>
+								<input
+									type='number'
+									className='form-input form-input-sm'
+									placeholder={t('recipes.minServings')}
+									value={createMinServings}
+									onChange={(e) => onChangeCreateMinServings?.(e.target.value)}
+									min={0}
+									step={1}
+								/>
+								<span className='threshold-unit'>{t('recipes.portionsUnit')}</span>
 							</div>
 						</div>
 					)}
