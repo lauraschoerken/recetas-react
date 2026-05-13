@@ -1,10 +1,10 @@
 import './ItemCard.scss'
 
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { HiOutlineArrowDownTray, HiOutlineLockClosed } from 'react-icons/hi2'
+import { Link } from 'react-router-dom'
 
 import { CalendarAddIcon, DeleteIcon, EditIcon } from '@/components/shared/icons'
-import { HiOutlineArrowDownTray } from 'react-icons/hi2'
 
 export interface ItemCardData {
 	id: number
@@ -18,6 +18,7 @@ export interface ItemCardData {
 	servings?: number | null
 	tags?: { id: number; name: string; color?: string | null }[]
 	type: 'recipe' | 'dish'
+	isPublic?: boolean
 }
 
 interface ItemCardProps {
@@ -129,22 +130,39 @@ export function ItemCard({
 				</div>
 			</div>
 
-			{/* Tags de ingredientes */}
-			{item.tags && item.tags.length > 0 && (
-				<div className={`item-card-tags${item.imageUrl ? ' item-card-tags--over-image' : ''}`}>
-					{item.tags.slice(0, 2).map((tag) => (
-						<span
-							key={tag.id}
-							className='item-card-tag'
-							style={tag.color ? ({ '--tag-color': tag.color } as React.CSSProperties) : undefined}>
-							{tag.name}
-						</span>
-					))}
-					{item.tags.length > 2 && (
-						<span className='item-card-tag item-card-tag--more'>+{item.tags.length - 2}</span>
-					)}
-				</div>
-			)}
+			{/* Área de tags (pie de card) */}
+			<div
+				className={`item-card-tags-wrapper${item.imageUrl ? ' item-card-tags--over-image' : ''}`}>
+				{item.tags && item.tags.length > 0 ? (
+					<div className={`item-card-tags${item.imageUrl ? ' item-card-tags--over-image' : ''}`}>
+						{item.tags.slice(0, 2).map((tag) => (
+							<span
+								key={tag.id}
+								className='item-card-tag'
+								style={
+									tag.color ? ({ '--tag-color': tag.color } as React.CSSProperties) : undefined
+								}>
+								{tag.name}
+							</span>
+						))}
+						{item.tags.length > 2 && (
+							<span className='item-card-tag item-card-tag--more'>+{item.tags.length - 2}</span>
+						)}
+					</div>
+				) : null}
+			</div>
+
+			{/* Lock: sits inside the card so it's not occluded by overlays; appears on hover */}
+			{!item.isPublic &&
+				(console.log('render lock', item.isPublic),
+				(
+					<span
+						className={`item-card-lock ${item.tags && item.tags.length > 0 ? 'item-card-lock--above-tags' : 'item-card-lock--in-tags'}${item.imageUrl ? ' item-card-lock--over-image' : ''}`}
+						title={t('private')}
+						aria-hidden='true'>
+						<HiOutlineLockClosed size={14} />
+					</span>
+				))}
 		</div>
 	)
 }

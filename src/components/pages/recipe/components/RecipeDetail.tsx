@@ -2,6 +2,7 @@ import './RecipeDetail.scss'
 
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { HiOutlineLockClosed } from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
 
 import { alertService } from '@/services/alert'
@@ -316,7 +317,14 @@ export function RecipeDetail({
 		<div className='recipe-detail'>
 			<div className='recipe-detail-header'>
 				<div>
-					<h1 className='recipe-detail-title'>{recipe.title}</h1>
+					<h1 className='recipe-detail-title'>
+						{recipe.title}
+						{recipe.isPublic === false && (
+							<span className='recipe-detail-lock' title={t('private')} aria-hidden='true'>
+								<HiOutlineLockClosed size={18} />
+							</span>
+						)}
+					</h1>
 					<div className='recipe-detail-meta'>
 						<span className='recipe-detail-chip'>
 							{recipe.servings} {t('recipes.portionsUnit')}

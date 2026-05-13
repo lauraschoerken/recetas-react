@@ -40,9 +40,11 @@ export function ProductListContainer() {
 	const [overrideLoading, setOverrideLoading] = useState(false)
 	const [overrideSaving, setOverrideSaving] = useState(false)
 	const [existingOverride, setExistingOverride] = useState<ProductOverride | null>(null)
-	// Vista: 'edit' (admin edita global) | 'override' (usuario personaliza) | 'propose' (usuario propone)
-	const [overrideMode, setOverrideMode] = useState<'edit' | 'override' | 'propose'>('override')
-	const [proposeField, setProposeField] = useState<'name' | 'imageUrl'>('name')
+	// Vista: 'edit' (admin edita global) | 'override' (usuario personaliza)
+	const [overrideMode, setOverrideMode] = useState<'edit' | 'override'>('override')
+	// Estado para ⋯ proponer campo al admin (no-admin)
+	const [productFieldMenuOpen, setProductFieldMenuOpen] = useState<'name' | 'imageUrl' | null>(null)
+	const [productInlinePropose, setProductInlinePropose] = useState<{ field: 'name' | 'imageUrl'; value: string } | null>(null)
 
 	// Modal aÃ±adir a compra
 	const [shoppingProduct, setShoppingProduct] = useState<Product | null>(null)
@@ -244,32 +246,32 @@ export function ProductListContainer() {
 		}
 	}
 
-	const handlePropose = async () => {
-		if (!overrideProduct) return
-		const proposedValue = proposeField === 'name' ? overrideName.trim() : overrideImageUrl
-		const currentValue =
-			proposeField === 'name' ? overrideProduct.name : (overrideProduct.imageUrl ?? '')
-		if (!proposedValue || proposedValue === currentValue) return
+	const handleProductProposeField = async () => {
+		if (!overrideProduct || !productInlinePropose) return
+		const { field, value } = productInlinePropose
+		if (!value.trim()) return
 		setOverrideSaving(true)
 		try {
 			await productService.propose(overrideProduct.id, {
-				fieldName: proposeField,
-				currentValue,
-				proposedValue,
+				fieldName: field,
+				currentValue: field === 'name' ? overrideProduct.name : (overrideProduct.imageUrl ?? ''),
+				proposedValue: value.trim(),
 			})
 			toast.success(t('products.proposeSent'))
-			closeOverrideModal()
-		} catch (err: unknown) {
-			const e = err as { status?: number; httpCode?: number }
-			if (e?.status === 409 || e?.httpCode === 409) {
+			setProductInlinePropose(null)
+			setProductFieldMenuOpen(null)
+		} catch (e: any) {
+			if (e.message?.includes('duplicate') || e.message?.includes('ya tienes')) {
 				toast.error(t('products.proposeDuplicate'))
 			} else {
-				toast.error(t('error'))
+				toast.error(e.message || t('products.saveError'))
 			}
 		} finally {
 			setOverrideSaving(false)
 		}
 	}
+
+	// handlePropose removed — now using handleProductProposeField with inline proposal UI
 
 	const openAddToShopping = (p: Product) => {
 		setShoppingProduct(p)
@@ -435,33 +437,13 @@ export function ProductListContainer() {
 						) : (
 							<>
 								<h3>
-									{isAdmin
-										? t('products.editTitle')
-										: overrideMode === 'propose'
-											? t('products.proposeTitle')
-											: t('products.customizeTitle')}
+									{isAdmin ? t('products.editTitle') : t('products.customizeTitle')}
 								</h3>
 								<p className='text-muted' style={{ fontSize: '0.85rem', marginBottom: '0.75rem' }}>
 									{overrideProduct.name}
 								</p>
 
-								{/* Tabs para usuario no-admin */}
-								{!isAdmin && (
-									<div className='modal-tabs'>
-										<button
-											className={`modal-tab ${overrideMode === 'override' ? 'modal-tab--active' : ''}`}
-											onClick={() => setOverrideMode('override')}>
-											{t('products.tabPersonal')}
-										</button>
-										<button
-											className={`modal-tab ${overrideMode === 'propose' ? 'modal-tab--active' : ''}`}
-											onClick={() => setOverrideMode('propose')}>
-											{t('products.tabPropose')}
-										</button>
-									</div>
-								)}
-
-								{/* Contenido segÃºn modo */}
+								{/* Admin: editar producto global */}
 								{overrideMode === 'edit' && (
 									<>
 										<div className='form-group'>
@@ -498,13 +480,38 @@ export function ProductListContainer() {
 									</>
 								)}
 
-								{overrideMode === 'override' && (
+								{overrideMode !== 'edit' && !isAdmin && (
 									<>
 										<p className='text-muted' style={{ fontSize: '0.8rem' }}>
 											{t('products.overrideDesc')}
 										</p>
+
+										{/* Nombre */}
 										<div className='form-group'>
-											<label>{t('products.name')}</label>
+											<div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+												<label style={{ margin: 0 }}>{t('products.name')}</label>
+												<div className='ifm-conv-menu'>
+													<button
+														className='btn-icon-small ifm-conv-menu-btn'
+														type='button'
+														onClick={() => setProductFieldMenuOpen(productFieldMenuOpen === 'name' ? null : 'name')}>
+														⋯
+													</button>
+													{productFieldMenuOpen === 'name' && (
+														<div className='ifm-conv-menu-dropdown'>
+															<button
+																type='button'
+																className='ifm-conv-menu-item'
+																onClick={() => {
+																	setProductInlinePropose({ field: 'name', value: overrideProduct.name })
+																	setProductFieldMenuOpen(null)
+																}}>
+																{t('products.tabPropose')}
+															</button>
+														</div>
+													)}
+												</div>
+											</div>
 											<input
 												type='text'
 												className='form-input'
@@ -512,9 +519,58 @@ export function ProductListContainer() {
 												onChange={(e) => setOverrideName(e.target.value)}
 												autoFocus
 											/>
+											{productInlinePropose?.field === 'name' && (
+												<div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--surface-2)', borderRadius: '0.4rem' }}>
+													<p className='text-muted' style={{ fontSize: '0.8rem', marginBottom: '0.4rem' }}>{t('products.proposeDesc')}</p>
+													<input
+														type='text'
+														className='form-input'
+														value={productInlinePropose.value}
+														onChange={(e) => setProductInlinePropose({ field: 'name', value: e.target.value })}
+													/>
+													<div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem' }}>
+														<button
+															className='btn btn-sm btn-secondary'
+															disabled={overrideSaving || !productInlinePropose.value.trim()}
+															onClick={handleProductProposeField}>
+															{overrideSaving ? t('saving') : t('products.sendProposal')}
+														</button>
+														<button
+															className='btn btn-sm btn-outline'
+															onClick={() => setProductInlinePropose(null)}>
+															{t('cancel')}
+														</button>
+													</div>
+												</div>
+											)}
 										</div>
+
+										{/* Imagen */}
 										<div className='form-group'>
-											<label>{t('products.imageUrl')}</label>
+											<div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+												<label style={{ margin: 0 }}>{t('products.imageUrl')}</label>
+												<div className='ifm-conv-menu'>
+													<button
+														className='btn-icon-small ifm-conv-menu-btn'
+														type='button'
+														onClick={() => setProductFieldMenuOpen(productFieldMenuOpen === 'imageUrl' ? null : 'imageUrl')}>
+														⋯
+													</button>
+													{productFieldMenuOpen === 'imageUrl' && (
+														<div className='ifm-conv-menu-dropdown'>
+															<button
+																type='button'
+																className='ifm-conv-menu-item'
+																onClick={() => {
+																	setProductInlinePropose({ field: 'imageUrl', value: overrideProduct.imageUrl ?? '' })
+																	setProductFieldMenuOpen(null)
+																}}>
+																{t('products.tabPropose')}
+															</button>
+														</div>
+													)}
+												</div>
+											</div>
 											<input
 												type='text'
 												className='form-input'
@@ -522,7 +578,32 @@ export function ProductListContainer() {
 												onChange={(e) => setOverrideImageUrl(e.target.value)}
 												placeholder='https://...'
 											/>
+											{productInlinePropose?.field === 'imageUrl' && (
+												<div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'var(--surface-2)', borderRadius: '0.4rem' }}>
+													<p className='text-muted' style={{ fontSize: '0.8rem', marginBottom: '0.4rem' }}>{t('products.proposeDesc')}</p>
+													<input
+														type='text'
+														className='form-input'
+														value={productInlinePropose.value}
+														onChange={(e) => setProductInlinePropose({ field: 'imageUrl', value: e.target.value })}
+													/>
+													<div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem' }}>
+														<button
+															className='btn btn-sm btn-secondary'
+															disabled={overrideSaving || !productInlinePropose.value.trim()}
+															onClick={handleProductProposeField}>
+															{overrideSaving ? t('saving') : t('products.sendProposal')}
+														</button>
+														<button
+															className='btn btn-sm btn-outline'
+															onClick={() => setProductInlinePropose(null)}>
+															{t('cancel')}
+														</button>
+													</div>
+												</div>
+											)}
 										</div>
+
 										<div className='modal-actions'>
 											{existingOverride && (
 												<button
@@ -539,48 +620,6 @@ export function ProductListContainer() {
 												onClick={handleSaveOverride}
 												disabled={overrideSaving}>
 												{overrideSaving ? t('saving') : t('products.savePersonal')}
-											</button>
-										</div>
-									</>
-								)}
-
-								{overrideMode === 'propose' && (
-									<>
-										<p className='text-muted' style={{ fontSize: '0.8rem' }}>
-											{t('products.proposeDesc')}
-										</p>
-										<div className='form-group'>
-											<label>{t('products.proposeField')}</label>
-											<select
-												className='form-input'
-												value={proposeField}
-												onChange={(e) => setProposeField(e.target.value as 'name' | 'imageUrl')}>
-												<option value='name'>{t('products.name')}</option>
-												<option value='imageUrl'>{t('products.imageUrl')}</option>
-											</select>
-										</div>
-										<div className='form-group'>
-											<label>{t('products.proposeValue')}</label>
-											<input
-												type='text'
-												className='form-input'
-												value={proposeField === 'name' ? overrideName : overrideImageUrl}
-												onChange={(e) =>
-													proposeField === 'name'
-														? setOverrideName(e.target.value)
-														: setOverrideImageUrl(e.target.value)
-												}
-											/>
-										</div>
-										<div className='modal-actions'>
-											<button className='btn btn-outline' onClick={closeOverrideModal}>
-												{t('cancel')}
-											</button>
-											<button
-												className='btn btn-primary'
-												onClick={handlePropose}
-												disabled={overrideSaving}>
-												{overrideSaving ? t('saving') : t('products.sendProposal')}
 											</button>
 										</div>
 									</>

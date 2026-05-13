@@ -17,6 +17,18 @@
 	margin-bottom: 0.25rem;
 }
 
+.recipe-detail-title {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.recipe-detail-lock {
+	color: var(--text-secondary);
+	display: inline-flex;
+	align-items: center;
+}
+
 .recipe-detail-servings {
 	color: var(--text-secondary);
 }

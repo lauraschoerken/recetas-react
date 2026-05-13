@@ -305,3 +305,61 @@
 		background: var(--tag-color, rgba(255, 255, 255, 0.7));
 	}
 }
+
+/* Wrapper for tags (keeps compatibility if markup uses it) */
+.item-card-tags-wrapper {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	pointer-events: none;
+	padding-right: 4.5rem; /* leave space for action buttons */
+}
+
+/* Lock icon: hidden by default, visible on hover. */
+.item-card-lock {
+	position: absolute;
+	left: 0.45rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	/* make it just the icon: no fixed box */
+	width: auto;
+	height: auto;
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
+	color: var(--text-secondary);
+	opacity: 0;
+	transform: translateY(0);
+	transition:
+		opacity 0.12s ease,
+		transform 0.12s ease;
+	pointer-events: none;
+	z-index: 60;
+}
+
+/* When there are no tags, show the lock inside the tags area (bottom) */
+.item-card-lock--in-tags {
+	bottom: 0.25rem;
+}
+
+/* When there are tags, position the lock above the tags row */
+.item-card-lock--above-tags {
+	bottom: 2rem; /* closer above the tags row */
+	left: 0.8rem;
+}
+
+.item-card-lock--over-image {
+	/* over-image: keep icon light for contrast */
+	color: #fff;
+}
+
+/* Reveal lock only on card hover */
+.item-card:hover .item-card-lock {
+	opacity: 1;
+	transform: translateY(-2px);
+	pointer-events: auto;
+}
