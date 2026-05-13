@@ -354,7 +354,7 @@
 
 .item-card-lock--over-image {
 	/* over-image: keep icon light for contrast */
-	color: #fff;
+	color: var(--primary-color);
 }
 
 /* Reveal lock only on card hover */
