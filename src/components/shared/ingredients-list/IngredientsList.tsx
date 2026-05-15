@@ -61,7 +61,6 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 	const { t } = useTranslation()
 	const [suggestions, setSuggestions] = useState<Record<string, Suggestion[]>>({})
 	const [activeInputId, setActiveInputId] = useState<string | null>(null)
-	const [showNewUnitModal, setShowNewUnitModal] = useState<string | null>(null)
 	const [showMacrosId, setShowMacrosId] = useState<string | null>(null)
 	const [showConversionsId, setShowConversionsId] = useState<string | null>(null)
 	const [newUnitName, setNewUnitName] = useState('')
@@ -239,7 +238,6 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 				)
 			)
 
-			setShowNewUnitModal(null)
 			setNewUnitName('')
 			setNewUnitGrams('')
 		} catch (error) {
@@ -430,15 +428,6 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 												</option>
 											))}
 										</select>
-										{ing.name && (
-											<button
-												type='button'
-												className='add-unit-btn'
-												onClick={() => setShowNewUnitModal(ing.id)}
-												title={t('ingredients.addUnitTitle')}>
-												+
-											</button>
-										)}
 									</div>
 									<div className='ingredient-actions'>
 										{ing.name && (
@@ -473,12 +462,12 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 										</button>
 									</div>
 								</div>
-								{showConversionsId === ing.id && ing.conversions && (
+								{showConversionsId === ing.id && (
 									<div className='ingredient-info-panel'>
 										<div className='info-panel-header'>
 											{t('ingredients.unitConversionsHeader')}
 										</div>
-										{ing.conversions.length > 0 ? (
+										{ing.conversions && ing.conversions.length > 0 ? (
 											<ul className='conversions-list'>
 												{ing.conversions.map((c) => (
 													<li key={c.id}>
@@ -488,6 +477,38 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 											</ul>
 										) : (
 											<p className='no-data'>{t('ingredients.noConversions')}</p>
+										)}
+										{ing.name && (
+											<div className='new-unit-modal-body'>
+												<div className='new-unit-row'>
+													<span>1</span>
+													<input
+														type='text'
+														className='form-input'
+														value={newUnitName}
+														onChange={(e) => setNewUnitName(e.target.value)}
+														placeholder={t('ingredients.unitPlaceholder')}
+													/>
+													<span>=</span>
+													<input
+														type='number'
+														className='form-input'
+														value={newUnitGrams}
+														onChange={(e) => setNewUnitGrams(e.target.value)}
+														placeholder='0'
+														min={0}
+														step={0.1}
+													/>
+													<span>{ing.baseUnit || 'g'}</span>
+												</div>
+												<button
+													type='button'
+													className='btn btn-primary btn-sm'
+													onClick={() => handleAddNewConversion(ing.id)}
+													disabled={!newUnitName.trim() || !newUnitGrams}>
+													{t('recipes.saveConversion')}
+												</button>
+											</div>
 										)}
 									</div>
 								)}
@@ -519,55 +540,6 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 											</button>
 										</div>
 									))}
-								{showNewUnitModal === ing.id && (
-									<div className='new-unit-modal'>
-										<div className='new-unit-modal-header'>
-											<span>
-												{t('ingredients.newUnitFor', { name: capitalizeFirst(ing.name) })}
-											</span>
-											<button
-												type='button'
-												className='modal-close-btn'
-												onClick={() => {
-													setShowNewUnitModal(null)
-													setNewUnitName('')
-													setNewUnitGrams('')
-												}}>
-												<CloseIcon size={14} aria-hidden='true' />
-											</button>
-										</div>
-										<div className='new-unit-modal-body'>
-											<div className='new-unit-row'>
-												<span>1</span>
-												<input
-													type='text'
-													className='form-input'
-													value={newUnitName}
-													onChange={(e) => setNewUnitName(e.target.value)}
-													placeholder={t('ingredients.unitPlaceholder')}
-												/>
-												<span>=</span>
-												<input
-													type='number'
-													className='form-input'
-													value={newUnitGrams}
-													onChange={(e) => setNewUnitGrams(e.target.value)}
-													placeholder='0'
-													min={0}
-													step={0.1}
-												/>
-												<span>{ing.baseUnit || 'g'}</span>
-											</div>
-											<button
-												type='button'
-												className='btn btn-primary btn-sm'
-												onClick={() => handleAddNewConversion(ing.id)}
-												disabled={!newUnitName.trim() || !newUnitGrams}>
-												{t('recipes.saveConversion')}
-											</button>
-										</div>
-									</div>
-								)}
 							</div>
 						))}
 					</div>
