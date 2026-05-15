@@ -55,6 +55,12 @@ interface Props {
 	readonlyName?: boolean
 	/** Al cerrar el modal (X u overlay), guarda automáticamente en lugar de descartar */
 	autoSaveOnClose?: boolean
+	/** Nombre inicial en modo creación */
+	defaultName?: string
+	/** Callback con el ingrediente recién creado (solo en modo creación) */
+	onSavedIngredient?: (ingredient: Ingredient) => void
+	/** Oculta el selector uno/varios y fuerza modo un ingrediente */
+	singleOnly?: boolean
 }
 
 // --- Sub-seccion: nombre, imagen, ubicacion ---------------------------------
@@ -356,6 +362,9 @@ export function IngredientFormModal({
 	thresholdData,
 	readonlyName: forceReadonlyName,
 	autoSaveOnClose,
+	defaultName,
+	onSavedIngredient,
+	singleOnly,
 }: Props) {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
@@ -477,7 +486,7 @@ export function IngredientFormModal({
 			setNewConvUnit('')
 			setNewConvGrams('')
 		} else {
-			setName('')
+			setName(defaultName ?? '')
 			setImageUrl('')
 			setLocation('')
 			setAddMode('single')
@@ -506,7 +515,7 @@ export function IngredientFormModal({
 			setNewTagInput('')
 			setBulkRows([{ id: 'b0', name: '', unit: 'g' }])
 		}
-	}, [isOpen, ingredient, thresholdData])
+	}, [isOpen, ingredient, thresholdData, defaultName])
 
 	// Sincronizar estado de tiendas cuando se cargan (modo edicion)
 	useEffect(() => {
@@ -665,6 +674,7 @@ export function IngredientFormModal({
 			} else {
 				toast.success(t('ingredients.created'))
 			}
+			onSavedIngredient?.(created)
 			onSaved()
 			onClose()
 		} catch {
@@ -1095,7 +1105,7 @@ export function IngredientFormModal({
 				onClose={autoSaveOnClose && isEdit ? handleAutoSaveClose : onClose}
 				title={modalTitle}>
 				{/* Selector modo creacion: uno / varios */}
-				{!isEdit && (
+				{!isEdit && !singleOnly && (
 					<div className='ifm-mode-toggle'>
 						<button
 							type='button'
@@ -1113,7 +1123,7 @@ export function IngredientFormModal({
 				)}
 
 				{/* Modo bulk (solo creacion) */}
-				{!isEdit && addMode === 'multiple' && (
+				{!isEdit && !singleOnly && addMode === 'multiple' && (
 					<form onSubmit={handleBulkCreate} className='ifm-form'>
 						<p className='ifm-hint'>{t('ingredients.bulkHint')}</p>
 						<div className='ifm-bulk-list'>
@@ -1242,106 +1252,112 @@ export function IngredientFormModal({
 								onSave={isEdit ? handleSaveBasic : undefined}
 								saving={savingBasic}
 								readonlyName={forceReadonlyName || (isEdit && !isUserAdmin && isGlobalIngredient)}
-							fieldMenuOpen={isEdit && !isUserAdmin && isGlobalIngredient ? fieldMenuOpen : undefined}
-							onFieldMenuToggle={isEdit && !isUserAdmin && isGlobalIngredient ? setFieldMenuOpen : undefined}
-							onProposeField={isEdit && !isUserAdmin && isGlobalIngredient ? handleOpenFieldProposal : undefined}
-						/>
-					</div>
-
-					{/* Inline proposal form tras ⋯ Proponer en nombre o imagen */}
-					{inlineProposalField && isEdit && !isUserAdmin && isGlobalIngredient && (
-						<div className='ifm-edit-section'>
-							<p className='ifm-section-label'>
-								{t('ingredients.proposeChange')}:{' '}
-								{inlineProposalField === 'name'
-									? t('ingredients.namePlaceholder')
-									: t('ingredients.imageUrlPlaceholder')}
-							</p>
-							<p className='ifm-hint'>{t('ingredients.proposeHint')}</p>
-							<input
-								type='text'
-								className='form-input'
-								value={proposalValue}
-								onChange={(e) => setProposalValue(e.target.value)}
+								fieldMenuOpen={
+									isEdit && !isUserAdmin && isGlobalIngredient ? fieldMenuOpen : undefined
+								}
+								onFieldMenuToggle={
+									isEdit && !isUserAdmin && isGlobalIngredient ? setFieldMenuOpen : undefined
+								}
+								onProposeField={
+									isEdit && !isUserAdmin && isGlobalIngredient ? handleOpenFieldProposal : undefined
+								}
 							/>
-							<div className='ifm-section-save'>
-								<button
-									type='button'
-									className='btn btn-sm btn-secondary'
-									disabled={sendingProposal || !proposalValue.trim()}
-									onClick={handleProposeField}>
-									{sendingProposal ? t('loading') : t('ingredients.proposalSend')}
-								</button>
-								<button
-									type='button'
-									className='btn btn-sm btn-outline'
-									onClick={() => {
-										setInlineProposalField(null)
-										setProposalValue('')
-									}}>
-									{t('cancel')}
-								</button>
-							</div>
 						</div>
-					)}
 
-					{/* Umbral de alerta */}
-					<div className={isEdit ? 'ifm-edit-section' : 'ifm-section'}>
-						<p className='ifm-section-label'>{t('ingredients.thresholdLabel')}</p>
-						{isEdit ? (
-							<div className='ifm-row'>
+						{/* Inline proposal form tras ⋯ Proponer en nombre o imagen */}
+						{inlineProposalField && isEdit && !isUserAdmin && isGlobalIngredient && (
+							<div className='ifm-edit-section'>
+								<p className='ifm-section-label'>
+									{t('ingredients.proposeChange')}:{' '}
+									{inlineProposalField === 'name'
+										? t('ingredients.namePlaceholder')
+										: t('ingredients.imageUrlPlaceholder')}
+								</p>
+								<p className='ifm-hint'>{t('ingredients.proposeHint')}</p>
 								<input
-									type='number'
-									className='form-input form-input-sm'
-									placeholder='0'
-									value={minQuantity}
-									onChange={(e) => setMinQuantity(e.target.value)}
-									min={0}
-									step={0.1}
+									type='text'
+									className='form-input'
+									value={proposalValue}
+									onChange={(e) => setProposalValue(e.target.value)}
 								/>
-								<select
-									className='form-input form-input-sm'
-									value={minUnit}
-									onChange={(e) => setMinUnit(e.target.value)}>
-									<option value={unit}>{unit}</option>
-									{localConversions.map((c) => (
-										<option key={c.id} value={c.unitName}>
-											{c.unitName}
-										</option>
-									))}
-								</select>
-								<button
-									type='button'
-									className='btn btn-sm btn-primary'
-									disabled={!minQuantity || Number(minQuantity) <= 0}
-									onClick={handleSaveThreshold}>
-									{t('save')}
-								</button>
-								{hasThreshold && (
+								<div className='ifm-section-save'>
+									<button
+										type='button'
+										className='btn btn-sm btn-secondary'
+										disabled={sendingProposal || !proposalValue.trim()}
+										onClick={handleProposeField}>
+										{sendingProposal ? t('loading') : t('ingredients.proposalSend')}
+									</button>
 									<button
 										type='button'
 										className='btn btn-sm btn-outline'
-										onClick={handleDeleteThreshold}
-										title={t('ingredients.removeThreshold')}>
-										×
+										onClick={() => {
+											setInlineProposalField(null)
+											setProposalValue('')
+										}}>
+										{t('cancel')}
 									</button>
-								)}
-							</div>
-						) : (
-							<div className='ifm-row'>
-								<input
-									type='number'
-									className='form-input'
-									placeholder={t('ingredients.quantityPlaceholder')}
-									value={newMinQuantity}
-									onChange={(e) => setNewMinQuantity(e.target.value)}
-									min={0}
-									step={1}
-								/>
-								<span className='ifm-unit-label'>{unit}</span>
+								</div>
 							</div>
 						)}
-					</div>
+
+						{/* Umbral de alerta */}
+						<div className={isEdit ? 'ifm-edit-section' : 'ifm-section'}>
+							<p className='ifm-section-label'>{t('ingredients.thresholdLabel')}</p>
+							{isEdit ? (
+								<div className='ifm-row'>
+									<input
+										type='number'
+										className='form-input form-input-sm'
+										placeholder='0'
+										value={minQuantity}
+										onChange={(e) => setMinQuantity(e.target.value)}
+										min={0}
+										step={0.1}
+									/>
+									<select
+										className='form-input form-input-sm'
+										value={minUnit}
+										onChange={(e) => setMinUnit(e.target.value)}>
+										<option value={unit}>{unit}</option>
+										{localConversions.map((c) => (
+											<option key={c.id} value={c.unitName}>
+												{c.unitName}
+											</option>
+										))}
+									</select>
+									<button
+										type='button'
+										className='btn btn-sm btn-primary'
+										disabled={!minQuantity || Number(minQuantity) <= 0}
+										onClick={handleSaveThreshold}>
+										{t('save')}
+									</button>
+									{hasThreshold && (
+										<button
+											type='button'
+											className='btn btn-sm btn-outline'
+											onClick={handleDeleteThreshold}
+											title={t('ingredients.removeThreshold')}>
+											×
+										</button>
+									)}
+								</div>
+							) : (
+								<div className='ifm-row'>
+									<input
+										type='number'
+										className='form-input'
+										placeholder={t('ingredients.quantityPlaceholder')}
+										value={newMinQuantity}
+										onChange={(e) => setNewMinQuantity(e.target.value)}
+										min={0}
+										step={1}
+									/>
+									<span className='ifm-unit-label'>{unit}</span>
+								</div>
+							)}
+						</div>
 
 						{/* Variantes / estados */}
 						<div className={isEdit ? 'ifm-edit-section' : 'ifm-section'}>

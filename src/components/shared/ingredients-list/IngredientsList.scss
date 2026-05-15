@@ -13,7 +13,7 @@
 
 .ingredients-table-header {
 	display: grid;
-	grid-template-columns: 1fr 100px 80px 100px 100px;
+	grid-template-columns: 1fr 100px 80px 100px auto;
 	gap: t.$space-2;
 	padding: 0 0 t.$space-3 0;
 	margin-bottom: t.$space-2;
@@ -39,7 +39,7 @@
 
 .ingredients-table-row {
 	display: grid;
-	grid-template-columns: 1fr 100px 80px 100px 100px;
+	grid-template-columns: 1fr 100px 80px 100px auto;
 	gap: 0.5rem;
 	align-items: center;
 }
@@ -538,6 +538,40 @@
 .ingredients-remove-btn:hover {
 	background: var(--danger-light);
 	color: var(--danger-color);
+}
+
+.ingredient-menu-wrapper {
+	position: relative;
+}
+
+.ingredient-dropdown {
+	position: absolute;
+	top: calc(100% + 4px);
+	right: 0;
+	z-index: 100;
+	background: var(--surface-1);
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	box-shadow: var(--shadow-lg);
+	min-width: 11rem;
+	overflow: hidden;
+}
+
+.ingredient-dropdown-item {
+	display: block;
+	width: 100%;
+	padding: 0.55rem 0.9rem;
+	text-align: left;
+	background: none;
+	border: none;
+	font-size: 0.85rem;
+	color: var(--text-primary);
+	cursor: pointer;
+	transition: background 0.15s;
+
+	&:hover {
+		background: var(--surface-2);
+	}
 }
 
 .ingredients-add-btn {

@@ -3,11 +3,13 @@ import './IngredientsList.scss'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { ChartIcon, CloseIcon, ScaleIcon } from '@/components/shared/icons'
+import { ChartIcon, CloseIcon, DotsIcon, ScaleIcon } from '@/components/shared/icons'
 import {
 	IngredientStatesPanel,
 	IngredientVariant,
 } from '@/components/shared/ingredient-states-panel'
+import { IngredientFormModal } from '@/components/pages/ingredient/containers/IngredientFormModal'
+import { Ingredient } from '@/services/ingredient'
 import { api } from '@/services/api'
 
 interface UnitConversion {
@@ -72,6 +74,12 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 	const [activeInputId, setActiveInputId] = useState<string | null>(null)
 	const [showMacrosId, setShowMacrosId] = useState<string | null>(null)
 	const [showConversionsId, setShowConversionsId] = useState<string | null>(null)
+	const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
+	const [ingredientModal, setIngredientModal] = useState<{
+		ingId: string
+		data: Ingredient | null
+		defaultName?: string
+	} | null>(null)
 	const [newUnitName, setNewUnitName] = useState('')
 	const [newUnitGrams, setNewUnitGrams] = useState('')
 	const debounceRef = useRef<Record<string, NodeJS.Timeout>>({})
@@ -440,6 +448,54 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 												</button>
 											</>
 										)}
+										{ing.name && (
+											<div className='ingredient-menu-wrapper'>
+												<button
+													type='button'
+													className='ingredient-icon-btn'
+													onClick={() => setMenuOpenId(menuOpenId === ing.id ? null : ing.id)}
+													title='Más opciones'>
+													<DotsIcon size={14} aria-hidden='true' />
+												</button>
+												{menuOpenId === ing.id && (
+													<div className='ingredient-dropdown'>
+														{!ing.isFromDatabase && (
+															<button
+																type='button'
+																className='ingredient-dropdown-item'
+																onClick={() => {
+																	setMenuOpenId(null)
+																	setIngredientModal({
+																		ingId: ing.id,
+																		data: null,
+																		defaultName: ing.name,
+																	})
+																}}>
+																{t('ingredients.viewEditMacros')}
+															</button>
+														)}
+														{ing.isFromDatabase && ing.databaseId && (
+															<button
+																type='button'
+																className='ingredient-dropdown-item'
+																onClick={async () => {
+																	setMenuOpenId(null)
+																	try {
+																		const data = await api.get<Ingredient>(
+																			`/ingredients/${ing.databaseId}`
+																		)
+																		setIngredientModal({ ingId: ing.id, data })
+																	} catch {
+																		console.error('Error cargando ingrediente')
+																	}
+																}}>
+																{t('ingredients.viewEditMacros')}
+															</button>
+														)}
+													</div>
+												)}
+											</div>
+										)}
 										<button
 											type='button'
 											className='ingredients-remove-btn'
@@ -720,6 +776,36 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 			<button type='button' className='ingredients-add-btn' onClick={addIngredient}>
 				{t('ingredients.addIngredientBtn')}
 			</button>
+
+			{ingredientModal && (
+				<IngredientFormModal
+					isOpen={true}
+					singleOnly={true}
+					ingredient={ingredientModal.data}
+					defaultName={ingredientModal.defaultName}
+					onClose={() => setIngredientModal(null)}
+					onSaved={() => setIngredientModal(null)}
+					onSavedIngredient={(created) => {
+						const ingId = ingredientModal.ingId
+						onChange(
+							ingredients.map((i) =>
+								i.id === ingId
+									? {
+											...i,
+											isFromDatabase: true,
+											databaseId: created.id,
+											baseUnit: (created.unit as 'g' | 'ml') ?? 'g',
+											variants: created.variants ?? [],
+											pendingVariants: undefined,
+											pendingConversions: undefined,
+										}
+									: i
+							)
+						)
+						setIngredientModal(null)
+					}}
+				/>
+			)}
 		</div>
 	)
 }
