@@ -606,7 +606,9 @@
 		"sortQtyDesc": "Mayor cantidad",
 		"sortQtyAsc": "Menor cantidad",
 		"sortTagAsc": "Por etiqueta (A-Z)",
-		"sortStoreAsc": "Por supermercado (A-Z)"
+		"sortStoreAsc": "Por supermercado (A-Z)",
+		"editQuantity": "Editar cantidad",
+		"changeUnit": "Cambiar unidad"
 	},
 	"alerts": {
 		"title": "Alertas de Stock",

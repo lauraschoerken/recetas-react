@@ -1,4 +1,4 @@
-import './ShoppingList.scss'
+﻿import './ShoppingList.scss'
 
 import { useTranslation } from 'react-i18next'
 
@@ -12,6 +12,10 @@ interface ShoppingListProps {
 	onToggle: (id: number) => void
 	onExclude?: (id: number) => void
 	sectionTitle?: string
+	quantityOverrides?: Record<number, number>
+	onQuantityOverride?: (id: number, qty: number) => void
+	unitOverrides?: Record<number, string>
+	onUnitOverride?: (id: number, unit: string, qty: number) => void
 }
 
 export function ShoppingList({
@@ -20,6 +24,10 @@ export function ShoppingList({
 	onToggle,
 	onExclude,
 	sectionTitle,
+	quantityOverrides,
+	onQuantityOverride,
+	unitOverrides,
+	onUnitOverride,
 }: ShoppingListProps) {
 	const { t } = useTranslation()
 
@@ -59,6 +67,18 @@ export function ShoppingList({
 								checked={false}
 								onToggle={() => onToggle(item.ingredientId)}
 								onExclude={onExclude ? () => onExclude(item.ingredientId) : undefined}
+								quantityOverride={quantityOverrides?.[item.ingredientId]}
+								onQuantityOverride={
+									onQuantityOverride
+										? (qty) => onQuantityOverride(item.ingredientId, qty)
+										: undefined
+								}
+								unitOverride={unitOverrides?.[item.ingredientId]}
+								onUnitOverride={
+									onUnitOverride
+										? (unit, qty) => onUnitOverride(item.ingredientId, unit, qty)
+										: undefined
+								}
 							/>
 						))}
 					</ul>
@@ -77,6 +97,18 @@ export function ShoppingList({
 								item={item}
 								checked={true}
 								onToggle={() => onToggle(item.ingredientId)}
+								quantityOverride={quantityOverrides?.[item.ingredientId]}
+								onQuantityOverride={
+									onQuantityOverride
+										? (qty) => onQuantityOverride(item.ingredientId, qty)
+										: undefined
+								}
+								unitOverride={unitOverrides?.[item.ingredientId]}
+								onUnitOverride={
+									onUnitOverride
+										? (unit, qty) => onUnitOverride(item.ingredientId, unit, qty)
+										: undefined
+								}
 							/>
 						))}
 					</ul>

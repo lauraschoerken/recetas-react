@@ -602,7 +602,9 @@
 		"sortQtyDesc": "Most quantity",
 		"sortQtyAsc": "Least quantity",
 		"sortTagAsc": "By tag (A-Z)",
-		"sortStoreAsc": "By store (A-Z)"
+		"sortStoreAsc": "By store (A-Z)",
+		"editQuantity": "Edit quantity",
+		"changeUnit": "Change unit"
 	},
 	"alerts": {
 		"title": "Stock Alerts",

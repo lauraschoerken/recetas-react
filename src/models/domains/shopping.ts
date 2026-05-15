@@ -29,6 +29,7 @@ export interface ShoppingItem {
 	quantityToBuy: number
 	preferredUnit?: string | null
 	preferredQuantity?: number | null
+	conversions?: { unitName: string; gramsPerUnit: number }[]
 }
 
 export interface CreateWeekPlanData {

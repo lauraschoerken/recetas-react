@@ -20,10 +20,11 @@
 .shopping-item-label {
 	display: flex;
 	align-items: center;
-	padding: 0.875rem 1rem;
+	padding: 0.875rem 0 0.875rem 1rem;
 	cursor: pointer;
 	gap: 1rem;
 	flex: 1;
+	min-width: 0;
 }
 
 .shopping-item-checkbox {
@@ -72,6 +73,7 @@
 	flex-direction: column;
 	align-items: flex-end;
 	gap: 0.125rem;
+	padding: 0.875rem 1rem;
 }
 
 .shopping-item-preferred {
@@ -96,6 +98,115 @@
 .shopping-item-checked .shopping-item-name {
 	text-decoration: line-through;
 	color: var(--text-secondary);
+}
+
+.shopping-item-qty-clickable {
+	cursor: pointer;
+	border-bottom: 1px dashed var(--primary-color);
+
+	&:hover {
+		color: var(--primary-hover);
+	}
+}
+
+.shopping-item-qty-overridden {
+	color: var(--warning-color);
+}
+
+.shopping-item-qty-display {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.shopping-item-unit-label {
+	font-size: 1rem;
+	font-weight: 600;
+}
+
+.shopping-item-unit-clickable {
+	cursor: pointer;
+	border-bottom: 1px dashed var(--border-strong);
+
+	&:hover {
+		color: var(--primary-hover);
+		border-bottom-color: var(--primary-color);
+	}
+}
+
+.shopping-item-unit-overridden {
+	color: var(--warning-color);
+}
+
+.shopping-item-unit-input {
+	width: 4rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--primary-color);
+	background: var(--surface-1);
+	border: 1px solid var(--primary-color);
+	border-radius: 4px;
+	padding: 0.125rem 0.25rem;
+	text-align: center;
+
+	&:focus {
+		outline: none;
+		border-color: var(--primary-hover);
+	}
+}
+
+.shopping-item-unit-select {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--primary-color);
+	background: var(--surface-1);
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	padding: 0.125rem 0.25rem;
+	cursor: pointer;
+	max-width: 6rem;
+
+	&:focus {
+		outline: none;
+		border-color: var(--primary-color);
+	}
+}
+
+.shopping-item-qty-edit {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+.shopping-item-qty-input {
+	width: 4rem;
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--primary-color);
+	background: var(--surface-1);
+	border: 1px solid var(--primary-color);
+	border-radius: 4px;
+	padding: 0.125rem 0.25rem;
+	text-align: right;
+
+	&:focus {
+		outline: none;
+		border-color: var(--primary-hover);
+	}
+
+	/* Ocultar flechas del input number */
+	&::-webkit-outer-spin-button,
+	&::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+	-moz-appearance: textfield;
+}
+
+.shopping-item-qty-unit {
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--primary-color);
 }
 
 .shopping-item-exclude {

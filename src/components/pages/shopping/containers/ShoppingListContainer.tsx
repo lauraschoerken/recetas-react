@@ -14,6 +14,8 @@ import { ShoppingList } from '../components/ShoppingList'
 
 const STORAGE_KEY_CHECKED = 'shopping_checked'
 const STORAGE_KEY_EXCLUDED = 'shopping_excluded'
+const STORAGE_KEY_QTY_OVERRIDES = 'shopping_qty_overrides'
+const STORAGE_KEY_UNIT_OVERRIDES = 'shopping_unit_overrides'
 
 type SortOption = 'nameAsc' | 'nameDesc' | 'qtyDesc' | 'qtyAsc' | 'tagAsc' | 'storeAsc'
 
@@ -101,6 +103,11 @@ export function ShoppingListContainer() {
 	const [addQty, setAddQty] = useState<number>(1)
 	const [addUnit, setAddUnit] = useState<string>('g')
 
+	// Overrides de cantidad manual
+	const [quantityOverrides, setQuantityOverrides] = useState<Record<number, number>>({})
+	// Overrides de unidad manual
+	const [unitOverrides, setUnitOverrides] = useState<Record<number, string>>({})
+
 	// Filtros del panel
 	const [filterSearch, setFilterSearch] = useState('')
 	const [filterTagId, setFilterTagId] = useState<number | null>(null)
@@ -117,8 +124,12 @@ export function ShoppingListContainer() {
 	useEffect(() => {
 		const savedExcluded = localStorage.getItem(STORAGE_KEY_EXCLUDED)
 		const savedChecked = localStorage.getItem(STORAGE_KEY_CHECKED)
+		const savedOverrides = localStorage.getItem(STORAGE_KEY_QTY_OVERRIDES)
+		const savedUnitOverrides = localStorage.getItem(STORAGE_KEY_UNIT_OVERRIDES)
 		if (savedExcluded) setExcludedItems(new Set(JSON.parse(savedExcluded)))
 		if (savedChecked) setCheckedItems(new Set(JSON.parse(savedChecked)))
+		if (savedOverrides) setQuantityOverrides(JSON.parse(savedOverrides))
+		if (savedUnitOverrides) setUnitOverrides(JSON.parse(savedUnitOverrides))
 		storeService
 			.getAll()
 			.then(setStores)
@@ -199,6 +210,21 @@ export function ShoppingListContainer() {
 		localStorage.setItem(STORAGE_KEY_EXCLUDED, JSON.stringify([...newExcluded]))
 	}
 
+	const handleQuantityOverride = (id: number, qty: number) => {
+		const newOverrides = { ...quantityOverrides, [id]: qty }
+		setQuantityOverrides(newOverrides)
+		localStorage.setItem(STORAGE_KEY_QTY_OVERRIDES, JSON.stringify(newOverrides))
+	}
+
+	const handleUnitOverride = (id: number, unit: string, qty: number) => {
+		const newUnitOverrides = { ...unitOverrides, [id]: unit }
+		setUnitOverrides(newUnitOverrides)
+		localStorage.setItem(STORAGE_KEY_UNIT_OVERRIDES, JSON.stringify(newUnitOverrides))
+		const newQtyOverrides = { ...quantityOverrides, [id]: qty }
+		setQuantityOverrides(newQtyOverrides)
+		localStorage.setItem(STORAGE_KEY_QTY_OVERRIDES, JSON.stringify(newQtyOverrides))
+	}
+
 	const clearChecked = () => {
 		setCheckedItems(new Set())
 		localStorage.removeItem(STORAGE_KEY_CHECKED)
@@ -206,7 +232,11 @@ export function ShoppingListContainer() {
 
 	const resetAll = () => {
 		setCheckedItems(new Set())
+		setQuantityOverrides({})
+		setUnitOverrides({})
 		localStorage.removeItem(STORAGE_KEY_CHECKED)
+		localStorage.removeItem(STORAGE_KEY_QTY_OVERRIDES)
+		localStorage.removeItem(STORAGE_KEY_UNIT_OVERRIDES)
 	}
 
 	const handleOpenAddItem = async () => {
@@ -474,6 +504,10 @@ export function ShoppingListContainer() {
 									onToggle={handleToggle}
 									onExclude={handleExclude}
 									sectionTitle={label}
+									quantityOverrides={quantityOverrides}
+									onQuantityOverride={handleQuantityOverride}
+									unitOverrides={unitOverrides}
+									onUnitOverride={handleUnitOverride}
 								/>
 							))
 						}
@@ -485,6 +519,10 @@ export function ShoppingListContainer() {
 								checkedItems={checkedItems}
 								onToggle={handleToggle}
 								onExclude={handleExclude}
+								quantityOverrides={quantityOverrides}
+								onQuantityOverride={handleQuantityOverride}
+								unitOverrides={unitOverrides}
+								onUnitOverride={handleUnitOverride}
 							/>
 						)
 					})()}
