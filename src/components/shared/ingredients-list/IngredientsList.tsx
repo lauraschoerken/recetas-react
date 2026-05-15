@@ -35,6 +35,14 @@ export interface IngredientItem {
 	baseUnit?: 'g' | 'ml'
 	conversions?: UnitConversion[]
 	pendingConversions?: { unitName: string; gramsPerUnit: number }[]
+	pendingVariants?: {
+		name: string
+		calories?: number
+		protein?: number
+		carbs?: number
+		fat?: number
+		fiber?: number
+	}[]
 	variants?: IngredientVariant[]
 }
 
@@ -251,40 +259,6 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 		)
 	}
 
-	const handleCreateIngredient = async (ingredientId: string) => {
-		const ing = ingredients.find((i) => i.id === ingredientId)
-		if (!ing || !ing.name) return
-
-		try {
-			const createdIng = await api.post<Suggestion>('/ingredients', {
-				name: ing.name,
-				unit: ing.unit || 'g',
-			})
-
-			const defaultVariant =
-				createdIng.variants?.find((v) => v.isDefault) || createdIng.variants?.[0]
-
-			onChange(
-				ingredients.map((i) =>
-					i.id === ingredientId
-						? {
-								...i,
-								databaseId: createdIng.id,
-								isFromDatabase: true,
-								baseUnit: createdIng.unit,
-								variants: createdIng.variants,
-								conversions: createdIng.conversions,
-								variantId: defaultVariant?.id,
-								variantName: defaultVariant?.name,
-							}
-						: i
-				)
-			)
-		} catch (error) {
-			console.error('Error creating ingredient:', error)
-		}
-	}
-
 	const removeIngredient = (id: string) => {
 		onChange(ingredients.filter((ing) => ing.id !== id))
 	}
@@ -377,6 +351,23 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 													</option>
 												))}
 											</select>
+										) : ing.pendingVariants && ing.pendingVariants.length > 0 ? (
+											<select
+												className='form-input form-input-sm'
+												value={ing.variantName || ''}
+												onChange={(e) =>
+													onChange(
+														ingredients.map((i) =>
+															i.id === ing.id ? { ...i, variantName: e.target.value } : i
+														)
+													)
+												}>
+												{ing.pendingVariants.map((pv, idx) => (
+													<option key={idx} value={pv.name || String(idx)}>
+														{pv.name || `${t('ingredients.rawVariant')} ${idx + 1}`}
+													</option>
+												))}
+											</select>
 										) : (
 											<span className='variant-default'>{t('ingredients.rawVariant')}</span>
 										)}
@@ -420,8 +411,26 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 												</button>
 												<button
 													type='button'
-													className='ingredient-icon-btn'
-													onClick={() => setShowMacrosId(showMacrosId === ing.id ? null : ing.id)}
+													className={`ingredient-icon-btn${ing.name && !ing.isFromDatabase && !(ing.pendingVariants && ing.pendingVariants.length > 0) ? ' ingredient-icon-btn--warning' : ''}`}
+													onClick={() => {
+														if (
+															showMacrosId !== ing.id &&
+															!ing.isFromDatabase &&
+															!ing.pendingVariants
+														) {
+															onChange(
+																ingredients.map((i) =>
+																	i.id === ing.id
+																		? {
+																				...i,
+																				pendingVariants: [{ name: t('ingredients.rawVariant') }],
+																			}
+																		: i
+																)
+															)
+														}
+														setShowMacrosId(showMacrosId === ing.id ? null : ing.id)
+													}}
 													title={
 														ing.isFromDatabase
 															? t('ingredients.viewEditMacros')
@@ -504,16 +513,201 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 											}
 										/>
 									) : (
-										<div className='ingredient-info-panel new-ingredient-panel'>
-											<div className='info-panel-header'>
-												{t('ingredients.newIngredientName', { name: capitalizeFirst(ing.name) })}
-											</div>
-											<p className='new-ingredient-hint'>{t('ingredients.newIngredientHint')}</p>
+										<div className='ingredient-info-panel'>
+											<div className='info-panel-header'>{t('ingredients.createAndAddMacros')}</div>
+											{(ing.pendingVariants ?? [{ name: '' }]).map((pv, pvIdx) => (
+												<div key={pvIdx} className='pending-state-block'>
+													<div className='pending-state-header'>
+														<input
+															type='text'
+															className='form-input'
+															placeholder={t('ingredients.stateNamePlaceholder')}
+															value={pv.name}
+															onChange={(e) => {
+																const updated = (ing.pendingVariants ?? [{ name: '' }]).map(
+																	(v, vi) => (vi === pvIdx ? { ...v, name: e.target.value } : v)
+																)
+																onChange(
+																	ingredients.map((i) =>
+																		i.id === ing.id ? { ...i, pendingVariants: updated } : i
+																	)
+																)
+															}}
+														/>
+														{(ing.pendingVariants ?? []).length > 1 && (
+															<button
+																type='button'
+																className='variant-action-btn delete'
+																onClick={() => {
+																	const updated = (ing.pendingVariants ?? []).filter(
+																		(_, vi) => vi !== pvIdx
+																	)
+																	onChange(
+																		ingredients.map((i) =>
+																			i.id === ing.id ? { ...i, pendingVariants: updated } : i
+																		)
+																	)
+																}}>
+																<CloseIcon size={12} aria-hidden='true' />
+															</button>
+														)}
+													</div>
+													<div className='state-macros-edit pending-macros-row'>
+														<div className='macro-input'>
+															<input
+																type='number'
+																placeholder='0'
+																min={0}
+																step={0.1}
+																value={pv.calories ?? ''}
+																onChange={(e) => {
+																	const updated = (ing.pendingVariants ?? [{ name: '' }]).map(
+																		(v, vi) =>
+																			vi === pvIdx
+																				? {
+																						...v,
+																						calories: e.target.value
+																							? parseFloat(e.target.value)
+																							: undefined,
+																					}
+																				: v
+																	)
+																	onChange(
+																		ingredients.map((i) =>
+																			i.id === ing.id ? { ...i, pendingVariants: updated } : i
+																		)
+																	)
+																}}
+															/>
+															<span>{t('ingredients.kcalUnit')}</span>
+														</div>
+														<div className='macro-input'>
+															<input
+																type='number'
+																placeholder='0'
+																min={0}
+																step={0.1}
+																value={pv.protein ?? ''}
+																onChange={(e) => {
+																	const updated = (ing.pendingVariants ?? [{ name: '' }]).map(
+																		(v, vi) =>
+																			vi === pvIdx
+																				? {
+																						...v,
+																						protein: e.target.value
+																							? parseFloat(e.target.value)
+																							: undefined,
+																					}
+																				: v
+																	)
+																	onChange(
+																		ingredients.map((i) =>
+																			i.id === ing.id ? { ...i, pendingVariants: updated } : i
+																		)
+																	)
+																}}
+															/>
+															<span>{t('ingredients.protUnit')}</span>
+														</div>
+														<div className='macro-input'>
+															<input
+																type='number'
+																placeholder='0'
+																min={0}
+																step={0.1}
+																value={pv.carbs ?? ''}
+																onChange={(e) => {
+																	const updated = (ing.pendingVariants ?? [{ name: '' }]).map(
+																		(v, vi) =>
+																			vi === pvIdx
+																				? {
+																						...v,
+																						carbs: e.target.value
+																							? parseFloat(e.target.value)
+																							: undefined,
+																					}
+																				: v
+																	)
+																	onChange(
+																		ingredients.map((i) =>
+																			i.id === ing.id ? { ...i, pendingVariants: updated } : i
+																		)
+																	)
+																}}
+															/>
+															<span>{t('ingredients.carbsUnit')}</span>
+														</div>
+														<div className='macro-input'>
+															<input
+																type='number'
+																placeholder='0'
+																min={0}
+																step={0.1}
+																value={pv.fat ?? ''}
+																onChange={(e) => {
+																	const updated = (ing.pendingVariants ?? [{ name: '' }]).map(
+																		(v, vi) =>
+																			vi === pvIdx
+																				? {
+																						...v,
+																						fat: e.target.value
+																							? parseFloat(e.target.value)
+																							: undefined,
+																					}
+																				: v
+																	)
+																	onChange(
+																		ingredients.map((i) =>
+																			i.id === ing.id ? { ...i, pendingVariants: updated } : i
+																		)
+																	)
+																}}
+															/>
+															<span>{t('ingredients.fatUnit')}</span>
+														</div>
+														<div className='macro-input'>
+															<input
+																type='number'
+																placeholder='0'
+																min={0}
+																step={0.1}
+																value={pv.fiber ?? ''}
+																onChange={(e) => {
+																	const updated = (ing.pendingVariants ?? [{ name: '' }]).map(
+																		(v, vi) =>
+																			vi === pvIdx
+																				? {
+																						...v,
+																						fiber: e.target.value
+																							? parseFloat(e.target.value)
+																							: undefined,
+																					}
+																				: v
+																	)
+																	onChange(
+																		ingredients.map((i) =>
+																			i.id === ing.id ? { ...i, pendingVariants: updated } : i
+																		)
+																	)
+																}}
+															/>
+															<span>{t('ingredients.fiberUnit')}</span>
+														</div>
+													</div>
+												</div>
+											))}
 											<button
 												type='button'
-												className='btn btn-primary btn-sm'
-												onClick={() => handleCreateIngredient(ing.id)}>
-												{t('ingredients.createAndConfigMacros')}
+												className='btn btn-secondary btn-sm'
+												onClick={() => {
+													const updated = [...(ing.pendingVariants ?? [{ name: '' }]), { name: '' }]
+													onChange(
+														ingredients.map((i) =>
+															i.id === ing.id ? { ...i, pendingVariants: updated } : i
+														)
+													)
+												}}>
+												{t('ingredients.addState')}
 											</button>
 										</div>
 									))}

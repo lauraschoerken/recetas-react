@@ -209,7 +209,7 @@ export function IngredientStatesPanel({
 										}
 										placeholder={t('ingredients.namePlaceholderShort')}
 									/>
-									<div className='state-macros-edit'>
+									<div className='state-macros-edit pending-macros-row'>
 										<div className='macro-input'>
 											<input
 												type='number'
@@ -371,7 +371,7 @@ export function IngredientStatesPanel({
 						onChange={(e) => setNewVariantName(capitalizeFirst(e.target.value))}
 						placeholder={t('ingredients.stateNamePlaceholder')}
 					/>
-					<div className='new-state-macros'>
+					<div className='new-state-macros pending-macros-row'>
 						<div className='macro-input'>
 							<input
 								type='number'

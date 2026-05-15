@@ -275,24 +275,44 @@ export function RecipeForm({
 
 		// Guardar conversiones pendientes antes de enviar la receta
 		for (const ing of validIngredients) {
-			if (!ing.pendingConversions || ing.pendingConversions.length === 0) continue
+			const hasPendingConversions = ing.pendingConversions && ing.pendingConversions.length > 0
+			const hasPendingVariants = ing.pendingVariants && ing.pendingVariants.length > 0
+			if (!hasPendingConversions && !hasPendingVariants) continue
 			try {
 				let dbId = ing.databaseId
 				if (!dbId) {
+					const variantPayload = hasPendingVariants
+						? ing.pendingVariants!.map((pv, idx) => {
+								const name = pv.name || (idx === 0 ? 'Crudo' : `Estado ${idx + 1}`)
+								const isSelected = ing.variantName ? name === ing.variantName : idx === 0
+								return {
+									name,
+									isDefault: isSelected,
+									calories: pv.calories,
+									protein: pv.protein,
+									carbs: pv.carbs,
+									fat: pv.fat,
+									fiber: pv.fiber,
+								}
+							})
+						: undefined
 					const created = await api.post<{ id: number; unit: string }>('/ingredients', {
 						name: ing.name,
 						unit: ing.baseUnit || 'g',
+						...(variantPayload ? { variants: variantPayload } : {}),
 					})
 					dbId = created.id
 				}
-				for (const conv of ing.pendingConversions) {
-					await api.post(`/ingredients/${dbId}/conversions`, {
-						unitName: conv.unitName,
-						gramsPerUnit: conv.gramsPerUnit,
-					})
+				if (hasPendingConversions) {
+					for (const conv of ing.pendingConversions!) {
+						await api.post(`/ingredients/${dbId}/conversions`, {
+							unitName: conv.unitName,
+							gramsPerUnit: conv.gramsPerUnit,
+						})
+					}
 				}
 			} catch (error) {
-				console.error('Error saving pending conversions:', error)
+				console.error('Error saving pending data:', error)
 			}
 		}
 

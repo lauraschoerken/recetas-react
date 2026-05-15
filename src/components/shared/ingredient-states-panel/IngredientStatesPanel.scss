@@ -144,6 +144,19 @@
 	gap: 0.4rem;
 }
 
+.pending-macros-row {
+	flex-wrap: nowrap;
+
+	.macro-input {
+		flex: 1;
+		min-width: 0;
+
+		input {
+			width: 100%;
+		}
+	}
+}
+
 .state-edit-actions {
 	display: flex;
 	gap: 0.5rem;
