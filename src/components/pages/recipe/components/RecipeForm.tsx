@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 import { IngredientItem, IngredientsList } from '@/components/shared/ingredients-list'
 import { StepsList } from '@/components/shared/steps-list'
+import { api } from '@/services/api'
 import { CreateComponentData, CreateRecipeData, Recipe } from '@/services/recipe'
 
 import { ComponentsEditor } from './features/ComponentsEditor'
@@ -240,7 +241,7 @@ export function RecipeForm({
 		}
 	}, [ingredients])
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 
 		const validIngredients = ingredients.filter((i) => i.name.trim() !== '')
@@ -270,6 +271,29 @@ export function RecipeForm({
 
 		if (validIngredients.length === 0 && allComponents.length === 0) {
 			return
+		}
+
+		// Guardar conversiones pendientes antes de enviar la receta
+		for (const ing of validIngredients) {
+			if (!ing.pendingConversions || ing.pendingConversions.length === 0) continue
+			try {
+				let dbId = ing.databaseId
+				if (!dbId) {
+					const created = await api.post<{ id: number; unit: string }>('/ingredients', {
+						name: ing.name,
+						unit: ing.baseUnit || 'g',
+					})
+					dbId = created.id
+				}
+				for (const conv of ing.pendingConversions) {
+					await api.post(`/ingredients/${dbId}/conversions`, {
+						unitName: conv.unitName,
+						gramsPerUnit: conv.gramsPerUnit,
+					})
+				}
+			} catch (error) {
+				console.error('Error saving pending conversions:', error)
+			}
 		}
 
 		onSubmit({
@@ -302,7 +326,6 @@ export function RecipeForm({
 		})
 	}
 
-	// Prioridad: 1) customMacros manuales activos, 2) liveNutrition del NutritionEditor, 3) nutritionPerServing del backend, 4) calculado de ingredientes
 	const displayNutrition = useMemo(() => {
 		if (customMacros.customCalories != null) {
 			return {

@@ -34,6 +34,7 @@ export interface IngredientItem {
 	databaseId?: number
 	baseUnit?: 'g' | 'ml'
 	conversions?: UnitConversion[]
+	pendingConversions?: { unitName: string; gramsPerUnit: number }[]
 	variants?: IngredientVariant[]
 }
 
@@ -192,57 +193,33 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 		}
 	}
 
-	const handleAddNewConversion = async (ingredientId: string) => {
+	const handleAddNewConversion = (ingredientId: string) => {
 		const ing = ingredients.find((i) => i.id === ingredientId)
-		if (!ing || !newUnitName || !newUnitGrams) return
+		if (!ing || !newUnitName.trim() || !newUnitGrams) return
 
-		try {
-			let dbId = ing.databaseId
+		const unitName = newUnitName.trim().toLowerCase()
+		const gramsPerUnit = parseFloat(newUnitGrams)
 
-			if (!dbId && ing.name) {
-				const createdIng = await api.post<Suggestion>('/ingredients', {
-					name: ing.name,
-					unit: ing.baseUnit || 'g',
-				})
-				dbId = createdIng.id
-
-				onChange(
-					ingredients.map((i) =>
-						i.id === ingredientId
-							? { ...i, databaseId: dbId, isFromDatabase: true, baseUnit: createdIng.unit }
-							: i
-					)
-				)
-			}
-
-			if (!dbId) return
-
-			await api.post(`/ingredients/${dbId}/conversions`, {
-				unitName: newUnitName,
-				gramsPerUnit: parseFloat(newUnitGrams),
-			})
-
-			const updatedIng = await api.get<Suggestion>(`/ingredients/${dbId}`)
-
-			onChange(
-				ingredients.map((i) =>
-					i.id === ingredientId
-						? {
-								...i,
-								conversions: updatedIng.conversions,
-								unit: newUnitName,
-								databaseId: dbId,
-								isFromDatabase: true,
-							}
-						: i
-				)
+		// Añadir visualmente a conversions (con id temporal negativo) y a pendingConversions
+		const tempId = -Date.now()
+		onChange(
+			ingredients.map((i) =>
+				i.id === ingredientId
+					? {
+							...i,
+							conversions: [
+								...(i.conversions ?? []),
+								{ id: tempId, unitName, gramsPerUnit, ingredientId: i.databaseId ?? 0 },
+							],
+							pendingConversions: [...(i.pendingConversions ?? []), { unitName, gramsPerUnit }],
+							unit: unitName,
+						}
+					: i
 			)
+		)
 
-			setNewUnitName('')
-			setNewUnitGrams('')
-		} catch (error) {
-			console.error('Error adding conversion:', error)
-		}
+		setNewUnitName('')
+		setNewUnitGrams('')
 	}
 
 	const handleVariantsChange = (
