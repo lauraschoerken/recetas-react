@@ -572,6 +572,23 @@ body {
 		font-size: 0.875rem;
 		cursor: pointer;
 	}
+
+	@media (max-width: 40rem) {
+		flex-wrap: wrap;
+		gap: 0.5rem;
+
+		.form-input {
+			width: 100%;
+			flex: none;
+		}
+
+		.form-select {
+			flex: 1 1 calc(50% - 0.25rem);
+			min-width: 0;
+			font-size: 0.8125rem;
+			padding: 0.5rem 0.5rem;
+		}
+	}
 }
 
 /* Shopping export modal */

@@ -102,4 +102,26 @@
 			width: 100%;
 		}
 	}
+
+	/* Sección "comprado" más compacta en móvil */
+	.shopping-list-section {
+		margin-bottom: 1.25rem;
+	}
+
+	.shopping-list-title {
+		font-size: 0.875rem;
+		margin-bottom: 0.75rem;
+	}
+
+	/* Botones de acción de la lista: columna en móvil */
+	.shopping-actions {
+		position: sticky;
+		bottom: 1rem;
+		z-index: 10;
+		background: var(--card-background);
+		padding: 0.75rem;
+		border-radius: var(--radius);
+		box-shadow: var(--shadow-lg);
+		margin-top: 1rem;
+	}
 }

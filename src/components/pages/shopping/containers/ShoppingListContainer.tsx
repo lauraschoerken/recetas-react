@@ -79,6 +79,53 @@ function applyFiltersAndSort(
 	})
 }
 
+/**
+ * Calcula la cantidad y unidad efectivas de un item respetando los overrides del usuario.
+ * La cantidad editada manualmente siempre tiene prioridad sobre el cálculo automático.
+ * Si hay una unidad preferida o sobrescrita, convierte la cantidad a esa unidad.
+ */
+function getEffectiveQtyAndUnit(
+	item: ShoppingItem,
+	quantityOverrides: Record<number, number>,
+	unitOverrides: Record<number, string>
+): { quantity: number; unit: string } {
+	const id = item.ingredientId
+	const qtyOverride = quantityOverrides[id]
+	const unitOverride = unitOverrides[id]
+	const activeUnit = unitOverride ?? item.preferredUnit ?? item.unit
+
+	// Si el usuario ha introducido una cantidad manual, siempre tiene prioridad
+	if (qtyOverride != null) {
+		return { quantity: qtyOverride, unit: activeUnit }
+	}
+
+	// Sin override de cantidad: devolver en la unidad activa (preferida o base)
+	if (activeUnit.toLowerCase() === item.unit.toLowerCase()) {
+		return { quantity: item.quantityToBuy, unit: item.unit }
+	}
+
+	// Hay que convertir a la unidad activa (misma lógica que ShoppingItem.tsx)
+	const conversions = item.conversions ?? []
+	const baseUnitConversion = conversions.find(
+		(c) => c.unitName.toLowerCase() === item.unit.toLowerCase()
+	)
+	const quantityInGrams =
+		baseUnitConversion && baseUnitConversion.gramsPerUnit > 0
+			? item.quantityToBuy * baseUnitConversion.gramsPerUnit
+			: item.quantityToBuy
+	const activeConversion = conversions.find(
+		(c) =>
+			c.unitName.toLowerCase() !== item.unit.toLowerCase() &&
+			c.unitName.toLowerCase() === activeUnit.toLowerCase()
+	)
+	if (activeConversion && activeConversion.gramsPerUnit > 0) {
+		const converted = Math.round((quantityInGrams / activeConversion.gramsPerUnit) * 10) / 10
+		return { quantity: converted, unit: activeUnit }
+	}
+
+	return { quantity: item.quantityToBuy, unit: item.unit }
+}
+
 export function ShoppingListContainer() {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
@@ -301,9 +348,9 @@ export function ShoppingListContainer() {
 			if (!shouldGroup) {
 				// Lista plana
 				const lines = items.map((i) => {
-					const qty =
-						i.quantityToBuy % 1 === 0 ? String(i.quantityToBuy) : i.quantityToBuy.toFixed(1)
-					return `- ${i.name}: ${qty} ${i.unit}`
+					const { quantity, unit } = getEffectiveQtyAndUnit(i, quantityOverrides, unitOverrides)
+					const qty = quantity % 1 === 0 ? String(quantity) : quantity.toFixed(1)
+					return `- ${i.name}: ${qty} ${unit}`
 				})
 				await navigator.clipboard.writeText(
 					`${t('shopping.title')} (${weekLabel})\n\n${lines.join('\n')}`
@@ -333,9 +380,9 @@ export function ShoppingListContainer() {
 				for (const [group, groupItems] of sortedGroups) {
 					lines.push(`${group}:`)
 					for (const i of groupItems) {
-						const qty =
-							i.quantityToBuy % 1 === 0 ? String(i.quantityToBuy) : i.quantityToBuy.toFixed(1)
-						lines.push(`  - ${i.name}: ${qty} ${i.unit}`)
+						const { quantity, unit } = getEffectiveQtyAndUnit(i, quantityOverrides, unitOverrides)
+						const qty = quantity % 1 === 0 ? String(quantity) : quantity.toFixed(1)
+						lines.push(`  - ${i.name}: ${qty} ${unit}`)
 					}
 					lines.push('')
 				}
@@ -354,7 +401,10 @@ export function ShoppingListContainer() {
 		setExporting(true)
 		try {
 			await shoppingService.downloadShoppingPdf(
-				exportItems.map((i) => ({ name: i.name, quantityToBuy: i.quantityToBuy, unit: i.unit })),
+				exportItems.map((i) => {
+					const { quantity, unit } = getEffectiveQtyAndUnit(i, quantityOverrides, unitOverrides)
+					return { name: i.name, quantityToBuy: quantity, unit }
+				}),
 				weekLabel
 			)
 			setShowExportModal(false)
@@ -534,11 +584,14 @@ export function ShoppingListContainer() {
 									const itemsToMark = displayedItems.filter((i) => checkedItems.has(i.ingredientId))
 									try {
 										await api.post('/shopping-list/mark-purchased', {
-											items: itemsToMark.map((i) => ({
-												ingredientId: i.ingredientId,
-												quantity: i.quantityToBuy,
-												unit: i.unit,
-											})),
+											items: itemsToMark.map((i) => {
+												const { quantity, unit } = getEffectiveQtyAndUnit(
+													i,
+													quantityOverrides,
+													unitOverrides
+												)
+												return { ingredientId: i.ingredientId, quantity, unit }
+											}),
 										})
 										toast.success(`${itemsToMark.length} ${t('shopping.addedToHome')}`)
 										clearChecked()
