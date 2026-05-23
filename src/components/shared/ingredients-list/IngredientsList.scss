@@ -5,6 +5,24 @@
 	flex-direction: column;
 }
 
+// Errores de validación en ingredientes
+.ingredient-quantity-error {
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--danger-fg);
+	padding: t.$space-1 0 t.$space-2 t.$space-2;
+
+	&::before {
+		content: '⚠ ';
+		font-size: 0.75rem;
+	}
+}
+
+input.has-error.form-input {
+	border-color: var(--danger-color) !important;
+	box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.12);
+}
+
 .ingredients-table {
 	@include t.card-surface;
 	padding: t.$space-4;

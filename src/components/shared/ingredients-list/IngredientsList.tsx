@@ -59,6 +59,7 @@ interface Suggestion {
 interface IngredientsListProps {
 	ingredients: IngredientItem[]
 	onChange: (ingredients: IngredientItem[]) => void
+	errors?: Record<string, string>
 }
 
 const BASE_UNITS: ('g' | 'ml')[] = ['g', 'ml']
@@ -68,7 +69,7 @@ function capitalizeFirst(str: string): string {
 	return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-export function IngredientsList({ ingredients, onChange }: IngredientsListProps) {
+export function IngredientsList({ ingredients, onChange, errors }: IngredientsListProps) {
 	const { t } = useTranslation()
 	const [suggestions, setSuggestions] = useState<Record<string, Suggestion[]>>({})
 	const [activeInputId, setActiveInputId] = useState<string | null>(null)
@@ -382,7 +383,7 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 									</div>
 									<input
 										type='number'
-										className='form-input'
+										className={`form-input${errors?.[ing.id] ? ' has-error' : ''}`}
 										value={ing.quantity}
 										onChange={(e) =>
 											updateIngredient(ing.id, 'quantity', parseFloat(e.target.value) || 0)
@@ -504,6 +505,9 @@ export function IngredientsList({ ingredients, onChange }: IngredientsListProps)
 										</button>
 									</div>
 								</div>
+								{errors?.[ing.id] && (
+									<p className='field-error ingredient-quantity-error'>{errors[ing.id]}</p>
+								)}
 								{showConversionsId === ing.id && (
 									<div className='ingredient-info-panel'>
 										<div className='info-panel-header'>

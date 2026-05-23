@@ -278,7 +278,11 @@
 		"noIngredients": "This recipe has no ingredients",
 		"thresholdSaved": "Threshold saved",
 		"thresholdRemoved": "Threshold removed",
-		"thresholdSaveError": "Error saving threshold"
+		"thresholdSaveError": "Error saving threshold",
+		"errTitleRequired": "Add a name for the recipe",
+		"errServingsMin": "Servings must be at least 1",
+		"errAtLeastOneIngredient": "Add at least one ingredient to save the recipe",
+		"errIngredientQuantityMin": "Quantity must be greater than 0"
 	},
 	"ingredients": {
 		"title": "Ingredients",

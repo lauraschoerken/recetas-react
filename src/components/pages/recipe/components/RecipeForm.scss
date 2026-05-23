@@ -5,6 +5,59 @@
 	margin: 0 auto;
 }
 
+// --- Validation error styles ---
+
+.field-error {
+	margin-top: t.$space-1;
+	font-size: 0.8rem;
+	font-weight: 500;
+	color: var(--danger-fg);
+	display: flex;
+	align-items: center;
+	gap: t.$space-1;
+
+	&::before {
+		content: '⚠';
+		font-size: 0.75rem;
+	}
+}
+
+.section-error {
+	margin-bottom: t.$space-3;
+	padding: t.$space-2 t.$space-3;
+	border-radius: var(--radius-sm);
+	background: var(--danger-light);
+	border-left: 3px solid var(--danger-color);
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--danger-fg);
+	display: flex;
+	align-items: center;
+	gap: t.$space-2;
+
+	&::before {
+		content: '⚠';
+	}
+}
+
+.has-error {
+	.form-input {
+		border-color: var(--danger-color) !important;
+		box-shadow: 0 0 0 2px rgba(var(--danger-color-rgb, 220, 38, 38), 0.12);
+
+		&:focus {
+			border-color: var(--danger-color) !important;
+			box-shadow: 0 0 0 3px rgba(var(--danger-color-rgb, 220, 38, 38), 0.2);
+		}
+	}
+}
+
+.ingredient-quantity-error {
+	grid-column: 1 / -1;
+	margin-top: t.$space-1;
+	padding-left: t.$space-2;
+}
+
 .form-tabs {
 	display: flex;
 	gap: t.$space-2;

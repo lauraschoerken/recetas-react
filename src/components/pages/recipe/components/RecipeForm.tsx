@@ -1,7 +1,7 @@
 import './RecipeDetail.scss'
 import './RecipeForm.scss'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { IngredientItem, IngredientsList } from '@/components/shared/ingredients-list'
@@ -46,6 +46,13 @@ const getQuantityFactor = (unit: string, quantity: number): number => {
 function capitalizeFirst(str: string): string {
 	if (!str) return str
 	return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+interface FormErrors {
+	title?: string
+	servings?: string
+	ingredients?: string
+	ingredientItems?: Record<string, string>
 }
 
 interface RecipeFormProps {
@@ -204,6 +211,40 @@ export function RecipeForm({
 	// Los macros ya vienen calculados del backend en initialData.nutrition
 	// No necesitamos buscar ingredientes al cargar
 
+	// --- Validación del formulario ---
+	const [formErrors, setFormErrors] = useState<FormErrors>({})
+	const [submitted, setSubmitted] = useState(false)
+	const titleRef = useRef<HTMLDivElement>(null)
+	const ingredientsSectionRef = useRef<HTMLDivElement>(null)
+
+	// Re-validar en tiempo real una vez que el usuario ha intentado enviar el formulario
+	useEffect(() => {
+		if (!submitted) return
+		const errors: FormErrors = {}
+		if (!title.trim()) {
+			errors.title = t('recipes.errTitleRequired')
+		}
+		if (servings < 1) {
+			errors.servings = t('recipes.errServingsMin')
+		}
+		const validIngs = ingredients.filter((i) => i.name.trim() !== '')
+		const validComps = components.filter((c) => c.name.trim() !== '' && c.options.length > 0)
+		const validIncs = includedRecipes.filter((r) => r.recipeId)
+		if (validIngs.length === 0 && validComps.length === 0 && validIncs.length === 0) {
+			errors.ingredients = t('recipes.errAtLeastOneIngredient')
+		}
+		const ingItemErrors: Record<string, string> = {}
+		validIngs.forEach((ing) => {
+			if (ing.quantity <= 0) {
+				ingItemErrors[ing.id] = t('recipes.errIngredientQuantityMin')
+			}
+		})
+		if (Object.keys(ingItemErrors).length > 0) {
+			errors.ingredientItems = ingItemErrors
+		}
+		setFormErrors(errors)
+	}, [submitted, title, servings, ingredients, components, includedRecipes, t])
+
 	const nutritionSummary = useMemo<NutritionSummary>(() => {
 		let calories = 0,
 			protein = 0,
@@ -244,7 +285,44 @@ export function RecipeForm({
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 
-		const validIngredients = ingredients.filter((i) => i.name.trim() !== '')
+		// Validar el formulario antes de enviar
+		setSubmitted(true)
+		const errors: FormErrors = {}
+		if (!title.trim()) {
+			errors.title = t('recipes.errTitleRequired')
+		}
+		if (servings < 1) {
+			errors.servings = t('recipes.errServingsMin')
+		}
+		const preValidIngs = ingredients.filter((i) => i.name.trim() !== '')
+		const preValidComps = components.filter((c) => c.name.trim() !== '' && c.options.length > 0)
+		const preValidIncs = includedRecipes.filter((r) => r.recipeId)
+		if (preValidIngs.length === 0 && preValidComps.length === 0 && preValidIncs.length === 0) {
+			errors.ingredients = t('recipes.errAtLeastOneIngredient')
+		}
+		const ingItemErrors: Record<string, string> = {}
+		preValidIngs.forEach((ing) => {
+			if (ing.quantity <= 0) {
+				ingItemErrors[ing.id] = t('recipes.errIngredientQuantityMin')
+			}
+		})
+		if (Object.keys(ingItemErrors).length > 0) {
+			errors.ingredientItems = ingItemErrors
+		}
+		setFormErrors(errors)
+
+		if (Object.keys(errors).length > 0) {
+			// Desplazar al primer error visible
+			setTimeout(() => {
+				const firstError = document.querySelector<HTMLElement>('.field-error, .section-error')
+				if (firstError) {
+					firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
+				}
+			}, 60)
+			return
+		}
+
+		const validIngredients = preValidIngs
 
 		// Convertir recetas incluidas a componentes (con una sola opción)
 		const includedAsComponents: CreateComponentData[] = includedRecipes
@@ -268,10 +346,6 @@ export function RecipeForm({
 
 		// Combinar todos los componentes
 		const allComponents = [...includedAsComponents, ...validComponents]
-
-		if (validIngredients.length === 0 && allComponents.length === 0) {
-			return
-		}
 
 		// Guardar conversiones pendientes antes de enviar la receta
 		for (const ing of validIngredients) {
@@ -587,7 +661,7 @@ export function RecipeForm({
 			)}
 
 			<div className='form-section'>
-				<div className='form-group'>
+				<div className={`form-group${formErrors.title ? ' has-error' : ''}`} ref={titleRef}>
 					<label className='form-label'>{t('recipes.titleLabel')}</label>
 					<input
 						type='text'
@@ -595,8 +669,8 @@ export function RecipeForm({
 						value={title}
 						onChange={(e) => setTitle(e.target.value)}
 						placeholder={t('recipes.titlePlaceholder')}
-						required
 					/>
+					{formErrors.title && <p className='field-error'>{formErrors.title}</p>}
 				</div>
 
 				<div className='form-group'>
@@ -635,7 +709,7 @@ export function RecipeForm({
 
 			<div className='form-section'>
 				<div className='form-grid-2'>
-					<div className='form-group'>
+					<div className={`form-group${formErrors.servings ? ' has-error' : ''}`}>
 						<label className='form-label'>{t('recipes.servingsLabel')}</label>
 						<input
 							type='number'
@@ -646,6 +720,7 @@ export function RecipeForm({
 							max={100}
 							style={{ width: '100px' }}
 						/>
+						{formErrors.servings && <p className='field-error'>{formErrors.servings}</p>}
 					</div>
 
 					{thresholdConfig && (
@@ -785,10 +860,15 @@ export function RecipeForm({
 
 			{activeTab === 'recipe' && (
 				<>
-					<div className='form-section'>
+					<div className='form-section' ref={ingredientsSectionRef}>
 						<label className='form-label'>{t('recipes.directIngredients')}</label>
 						<p className='form-hint'>{t('recipes.directIngredientsHint')}</p>
-						<IngredientsList ingredients={ingredients} onChange={setIngredients} />
+						{formErrors.ingredients && <p className='section-error'>{formErrors.ingredients}</p>}
+						<IngredientsList
+							ingredients={ingredients}
+							onChange={setIngredients}
+							errors={formErrors.ingredientItems}
+						/>
 					</div>
 
 					<div className='form-section'>
