@@ -40,6 +40,21 @@
 	}
 }
 
+.duplicate-ingredient-warning {
+	margin-bottom: t.$space-3;
+	padding: t.$space-2 t.$space-3;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--warning-color) 12%, transparent);
+	border-left: 3px solid var(--warning-color);
+	font-size: 0.85rem;
+	color: var(--text-primary);
+
+	p {
+		margin: 0;
+		padding: t.$space-1 0;
+	}
+}
+
 .has-error {
 	.form-input {
 		border-color: var(--danger-color) !important;

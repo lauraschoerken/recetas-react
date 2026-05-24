@@ -571,8 +571,23 @@ input.has-error.form-input {
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	box-shadow: var(--shadow-lg);
-	min-width: 11rem;
+	min-width: 14rem;
 	overflow: hidden;
+}
+
+.ingredient-dropdown-divider {
+	height: 1px;
+	background: var(--border-color);
+	margin: 0.25rem 0;
+}
+
+.ingredient-dropdown-section-label {
+	padding: 0.3rem 0.9rem 0.1rem;
+	font-size: 0.72rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--text-muted);
 }
 
 .ingredient-dropdown-item {
@@ -589,6 +604,15 @@ input.has-error.form-input {
 
 	&:hover {
 		background: var(--surface-2);
+	}
+
+	&--convert {
+		color: var(--primary-color);
+		font-weight: 500;
+
+		&:hover {
+			background: var(--primary-light);
+		}
 	}
 }
 

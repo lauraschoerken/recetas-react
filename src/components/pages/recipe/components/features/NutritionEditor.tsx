@@ -268,10 +268,7 @@ export function NutritionEditor({
 		<div className='nutrition-editor'>
 			<div className='nutrition-editor-section'>
 				<h4>{t('recipes.nutritionEditorTitle')}</h4>
-				<p className='nutrition-editor-help'>
-					Selecciona el estado de cada ingrediente después de cocinar para calcular los macros
-					finales.
-				</p>
+				<p className='nutrition-editor-help'>{t('recipes.nutritionEditorHelp')}</p>
 
 				{ingredients.length === 0 ? (
 					<p className='nutrition-editor-empty'>{t('recipes.nutritionEditorEmpty')}</p>

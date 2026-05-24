@@ -8,6 +8,7 @@ import { IngredientItem, IngredientsList } from '@/components/shared/ingredients
 import { StepsList } from '@/components/shared/steps-list'
 import { api } from '@/services/api'
 import { CreateComponentData, CreateRecipeData, Recipe } from '@/services/recipe'
+import { normalizeText } from '@/utils/normalize'
 
 import { ComponentsEditor } from './features/ComponentsEditor'
 import { IncludedRecipe, IncludedRecipes } from './features/IncludedRecipes'
@@ -210,6 +211,101 @@ export function RecipeForm({
 
 	// Los macros ya vienen calculados del backend en initialData.nutrition
 	// No necesitamos buscar ingredientes al cargar
+
+	// --- Convertir ingrediente fijo en grupo de opciones ---
+	const handleConvertToGroup = (
+		ing: IngredientItem,
+		mode: 'mandatory' | 'optional-off' | 'optional-on'
+	) => {
+		// Quitar de ingredientes fijos
+		setIngredients((prev) => prev.filter((i) => i.id !== ing.id))
+
+		const isOptional = mode !== 'mandatory'
+		const defaultEnabled = mode === 'optional-on'
+		const groupName = mode === 'mandatory' ? `Tipo de ${ing.name.toLowerCase()}` : ing.name
+
+		const newComponent: CreateComponentData = {
+			name: capitalizeFirst(groupName),
+			sortOrder: components.length,
+			isOptional,
+			defaultEnabled: isOptional ? defaultEnabled : undefined,
+			options: [
+				{
+					name: ing.name,
+					isDefault: true,
+					ingredientName: ing.name,
+					ingredientId: ing.databaseId,
+					ingredientVariants: ing.variants,
+					ingredientConversions: ing.conversions,
+					cookedVariantId: ing.cookedVariantId,
+					quantity: ing.quantity,
+					unit: ing.unit,
+				},
+			],
+		}
+		setComponents((prev) => [...prev, newComponent])
+	}
+
+	// --- Añadir ingrediente fijo como nueva opción en un grupo existente ---
+	const handleAddToGroup = (ing: IngredientItem, groupIndex: number) => {
+		setIngredients((prev) => prev.filter((i) => i.id !== ing.id))
+		setComponents((prev) => {
+			const updated = [...prev]
+			const comp = { ...updated[groupIndex] }
+			comp.options = [
+				...comp.options,
+				{
+					name: ing.name,
+					isDefault: false,
+					ingredientName: ing.name,
+					ingredientId: ing.databaseId,
+					ingredientVariants: ing.variants,
+					ingredientConversions: ing.conversions,
+					cookedVariantId: ing.cookedVariantId,
+					quantity: ing.quantity,
+					unit: ing.unit,
+				},
+			]
+			updated[groupIndex] = comp
+			return updated
+		})
+	}
+
+	// --- Convertir grupo de opciones de vuelta a ingrediente fijo ---
+	const handleConvertToFixed = (compIndex: number) => {
+		const comp = components[compIndex]
+		const opt = comp?.options[0]
+		if (opt?.ingredientName) {
+			const newIng: IngredientItem = {
+				id: crypto.randomUUID(),
+				name: opt.ingredientName,
+				quantity: opt.quantity ?? 100,
+				unit: opt.unit ?? 'g',
+				isFromDatabase: !!opt.ingredientId,
+				databaseId: opt.ingredientId,
+				variants: opt.ingredientVariants,
+				conversions: opt.ingredientConversions,
+				cookedVariantId: opt.cookedVariantId ?? undefined,
+			}
+			setIngredients((prev) => [...prev, newIng])
+		}
+		setComponents((prev) => prev.filter((_, i) => i !== compIndex))
+	}
+
+	// --- Detección de duplicados entre ingredientes fijos y opciones ---
+	const duplicateIngredients = useMemo(() => {
+		const fixedNames = new Set(ingredients.map((i) => normalizeText(i.name)).filter(Boolean))
+		const found: string[] = []
+		for (const comp of components) {
+			for (const opt of comp.options) {
+				const optName = opt.ingredientName || ''
+				if (optName && fixedNames.has(normalizeText(optName))) {
+					found.push(opt.ingredientName!)
+				}
+			}
+		}
+		return [...new Set(found)]
+	}, [ingredients, components])
 
 	// --- Validación del formulario ---
 	const [formErrors, setFormErrors] = useState<FormErrors>({})
@@ -864,10 +960,22 @@ export function RecipeForm({
 						<label className='form-label'>{t('recipes.directIngredients')}</label>
 						<p className='form-hint'>{t('recipes.directIngredientsHint')}</p>
 						{formErrors.ingredients && <p className='section-error'>{formErrors.ingredients}</p>}
+						{duplicateIngredients.length > 0 && (
+							<div className='duplicate-ingredient-warning'>
+								{duplicateIngredients.map((name) => (
+									<p key={name}>⚠️ {t('recipes.duplicateIngredientWarning', { name })}</p>
+								))}
+							</div>
+						)}
 						<IngredientsList
 							ingredients={ingredients}
 							onChange={setIngredients}
 							errors={formErrors.ingredientItems}
+							onConvertToGroup={handleConvertToGroup}
+							existingGroups={components
+								.map((c, i) => ({ name: c.name, index: i }))
+								.filter((g) => g.name.trim() !== '')}
+							onAddToGroup={handleAddToGroup}
 						/>
 					</div>
 
@@ -884,6 +992,7 @@ export function RecipeForm({
 							components={components}
 							onChange={setComponents}
 							currentRecipeId={initialData?.id}
+							onConvertToFixed={handleConvertToFixed}
 						/>
 					</div>
 

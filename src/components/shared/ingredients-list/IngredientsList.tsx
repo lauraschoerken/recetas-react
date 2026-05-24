@@ -60,6 +60,12 @@ interface IngredientsListProps {
 	ingredients: IngredientItem[]
 	onChange: (ingredients: IngredientItem[]) => void
 	errors?: Record<string, string>
+	onConvertToGroup?: (
+		ing: IngredientItem,
+		mode: 'mandatory' | 'optional-off' | 'optional-on'
+	) => void
+	existingGroups?: { name: string; index: number }[]
+	onAddToGroup?: (ing: IngredientItem, groupIndex: number) => void
 }
 
 const BASE_UNITS: ('g' | 'ml')[] = ['g', 'ml']
@@ -69,7 +75,14 @@ function capitalizeFirst(str: string): string {
 	return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-export function IngredientsList({ ingredients, onChange, errors }: IngredientsListProps) {
+export function IngredientsList({
+	ingredients,
+	onChange,
+	errors,
+	onConvertToGroup,
+	existingGroups,
+	onAddToGroup,
+}: IngredientsListProps) {
 	const { t } = useTranslation()
 	const [suggestions, setSuggestions] = useState<Record<string, Suggestion[]>>({})
 	const [activeInputId, setActiveInputId] = useState<string | null>(null)
@@ -492,6 +505,64 @@ export function IngredientsList({ ingredients, onChange, errors }: IngredientsLi
 																}}>
 																{t('ingredients.viewEditMacros')}
 															</button>
+														)}
+														{onConvertToGroup && (
+															<>
+																<div className='ingredient-dropdown-divider' />
+																<div className='ingredient-dropdown-section-label'>
+																	{t('recipes.convertToOptionsGroupLabel')}
+																</div>
+																<button
+																	type='button'
+																	className='ingredient-dropdown-item ingredient-dropdown-item--convert'
+																	title={t('recipes.actionCreateAlternativesHint')}
+																	onClick={() => {
+																		setMenuOpenId(null)
+																		onConvertToGroup(ing, 'mandatory')
+																	}}>
+																	↺ {t('recipes.actionCreateAlternatives')}
+																</button>
+																<button
+																	type='button'
+																	className='ingredient-dropdown-item ingredient-dropdown-item--convert'
+																	title={t('recipes.actionMakeExtraOptionalHint')}
+																	onClick={() => {
+																		setMenuOpenId(null)
+																		onConvertToGroup(ing, 'optional-off')
+																	}}>
+																	+ {t('recipes.actionMakeExtraOptional')}
+																</button>
+																<button
+																	type='button'
+																	className='ingredient-dropdown-item ingredient-dropdown-item--convert'
+																	title={t('recipes.actionMakeIncludedOptionalHint')}
+																	onClick={() => {
+																		setMenuOpenId(null)
+																		onConvertToGroup(ing, 'optional-on')
+																	}}>
+																	✓ {t('recipes.actionMakeIncludedOptional')}
+																</button>
+															</>
+														)}
+														{onAddToGroup && existingGroups && existingGroups.length > 0 && (
+															<>
+																<div className='ingredient-dropdown-divider' />
+																<div className='ingredient-dropdown-section-label'>
+																	{t('recipes.addToExistingGroup')}
+																</div>
+																{existingGroups.map((group) => (
+																	<button
+																		key={group.index}
+																		type='button'
+																		className='ingredient-dropdown-item'
+																		onClick={() => {
+																			setMenuOpenId(null)
+																			onAddToGroup(ing, group.index)
+																		}}>
+																		→ {group.name}
+																	</button>
+																))}
+															</>
 														)}
 													</div>
 												)}
