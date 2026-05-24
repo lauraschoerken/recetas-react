@@ -4,6 +4,10 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { ItemCard, ItemCardData } from '@/components/shared/item-card'
+import {
+	PdfVariantsModal,
+	PdfVariantsModalQuestion,
+} from '@/components/shared/pdf-variants-modal/PdfVariantsModal'
 import { pdfService } from '@/services/pdf'
 import { Recipe } from '@/services/recipe'
 import { useDialog } from '@/utils/dialog/DialogContext'
@@ -15,16 +19,6 @@ interface RecipeCardProps {
 	onAddToWeek: (recipe: Recipe) => void
 	isSelected?: boolean
 	onSelect?: (id: number) => void
-}
-
-interface PdfQuestion {
-	key: string
-	recipeId: number
-	recipeTitle: string
-	componentId: number
-	componentName: string
-	depth: number
-	options: any[]
 }
 
 export function RecipeCard({
@@ -39,7 +33,7 @@ export function RecipeCard({
 	const { toast } = useDialog()
 	const [showPdfOptions, setShowPdfOptions] = useState(false)
 	const [pdfComponentSelections, setPdfComponentSelections] = useState<Record<string, number>>({})
-	const [pdfQuestions, setPdfQuestions] = useState<PdfQuestion[]>([])
+	const [pdfQuestions, setPdfQuestions] = useState<PdfVariantsModalQuestion[]>([])
 	const [pdfRecipeCache, setPdfRecipeCache] = useState<Record<number, any>>({})
 	const [loadingPdfOptions, setLoadingPdfOptions] = useState(false)
 	const [pdfMerge, setPdfMerge] = useState(false)
@@ -79,7 +73,7 @@ export function RecipeCard({
 	) => {
 		const cache = { ...baseCache }
 		const selections = { ...baseSelections }
-		const questions: PdfQuestion[] = []
+		const questions: PdfVariantsModalQuestion[] = []
 
 		const walk = async (currentRecipeId: number, depth: number, visited: Set<number>) => {
 			if (visited.has(currentRecipeId)) return
@@ -89,7 +83,9 @@ export function RecipeCard({
 			for (const comp of data.components || []) {
 				const key = selectionKey(currentRecipeId, comp.id)
 				const defaultOptId = getDefaultOptionId(comp)
-				if (!selections[key] && defaultOptId) selections[key] = defaultOptId
+				if (!(key in selections)) {
+					selections[key] = comp.isOptional && !comp.defaultEnabled ? 0 : (defaultOptId ?? 0)
+				}
 
 				questions.push({
 					key,
@@ -98,11 +94,13 @@ export function RecipeCard({
 					componentId: comp.id,
 					componentName: comp.name,
 					depth,
+					isOptional: comp.isOptional ?? false,
 					options: comp.options,
 				})
 
-				const selectedOptId = selections[key] || defaultOptId
-				const selectedOpt = comp.options.find((o: any) => o.id === selectedOptId)
+				const selectedOptId = key in selections ? selections[key] : defaultOptId
+				const selectedOpt =
+					selectedOptId !== 0 ? comp.options.find((o: any) => o.id === selectedOptId) : null
 				const childRecipeId = selectedOpt?.recipe?.id
 				if (childRecipeId) {
 					await walk(childRecipeId, depth + 1, visited)
@@ -124,8 +122,8 @@ export function RecipeCard({
 		for (const comp of data?.components || []) {
 			const key = selectionKey(recipeId, comp.id)
 			const defaultOptId = getDefaultOptionId(comp)
-			const value = selections[key] || defaultOptId
-			if (value) selected[comp.id] = value
+			const value = key in selections ? selections[key] : comp.isOptional ? 0 : defaultOptId
+			if (value && value !== 0) selected[comp.id] = value
 		}
 		return selected
 	}
@@ -206,7 +204,7 @@ export function RecipeCard({
 		}
 	}
 
-	const handlePdfSelectionChange = async (question: PdfQuestion, value: number) => {
+	const handlePdfSelectionChange = async (question: PdfVariantsModalQuestion, value: number) => {
 		try {
 			setLoadingPdfOptions(true)
 			const nextSelections = { ...pdfComponentSelections, [question.key]: value }
@@ -259,77 +257,18 @@ export function RecipeCard({
 				onSelect={onSelect ? () => onSelect(recipe.id) : undefined}
 			/>
 
-			{showPdfOptions && pdfQuestions.length > 0 && (
-				<div className='modal-overlay' onClick={() => setShowPdfOptions(false)}>
-					<div className='modal-content recipe-card-pdf-modal' onClick={(e) => e.stopPropagation()}>
-						<div className='recipe-card-pdf-header'>
-							<h3 className='recipe-card-pdf-title'>{t('recipes.pdfSelectVariants')}</h3>
-							<p className='recipe-card-pdf-hint'>{t('recipes.pdfSelectVariantsHint')}</p>
-						</div>
-						{loadingPdfOptions && <p className='recipe-card-pdf-hint'>{t('loading')}</p>}
-						{pdfQuestions.map((q) => (
-							<div
-								key={q.key}
-								className='recipe-card-pdf-group'
-								style={{ marginLeft: `${q.depth * 14}px` }}>
-								<label className='recipe-card-pdf-label'>
-									{q.depth > 0 && <span className='pdf-nested-prefix'>{q.recipeTitle} - </span>}
-									{q.componentName}
-								</label>
-								<select
-									className='form-input'
-									value={pdfComponentSelections[q.key] || ''}
-									onChange={(e) => handlePdfSelectionChange(q, parseInt(e.target.value))}
-									disabled={loadingPdfOptions}>
-									{q.options.map((opt: any) => (
-										<option key={opt.id} value={opt.id}>
-											{opt.recipeId || opt.recipe ? '📖' : '🥬'}{' '}
-											{opt.name || opt.recipe?.title || opt.ingredient?.name}
-											{opt.isDefault ? ` (${t('default')})` : ''}
-										</option>
-									))}
-								</select>
-							</div>
-						))}
-						<div className='recipe-card-pdf-actions'>
-							{pdfQuestions.some((q) => q.depth > 0) && (
-								<div className='pdf-merge-row'>
-									<span className='recipe-card-pdf-label'>{t('recipes.pdfMode')}</span>
-									<label className='pdf-radio-label'>
-										<input
-											type='radio'
-											name={`pdfMode-${recipe.id}`}
-											checked={!pdfMerge}
-											onChange={() => setPdfMerge(false)}
-										/>
-										{t('recipes.pdfModeMultiple')}
-									</label>
-									<label className='pdf-radio-label'>
-										<input
-											type='radio'
-											name={`pdfMode-${recipe.id}`}
-											checked={pdfMerge}
-											onChange={() => setPdfMerge(true)}
-										/>
-										{t('recipes.pdfModeSingle')}
-									</label>
-								</div>
-							)}
-							<div className='flex gap-1'>
-								<button className='btn btn-outline' onClick={() => setShowPdfOptions(false)}>
-									{t('cancel')}
-								</button>
-								<button
-									className='btn btn-primary'
-									onClick={confirmPdfDownload}
-									disabled={loadingPdfOptions}>
-									{t('recipes.downloadPdf')}
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
+			<PdfVariantsModal
+				isOpen={showPdfOptions && pdfQuestions.length > 0}
+				onClose={() => setShowPdfOptions(false)}
+				questions={pdfQuestions}
+				selections={pdfComponentSelections}
+				loading={loadingPdfOptions}
+				merge={pdfMerge}
+				modalId={String(recipe.id)}
+				onSelectionChange={handlePdfSelectionChange}
+				onMergeChange={setPdfMerge}
+				onConfirm={confirmPdfDownload}
+			/>
 		</>
 	)
 }

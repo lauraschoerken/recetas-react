@@ -4,6 +4,10 @@ import { useTranslation } from 'react-i18next'
 
 import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
 import { Pagination } from '@/components/shared/pagination/Pagination'
+import {
+	PdfVariantsModal,
+	PdfVariantsModalQuestion,
+} from '@/components/shared/pdf-variants-modal/PdfVariantsModal'
 import { authService } from '@/services/auth'
 import { Recipe, recipeService } from '@/services/recipe'
 import { pdfService } from '@/services/pdf'
@@ -16,20 +20,8 @@ import { RecipeList } from '../components/RecipeList'
 import { RecipeFilters, RecipeFilterValues, DEFAULT_FILTERS } from '../components/RecipeFilters'
 
 // ── Tipos para el modal de selección de variantes al exportar PDF ──
-interface MultiPdfQuestion {
-	key: string
-	rootRecipeId: number
-	rootTitle: string
-	recipeId: number
-	recipeTitle: string
-	componentId: number
-	componentName: string
-	depth: number
-	options: any[]
-}
-
 interface MultiPdfModalState {
-	questions: MultiPdfQuestion[]
+	questions: PdfVariantsModalQuestion[]
 	selections: Record<string, number>
 	cache: Record<number, any>
 	rootIds: number[]
@@ -46,13 +38,13 @@ async function buildMultiPdfQuestions(
 	baseSelections: Record<string, number>,
 	baseCache: Record<number, any>
 ): Promise<{
-	questions: MultiPdfQuestion[]
+	questions: PdfVariantsModalQuestion[]
 	selections: Record<string, number>
 	cache: Record<number, any>
 }> {
 	const cache = { ...baseCache }
 	const selections = { ...baseSelections }
-	const questions: MultiPdfQuestion[] = []
+	const questions: PdfVariantsModalQuestion[] = []
 
 	const ensure = async (id: number) => {
 		if (!cache[id]) cache[id] = await pdfService.getRecipeData(id)
@@ -70,20 +62,23 @@ async function buildMultiPdfQuestions(
 			for (const comp of data.components || []) {
 				const key = mpKey(currentId, comp.id)
 				const defaultOptId = mpDefaultOpt(comp)
-				if (!selections[key] && defaultOptId) selections[key] = defaultOptId
+				if (!(key in selections)) {
+					selections[key] = comp.isOptional && !comp.defaultEnabled ? 0 : (defaultOptId ?? 0)
+				}
 				questions.push({
 					key,
-					rootRecipeId: rootId,
 					rootTitle,
 					recipeId: currentId,
 					recipeTitle: data.title,
 					componentId: comp.id,
 					componentName: comp.name,
 					depth,
+					isOptional: comp.isOptional ?? false,
 					options: comp.options,
 				})
-				const selectedOptId = selections[key] || defaultOptId
-				const selectedOpt = comp.options.find((o: any) => o.id === selectedOptId)
+				const selectedOptId = key in selections ? selections[key] : defaultOptId
+				const selectedOpt =
+					selectedOptId !== 0 ? comp.options.find((o: any) => o.id === selectedOptId) : null
 				const childId = selectedOpt?.recipe?.id
 				if (childId) await walk(childId, depth + 1, visited)
 			}
@@ -370,7 +365,7 @@ export function RecipeListContainer() {
 		}
 	}
 
-	const handleMultiPdfChange = async (question: MultiPdfQuestion, value: number) => {
+	const handleMultiPdfChange = async (question: PdfVariantsModalQuestion, value: number) => {
 		if (!multiPdfModal) return
 		setMultiPdfModal((m) => (m ? { ...m, loading: true } : m))
 		try {
@@ -416,8 +411,8 @@ export function RecipeListContainer() {
 				const selectedOptions: Record<number, number> = {}
 				for (const comp of data.components || []) {
 					const key = mpKey(recipeId, comp.id)
-					const val = selections[key] || mpDefaultOpt(comp)
-					if (val) selectedOptions[comp.id] = val
+					const val = key in selections ? selections[key] : mpDefaultOpt(comp)
+					if (val && val !== 0) selectedOptions[comp.id] = val
 				}
 				const children: { recipeId: number; selectedOptions: Record<number, number> }[] = []
 				for (const comp of data.components || []) {
@@ -667,78 +662,19 @@ export function RecipeListContainer() {
 				onClose={() => setModalOpen(false)}
 			/>
 
-			{multiPdfModal && (
-				<div className='modal-overlay' onClick={() => setMultiPdfModal(null)}>
-					<div className='modal-content recipe-card-pdf-modal' onClick={(e) => e.stopPropagation()}>
-						<div className='recipe-card-pdf-header'>
-							<h3 className='recipe-card-pdf-title'>{t('recipes.pdfSelectVariants')}</h3>
-							<p className='recipe-card-pdf-hint'>{t('recipes.pdfSelectVariantsHint')}</p>
-						</div>
-						{multiPdfModal.loading && <p className='recipe-card-pdf-hint'>{t('loading')}</p>}
-						{multiPdfModal.questions.map((q) => (
-							<div
-								key={q.key}
-								className='recipe-card-pdf-group'
-								style={{ marginLeft: `${q.depth * 14}px` }}>
-								<label className='recipe-card-pdf-label'>
-									{multiPdfModal.rootIds.length > 1 && (
-										<span className='pdf-nested-prefix'>{q.rootTitle} › </span>
-									)}
-									{q.depth > 0 && <span className='pdf-nested-prefix'>{q.recipeTitle} - </span>}
-									{q.componentName}
-								</label>
-								<select
-									className='form-input'
-									value={multiPdfModal.selections[q.key] || ''}
-									onChange={(e) => handleMultiPdfChange(q, parseInt(e.target.value))}
-									disabled={multiPdfModal.loading}>
-									{q.options.map((opt: any) => (
-										<option key={opt.id} value={opt.id}>
-											{opt.recipeId || opt.recipe ? '📖' : '🥬'}{' '}
-											{opt.name || opt.recipe?.title || opt.ingredient?.name}
-											{opt.isDefault ? ` (${t('default')})` : ''}
-										</option>
-									))}
-								</select>
-							</div>
-						))}
-						<div className='recipe-card-pdf-actions'>
-							{multiPdfModal.questions.some((q) => q.depth > 0) && (
-								<div className='pdf-merge-row'>
-									<span className='recipe-card-pdf-label'>{t('recipes.pdfMode')}</span>
-									<label className='pdf-radio-label'>
-										<input
-											type='radio'
-											checked={!multiPdfModal.merge}
-											onChange={() => setMultiPdfModal((m) => (m ? { ...m, merge: false } : m))}
-										/>
-										{t('recipes.pdfModeMultiple')}
-									</label>
-									<label className='pdf-radio-label'>
-										<input
-											type='radio'
-											checked={multiPdfModal.merge}
-											onChange={() => setMultiPdfModal((m) => (m ? { ...m, merge: true } : m))}
-										/>
-										{t('recipes.pdfModeSingle')}
-									</label>
-								</div>
-							)}
-							<div className='flex gap-1'>
-								<button className='btn btn-outline' onClick={() => setMultiPdfModal(null)}>
-									{t('cancel')}
-								</button>
-								<button
-									className='btn btn-primary'
-									onClick={confirmMultiPdfDownload}
-									disabled={multiPdfModal.loading}>
-									{t('recipes.downloadPdf')}
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
+			<PdfVariantsModal
+				isOpen={multiPdfModal !== null && multiPdfModal.questions.length > 0}
+				onClose={() => setMultiPdfModal(null)}
+				questions={multiPdfModal?.questions ?? []}
+				selections={multiPdfModal?.selections ?? {}}
+				loading={multiPdfModal?.loading ?? false}
+				merge={multiPdfModal?.merge ?? false}
+				showMultipleRoots={(multiPdfModal?.rootIds.length ?? 0) > 1}
+				modalId='multi'
+				onSelectionChange={handleMultiPdfChange}
+				onMergeChange={(v) => setMultiPdfModal((m) => (m ? { ...m, merge: v } : m))}
+				onConfirm={confirmMultiPdfDownload}
+			/>
 		</>
 	)
 }

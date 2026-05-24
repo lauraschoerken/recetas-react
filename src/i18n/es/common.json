@@ -301,6 +301,7 @@
 		"pdfMode": "Modo de descarga",
 		"pdfModeSingle": "Todo en un solo PDF",
 		"pdfModeMultiple": "PDFs separados",
+		"pdfNoneOption": "Ninguno (no incluir)",
 		"addToShopping": "Añadir a la compra",
 		"addedToShopping": "Ingredientes añadidos a la lista de la compra",
 		"addToShoppingError": "Error al añadir a la lista de la compra",
