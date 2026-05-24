@@ -460,8 +460,13 @@ export function RecipeForm({
 				],
 			}))
 
-		// Componentes con variantes
-		const validComponents = components.filter((c) => c.name.trim() !== '' && c.options.length > 0)
+		// Componentes con variantes — eliminar opciones vacías antes de guardar
+		const validComponents = components
+			.map((c) => ({
+				...c,
+				options: c.options.filter((o) => o.ingredientName?.trim() || o.recipeId),
+			}))
+			.filter((c) => c.name.trim() !== '' && c.options.length > 0)
 
 		// Combinar todos los componentes
 		const allComponents = [...includedAsComponents, ...validComponents]
