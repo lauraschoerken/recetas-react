@@ -33,6 +33,16 @@
 	color: var(--danger-fg);
 	display: flex;
 	align-items: center;
+}
+
+.form-section.has-error {
+	border: 1px solid var(--danger-color);
+	border-radius: var(--radius-md);
+	padding: t.$space-4;
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger-color) 15%, transparent);
+}
+
+.section-error-icon {
 	gap: t.$space-2;
 
 	&::before {

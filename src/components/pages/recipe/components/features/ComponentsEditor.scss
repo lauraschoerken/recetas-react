@@ -27,6 +27,11 @@
 	overflow: visible;
 }
 
+.variant-card--error {
+	border-color: var(--danger-color) !important;
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger-color) 18%, transparent);
+}
+
 .simple-optional-card {
 	display: flex;
 	align-items: center;
@@ -661,8 +666,8 @@
 	gap: t.$space-2;
 	margin-top: t.$space-2;
 	padding: t.$space-2 t.$space-3;
-	background: color-mix(in srgb, var(--warning-color) 12%, transparent);
-	border: 1px solid color-mix(in srgb, var(--warning-color) 40%, transparent);
+	background: color-mix(in srgb, var(--danger-color) 8%, transparent);
+	border: 1px solid color-mix(in srgb, var(--danger-color) 35%, transparent);
 	border-radius: 0.375rem;
 	font-size: 0.82rem;
 	color: var(--text-secondary);

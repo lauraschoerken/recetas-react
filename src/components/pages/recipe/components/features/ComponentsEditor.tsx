@@ -43,6 +43,7 @@ interface ComponentsEditorProps {
 	onChange: (components: CreateComponentData[]) => void
 	currentRecipeId?: number
 	onConvertToFixed?: (compIndex: number) => void
+	showErrors?: boolean
 }
 
 type OptionType = 'recipe' | 'ingredient'
@@ -69,6 +70,7 @@ export function ComponentsEditor({
 	onChange,
 	currentRecipeId,
 	onConvertToFixed,
+	showErrors = false,
 }: ComponentsEditorProps) {
 	const { t } = useTranslation()
 	const [availableRecipes, setAvailableRecipes] = useState<Recipe[]>([])
@@ -470,7 +472,15 @@ export function ComponentsEditor({
 						}
 
 						return (
-							<div key={compIndex} className='variant-card'>
+						<div
+							key={compIndex}
+							className={`variant-card${
+								showErrors &&
+								!comp.isOptional &&
+								comp.options.filter((o) => o.ingredientName?.trim() || o.recipeId).length < 2
+									? ' variant-card--error'
+									: ''
+							}`}>
 								<div className='variant-header'>
 									<input
 										type='text'
@@ -814,7 +824,9 @@ export function ComponentsEditor({
 										onClick={() => addOption(compIndex)}>
 										{t('recipes.addOption')}
 									</button>
-									{!comp.isOptional && comp.options.length < 2 && (
+									{!comp.isOptional &&
+										comp.options.filter((o) => o.ingredientName?.trim() || o.recipeId)
+											.length < 2 && (
 										<div className='mandatory-single-warning'>
 											<span>⚠ {t('recipes.mandatorySingleWarning')}</span>
 											<div className='mandatory-single-actions'>

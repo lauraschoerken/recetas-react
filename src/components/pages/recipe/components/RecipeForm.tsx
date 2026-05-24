@@ -54,6 +54,7 @@ interface FormErrors {
 	servings?: string
 	ingredients?: string
 	ingredientItems?: Record<string, string>
+	components?: string
 }
 
 interface RecipeFormProps {
@@ -312,6 +313,7 @@ export function RecipeForm({
 	const [submitted, setSubmitted] = useState(false)
 	const titleRef = useRef<HTMLDivElement>(null)
 	const ingredientsSectionRef = useRef<HTMLDivElement>(null)
+	const componentsSectionRef = useRef<HTMLDivElement>(null)
 
 	// Re-validar en tiempo real una vez que el usuario ha intentado enviar el formulario
 	useEffect(() => {
@@ -337,6 +339,14 @@ export function RecipeForm({
 		})
 		if (Object.keys(ingItemErrors).length > 0) {
 			errors.ingredientItems = ingItemErrors
+		}
+		const hasMandatoryUnderTwo = components.some(
+			(c) =>
+				!c.isOptional &&
+				c.options.filter((o) => o.ingredientName?.trim() || o.recipeId).length < 2
+		)
+		if (hasMandatoryUnderTwo) {
+			errors.components = t('recipes.errMandatoryGroupNeedsMoreOptions')
 		}
 		setFormErrors(errors)
 	}, [submitted, title, servings, ingredients, components, includedRecipes, t])
@@ -405,16 +415,30 @@ export function RecipeForm({
 		if (Object.keys(ingItemErrors).length > 0) {
 			errors.ingredientItems = ingItemErrors
 		}
+		const hasMandatoryUnderTwo = components.some(
+			(c) =>
+				!c.isOptional &&
+				c.options.filter((o) => o.ingredientName?.trim() || o.recipeId).length < 2
+		)
+		if (hasMandatoryUnderTwo) {
+			errors.components = t('recipes.errMandatoryGroupNeedsMoreOptions')
+		}
 		setFormErrors(errors)
 
 		if (Object.keys(errors).length > 0) {
-			// Desplazar al primer error visible
+			// Cambiar al tab de receta para que los errores sean visibles
+			setActiveTab('recipe')
+			// Desplazar al primer error visible (timeout mayor para dar tiempo al tab switch)
 			setTimeout(() => {
-				const firstError = document.querySelector<HTMLElement>('.field-error, .section-error')
-				if (firstError) {
-					firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
+				if (errors.components && componentsSectionRef.current) {
+					componentsSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+				} else {
+					const firstError = document.querySelector<HTMLElement>('.field-error, .section-error')
+					if (firstError) {
+						firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
+					}
 				}
-			}, 60)
+			}, 120)
 			return
 		}
 
@@ -985,14 +1009,20 @@ export function RecipeForm({
 						<IncludedRecipes recipes={includedRecipes} onChange={setIncludedRecipes} />
 					</div>
 
-					<div className='form-section'>
+					<div
+						className='form-section'
+						ref={componentsSectionRef}>
 						<label className='form-label'>{t('recipes.optionalVariants')}</label>
 						<p className='form-hint'>{t('recipes.optionalVariantsHint')}</p>
+						{formErrors.components && (
+							<p className='section-error'>{formErrors.components}</p>
+						)}
 						<ComponentsEditor
 							components={components}
 							onChange={setComponents}
 							currentRecipeId={initialData?.id}
 							onConvertToFixed={handleConvertToFixed}
+							showErrors={!!formErrors.components}
 						/>
 					</div>
 

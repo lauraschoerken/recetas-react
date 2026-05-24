@@ -305,6 +305,7 @@
 		"thresholdSaveError": "Error saving threshold",
 		"errTitleRequired": "Add a name for the recipe",
 		"errServingsMin": "Servings must be at least 1",
+		"errMandatoryGroupNeedsMoreOptions": "There are mandatory groups with fewer than 2 options. Add another option or convert them to fixed ingredients before saving.",
 		"errAtLeastOneIngredient": "Add at least one ingredient to save the recipe",
 		"errIngredientQuantityMin": "Quantity must be greater than 0"
 	},

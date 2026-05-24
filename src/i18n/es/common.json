@@ -309,6 +309,7 @@
 		"thresholdSaveError": "Error al guardar el umbral",
 		"errTitleRequired": "Añade un nombre para la receta",
 		"errServingsMin": "Las porciones deben ser al menos 1",
+		"errMandatoryGroupNeedsMoreOptions": "Hay grupos obligatorios con menos de 2 opciones. Añade otra opción o conviértelos en ingredientes fijos antes de guardar.",
 		"errAtLeastOneIngredient": "Añade al menos un ingrediente para guardar la receta",
 		"errIngredientQuantityMin": "La cantidad debe ser mayor que 0"
 	},
