@@ -3,12 +3,14 @@ import './ComponentsEditor.scss'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { ChartIcon, CloseIcon, ScaleIcon } from '@/components/shared/icons'
+import { ChartIcon, CloseIcon, DotsIcon, ScaleIcon } from '@/components/shared/icons'
 import {
 	IngredientStatesPanel,
 	IngredientVariant,
 } from '@/components/shared/ingredient-states-panel'
+import { IngredientFormModal } from '@/components/pages/ingredient/containers/IngredientFormModal'
 import { api } from '@/services/api'
+import { Ingredient } from '@/services/ingredient'
 import {
 	CreateComponentData,
 	CreateComponentOptionData,
@@ -80,6 +82,13 @@ export function ComponentsEditor({
 	const [showMacrosId, setShowMacrosId] = useState<string | null>(null)
 	const [showConversionsId, setShowConversionsId] = useState<string | null>(null)
 	const [forcedFullIndices, setForcedFullIndices] = useState<Set<number>>(new Set())
+	const [optionMenuOpen, setOptionMenuOpen] = useState<string | null>(null)
+	const [ingredientModal, setIngredientModal] = useState<{
+		compIndex: number
+		optIndex: number
+		data: Ingredient | null
+		defaultName?: string
+	} | null>(null)
 	const debounceRef = useRef<Record<string, NodeJS.Timeout>>({})
 
 	useEffect(() => {
@@ -131,6 +140,25 @@ export function ComponentsEditor({
 			Object.values(debounceRef.current).forEach(clearTimeout)
 		}
 	}, [])
+
+	useEffect(() => {
+		if (!optionMenuOpen) return
+		const close = () => setOptionMenuOpen(null)
+		document.addEventListener('click', close)
+		return () => document.removeEventListener('click', close)
+	}, [optionMenuOpen])
+
+	const mergeGroups = (sourceIndex: number, targetIndex: number) => {
+		const sourceOptions = components[sourceIndex].options
+		const updated = components
+			.map((c, i) => {
+				if (i === targetIndex) return { ...c, options: [...c.options, ...sourceOptions] }
+				return c
+			})
+			.filter((_, i) => i !== sourceIndex)
+		onChange(updated)
+		setOptionMenuOpen(null)
+	}
 
 	const searchIngredients = async (query: string, inputId: string) => {
 		if (query.length < 3) {
@@ -750,6 +778,67 @@ export function ComponentsEditor({
 																	}>
 																	<ChartIcon size={14} aria-hidden='true' />
 																</button>
+																<div className='option-menu-wrapper'>
+																	<button
+																		type='button'
+																		className='option-icon-btn'
+																		onClick={(e) => {
+																			e.stopPropagation()
+																			setOptionMenuOpen(optionMenuOpen === inputId ? null : inputId)
+																		}}
+																		title='Más opciones'>
+																		<DotsIcon size={14} aria-hidden='true' />
+																	</button>
+																	{optionMenuOpen === inputId && (
+																		<div className='option-dropdown'>
+																			<button
+																				type='button'
+																				className='option-dropdown-item'
+																				onClick={async () => {
+																					setOptionMenuOpen(null)
+																					if (ingredientData[inputId]?.databaseId) {
+																						try {
+																							const data = await api.get<Ingredient>(
+																								`/ingredients/${ingredientData[inputId].databaseId}`
+																							)
+																							setIngredientModal({ compIndex, optIndex, data })
+																						} catch {
+																							console.error('Error cargando ingrediente')
+																						}
+																					} else {
+																						setIngredientModal({
+																							compIndex,
+																							optIndex,
+																							data: null,
+																							defaultName: opt.ingredientName || '',
+																						})
+																					}
+																				}}>
+																				{t('ingredients.viewEditMacros')}
+																			</button>
+																			{components.length > 1 && (
+																				<>
+																					<div className='option-dropdown-divider' />
+																					<div className='option-dropdown-section-label'>
+																						{t('recipes.mergeGroupsLabel')}
+																					</div>
+																					{components.map((c, i) => {
+																						if (i === compIndex) return null
+																						return (
+																							<button
+																								key={i}
+																								type='button'
+																								className='option-dropdown-item'
+																								onClick={() => mergeGroups(compIndex, i)}>
+																								→ {c.name || '...'}
+																							</button>
+																						)
+																					})}
+																				</>
+																			)}
+																		</div>
+																	)}
+																</div>
 															</>
 														)}
 														<button
@@ -860,6 +949,17 @@ export function ComponentsEditor({
 			<button type='button' className='add-variant-btn' onClick={addComponent}>
 				{t('recipes.addVariant')}
 			</button>
+
+			{ingredientModal && (
+				<IngredientFormModal
+					isOpen={true}
+					singleOnly={true}
+					ingredient={ingredientModal.data}
+					defaultName={ingredientModal.defaultName}
+					onClose={() => setIngredientModal(null)}
+					onSaved={() => setIngredientModal(null)}
+				/>
+			)}
 		</div>
 	)
 }

@@ -31,7 +31,7 @@ input.has-error.form-input {
 
 .ingredients-table-header {
 	display: grid;
-	grid-template-columns: 1fr 100px 80px 100px auto;
+	grid-template-columns: 1fr 100px 80px 100px 128px;
 	gap: t.$space-2;
 	padding: 0 0 t.$space-3 0;
 	margin-bottom: t.$space-2;
@@ -57,7 +57,7 @@ input.has-error.form-input {
 
 .ingredients-table-row {
 	display: grid;
-	grid-template-columns: 1fr 100px 80px 100px auto;
+	grid-template-columns: 1fr 100px 80px 100px 128px;
 	gap: 0.5rem;
 	align-items: center;
 }

@@ -202,6 +202,7 @@
 		"mandatorySingleWarning": "Mandatory groups need at least 2 options. If there is only one, add another option or convert it to a fixed ingredient.",
 		"addAnotherOption": "+ Add another option",
 		"convertToFixedIngredient": "Move to fixed ingredients",
+		"mergeGroupsLabel": "Combine with another group",
 		"duplicateIngredientWarning": "\"{{name}}\" appears as a fixed ingredient and also inside an options group. It could be counted twice in macros and the shopping list.",
 		"totalNutrition": "Total ({{servings}} servings): {{calories}} kcal",
 		"saving": "Saving...",

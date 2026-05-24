@@ -494,6 +494,55 @@
 	color: var(--danger-color);
 }
 
+.option-menu-wrapper {
+	position: relative;
+}
+
+.option-dropdown {
+	position: absolute;
+	top: calc(100% + 4px);
+	right: 0;
+	z-index: 100;
+	background: var(--surface-1);
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	box-shadow: var(--shadow-lg);
+	min-width: 13rem;
+	overflow: hidden;
+}
+
+.option-dropdown-divider {
+	height: 1px;
+	background: var(--border-color);
+	margin: 0.25rem 0;
+}
+
+.option-dropdown-section-label {
+	padding: 0.3rem 0.9rem 0.1rem;
+	font-size: 0.72rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--text-muted);
+}
+
+.option-dropdown-item {
+	display: block;
+	width: 100%;
+	padding: 0.5rem 0.9rem;
+	text-align: left;
+	background: none;
+	border: none;
+	font-size: 0.85rem;
+	color: var(--text-primary);
+	cursor: pointer;
+	transition: background 0.15s;
+
+	&:hover {
+		background: var(--surface-2);
+	}
+}
+
 .option-info-panel {
 	grid-column: 1 / -1;
 	background: var(--surface-1);

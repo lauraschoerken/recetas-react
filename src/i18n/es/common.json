@@ -206,6 +206,7 @@
 		"mandatorySingleWarning": "Los grupos obligatorios deben tener al menos 2 opciones. Si solo hay una, a\u00f1ade otra opci\u00f3n o conv\u00e9rtelo en ingrediente fijo.",
 		"addAnotherOption": "+ A\u00f1adir otra opci\u00f3n",
 		"convertToFixedIngredient": "Mover a ingredientes fijos",
+		"mergeGroupsLabel": "Combinar con otro grupo",
 		"duplicateIngredientWarning": "\"{{name}}\" aparece como ingrediente fijo y también dentro de un grupo de opciones. Podría contarse dos veces en macros y en la lista de la compra.",
 		"totalNutrition": "Total ({{servings}} porciones): {{calories}} kcal",
 		"saving": "Guardando...",

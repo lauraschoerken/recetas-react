@@ -303,6 +303,13 @@ export function IngredientsList({
 		}
 	}, [])
 
+	useEffect(() => {
+		if (!menuOpenId) return
+		const close = () => setMenuOpenId(null)
+		document.addEventListener('click', close)
+		return () => document.removeEventListener('click', close)
+	}, [menuOpenId])
+
 	return (
 		<div className='ingredients-list-component'>
 			{ingredients.length > 0 && (
@@ -467,7 +474,10 @@ export function IngredientsList({
 												<button
 													type='button'
 													className='ingredient-icon-btn'
-													onClick={() => setMenuOpenId(menuOpenId === ing.id ? null : ing.id)}
+													onClick={(e) => {
+														e.stopPropagation()
+														setMenuOpenId(menuOpenId === ing.id ? null : ing.id)
+													}}
 													title='Más opciones'>
 													<DotsIcon size={14} aria-hidden='true' />
 												</button>
