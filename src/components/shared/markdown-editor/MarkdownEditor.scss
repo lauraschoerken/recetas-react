@@ -1,0 +1,44 @@
+@use '../../../assets/styles/tokens' as t;
+
+.md-editor-wrapper {
+	.w-md-editor {
+		border: 1px solid var(--border-color);
+		border-radius: 6px;
+		box-shadow: none;
+		font-family: inherit;
+
+		&:focus-within {
+			border-color: var(--primary-color);
+			box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 15%, transparent);
+		}
+	}
+
+	.w-md-editor-toolbar {
+		border-bottom: 1px solid var(--border-color);
+		border-radius: 6px 6px 0 0;
+		padding: 0.25rem 0.5rem;
+
+		// Botones de la barra de herramientas
+		li > button {
+			border-radius: 4px;
+		}
+	}
+
+	// En modo oscuro el editor ya tiene estilos propios de @uiw via data-color-mode
+	// Solo sobreescribimos lo necesario para integrar con el diseño del proyecto
+	&[data-color-mode='light'] {
+		.w-md-editor {
+			background: var(--surface-0);
+		}
+
+		.w-md-editor-toolbar {
+			background: var(--surface-1);
+		}
+	}
+
+	&[data-color-mode='dark'] {
+		.w-md-editor-toolbar {
+			background: #1e2433;
+		}
+	}
+}

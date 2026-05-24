@@ -19,6 +19,8 @@
 		"cy:cleanup": "node -e \"fetch('http://localhost:3001/api/test/cleanup-all-test-data', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({secret: 'cypress-test-secret'})}).then(r => r.json()).then(console.log)\""
 	},
 	"dependencies": {
+		"@uiw/react-markdown-preview": "^5.2.1",
+		"@uiw/react-md-editor": "^4.1.1",
 		"i18next": "^25.3.6",
 		"jszip": "^3.10.1",
 		"react": "^19.1.1",

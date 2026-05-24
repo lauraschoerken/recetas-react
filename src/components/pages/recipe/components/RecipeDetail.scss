@@ -100,9 +100,63 @@
 
 .recipe-detail-description {
 	color: var(--text-secondary);
-	font-size: 1.1rem;
+	font-size: 1rem;
 	margin-bottom: 1rem;
 	line-height: 1.6;
+
+	// Sobreescribir estilos de @uiw/react-markdown-preview para fondo transparente
+	.wmde-markdown {
+		background: transparent !important;
+		color: var(--text-primary) !important;
+		font-family: inherit !important;
+		font-size: 1rem !important;
+	}
+
+	// Headings
+	.wmde-markdown h1,
+	.wmde-markdown h2,
+	.wmde-markdown h3,
+	.wmde-markdown h4 {
+		color: var(--text-primary) !important;
+		border-bottom-color: var(--border-color) !important;
+	}
+
+	// Code blocks
+	.wmde-markdown pre,
+	.wmde-markdown code {
+		background: var(--surface-2) !important;
+		color: var(--text-primary) !important;
+	}
+
+	// Blockquote
+	.wmde-markdown blockquote {
+		border-left-color: var(--border-strong) !important;
+		color: var(--text-secondary) !important;
+	}
+
+	// Links
+	.wmde-markdown a {
+		color: var(--primary-color) !important;
+	}
+
+	// Table
+	.wmde-markdown table tr {
+		background: transparent !important;
+	}
+
+	.wmde-markdown table tr:nth-child(2n) {
+		background: var(--surface-1) !important;
+	}
+
+	.wmde-markdown table td,
+	.wmde-markdown table th {
+		border-color: var(--border-color) !important;
+	}
+
+	// HR
+	.wmde-markdown hr {
+		background: var(--border-color) !important;
+	}
 }
 
 .recipe-detail-tags {

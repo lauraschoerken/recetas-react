@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { IngredientItem, IngredientsList } from '@/components/shared/ingredients-list'
+import { MarkdownEditor } from '@/components/shared/markdown-editor/MarkdownEditor'
 import { StepsList } from '@/components/shared/steps-list'
 import { api } from '@/services/api'
 import { CreateComponentData, CreateRecipeData, Recipe } from '@/services/recipe'
@@ -790,12 +791,10 @@ export function RecipeForm({
 
 				<div className='form-group'>
 					<label className='form-label'>{t('recipes.descriptionLabel')}</label>
-					<textarea
-						className='form-input form-textarea'
+					<MarkdownEditor
 						value={description}
-						onChange={(e) => setDescription(e.target.value)}
+						onChange={setDescription}
 						placeholder={t('recipes.descriptionPlaceholder')}
-						rows={3}
 					/>
 				</div>
 

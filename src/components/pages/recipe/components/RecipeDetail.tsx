@@ -1,9 +1,11 @@
 import './RecipeDetail.scss'
+import '@uiw/react-markdown-preview/markdown.css'
 
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { HiOutlineLockClosed } from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
+import MDPreview from '@uiw/react-markdown-preview'
 
 import { alertService } from '@/services/alert'
 import { pdfService } from '@/services/pdf'
@@ -394,7 +396,11 @@ export function RecipeDetail({
 				</div>
 			)}
 
-			{recipe.description && <p className='recipe-detail-description'>{recipe.description}</p>}
+			{recipe.description && (
+				<div className='recipe-detail-description'>
+					<MDPreview source={recipe.description} />
+				</div>
+			)}
 
 			{recipe.tags && recipe.tags.length > 0 && (
 				<div className='recipe-detail-tags'>
