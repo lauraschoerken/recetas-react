@@ -342,8 +342,7 @@ export function RecipeForm({
 		}
 		const hasMandatoryUnderTwo = components.some(
 			(c) =>
-				!c.isOptional &&
-				c.options.filter((o) => o.ingredientName?.trim() || o.recipeId).length < 2
+				!c.isOptional && c.options.filter((o) => o.ingredientName?.trim() || o.recipeId).length < 2
 		)
 		if (hasMandatoryUnderTwo) {
 			errors.components = t('recipes.errMandatoryGroupNeedsMoreOptions')
@@ -417,8 +416,7 @@ export function RecipeForm({
 		}
 		const hasMandatoryUnderTwo = components.some(
 			(c) =>
-				!c.isOptional &&
-				c.options.filter((o) => o.ingredientName?.trim() || o.recipeId).length < 2
+				!c.isOptional && c.options.filter((o) => o.ingredientName?.trim() || o.recipeId).length < 2
 		)
 		if (hasMandatoryUnderTwo) {
 			errors.components = t('recipes.errMandatoryGroupNeedsMoreOptions')
@@ -1009,14 +1007,10 @@ export function RecipeForm({
 						<IncludedRecipes recipes={includedRecipes} onChange={setIncludedRecipes} />
 					</div>
 
-					<div
-						className='form-section'
-						ref={componentsSectionRef}>
+					<div className='form-section' ref={componentsSectionRef}>
 						<label className='form-label'>{t('recipes.optionalVariants')}</label>
 						<p className='form-hint'>{t('recipes.optionalVariantsHint')}</p>
-						{formErrors.components && (
-							<p className='section-error'>{formErrors.components}</p>
-						)}
+						{formErrors.components && <p className='section-error'>{formErrors.components}</p>}
 						<ComponentsEditor
 							components={components}
 							onChange={setComponents}

@@ -472,15 +472,15 @@ export function ComponentsEditor({
 						}
 
 						return (
-						<div
-							key={compIndex}
-							className={`variant-card${
-								showErrors &&
-								!comp.isOptional &&
-								comp.options.filter((o) => o.ingredientName?.trim() || o.recipeId).length < 2
-									? ' variant-card--error'
-									: ''
-							}`}>
+							<div
+								key={compIndex}
+								className={`variant-card${
+									showErrors &&
+									!comp.isOptional &&
+									comp.options.filter((o) => o.ingredientName?.trim() || o.recipeId).length < 2
+										? ' variant-card--error'
+										: ''
+								}`}>
 								<div className='variant-header'>
 									<input
 										type='text'
@@ -825,31 +825,31 @@ export function ComponentsEditor({
 										{t('recipes.addOption')}
 									</button>
 									{!comp.isOptional &&
-										comp.options.filter((o) => o.ingredientName?.trim() || o.recipeId)
-											.length < 2 && (
-										<div className='mandatory-single-warning'>
-											<span>⚠ {t('recipes.mandatorySingleWarning')}</span>
-											<div className='mandatory-single-actions'>
-												<button
-													type='button'
-													className='btn btn-sm'
-													onClick={() => addOption(compIndex)}>
-													{t('recipes.addAnotherOption')}
-												</button>
-												{onConvertToFixed &&
-													comp.options.length === 1 &&
-													getOptionType(comp.options[0]) === 'ingredient' &&
-													!!comp.options[0].ingredientName?.trim() && (
-														<button
-															type='button'
-															className='btn btn-sm btn-secondary'
-															onClick={() => onConvertToFixed(compIndex)}>
-															{t('recipes.convertToFixedIngredient')}
-														</button>
-													)}
+										comp.options.filter((o) => o.ingredientName?.trim() || o.recipeId).length <
+											2 && (
+											<div className='mandatory-single-warning'>
+												<span>⚠ {t('recipes.mandatorySingleWarning')}</span>
+												<div className='mandatory-single-actions'>
+													<button
+														type='button'
+														className='btn btn-sm'
+														onClick={() => addOption(compIndex)}>
+														{t('recipes.addAnotherOption')}
+													</button>
+													{onConvertToFixed &&
+														comp.options.length === 1 &&
+														getOptionType(comp.options[0]) === 'ingredient' &&
+														!!comp.options[0].ingredientName?.trim() && (
+															<button
+																type='button'
+																className='btn btn-sm btn-secondary'
+																onClick={() => onConvertToFixed(compIndex)}>
+																{t('recipes.convertToFixedIngredient')}
+															</button>
+														)}
+												</div>
 											</div>
-										</div>
-									)}
+										)}
 								</div>
 							</div>
 						)
