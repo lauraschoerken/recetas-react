@@ -34,10 +34,14 @@ class ApiClient {
 
 		if (!response.ok) {
 			if (response.status === 401) {
+				const hadToken = !!this.getToken()
 				localStorage.removeItem('token')
 				localStorage.removeItem('user')
-				window.location.href = '/login'
-				return {} as T
+				if (hadToken) {
+					window.location.href = '/login'
+				}
+				const errorData = await response.json().catch(() => ({}))
+				throw new Error(errorData.error || errorData.message || 'No autorizado')
 			}
 			const error = await response.json().catch(() => ({ error: 'Error de conexión' }))
 			throw new Error(error.error || 'Error en la petición')
