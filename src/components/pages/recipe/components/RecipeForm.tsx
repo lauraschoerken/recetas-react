@@ -518,17 +518,14 @@ export function RecipeForm({
 			servings,
 			isPublic,
 			defaultLocation: defaultLocation || undefined,
-			ingredients:
-				validIngredients.length > 0
-					? validIngredients.map((i) => ({
-							name: i.name,
-							quantity: i.quantity,
-							unit: i.unit,
-							variantId: i.variantId || undefined,
-							cookedVariantId: i.cookedVariantId || undefined,
-						}))
-					: undefined,
-			components: allComponents.length > 0 ? allComponents : undefined,
+			ingredients: validIngredients.map((i) => ({
+				name: i.name,
+				quantity: i.quantity,
+				unit: i.unit,
+				variantId: i.variantId || undefined,
+				cookedVariantId: i.cookedVariantId || undefined,
+			})),
+			components: allComponents,
 			// Macros manuales
 			customCalories: customMacros.customCalories,
 			customProtein: customMacros.customProtein,
