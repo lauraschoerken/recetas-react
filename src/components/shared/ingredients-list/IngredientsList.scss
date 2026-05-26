@@ -31,7 +31,7 @@ input.has-error.form-input {
 
 .ingredients-table-header {
 	display: grid;
-	grid-template-columns: 1fr 100px 80px 100px 128px;
+	grid-template-columns: 1fr 150px 70px 110px 120px;
 	gap: t.$space-2;
 	padding: 0 0 t.$space-3 0;
 	margin-bottom: t.$space-2;
@@ -41,6 +41,7 @@ input.has-error.form-input {
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 	border-bottom: 1px solid t.$color-slate-200;
+	align-items: center;
 }
 
 .ingredients-table-body {
@@ -57,9 +58,16 @@ input.has-error.form-input {
 
 .ingredients-table-row {
 	display: grid;
-	grid-template-columns: 1fr 100px 80px 100px 128px;
+	grid-template-columns: 1fr 150px 70px 110px 120px;
 	gap: 0.5rem;
 	align-items: center;
+
+	.form-input {
+		height: 2.25rem;
+		padding: 0 0.6rem;
+		font-size: 0.875rem;
+		box-sizing: border-box;
+	}
 }
 
 .variant-selector {
@@ -67,8 +75,10 @@ input.has-error.form-input {
 }
 
 .variant-selector .form-input-sm {
-	padding: 0.4rem 0.5rem;
-	font-size: 0.8rem;
+	height: 2.25rem;
+	padding: 0 0.5rem;
+	font-size: 0.875rem;
+	box-sizing: border-box;
 }
 
 .variant-default {
@@ -81,6 +91,8 @@ input.has-error.form-input {
 	display: flex;
 	gap: 0.25rem;
 	justify-content: flex-end;
+	align-items: center;
+	height: 100%;
 }
 
 .ingredient-icon-btn {
