@@ -97,7 +97,7 @@ export function RecipeForm({
 		initialData?.instructions ? initialData.instructions.split('\n').filter((s) => s.trim()) : []
 	)
 	const [servings, setServings] = useState(initialData?.servings || 4)
-	const [isPublic, setIsPublic] = useState(initialData?.isPublic || false)
+	const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true)
 	const [defaultLocation, setDefaultLocation] = useState(initialData?.defaultLocation || '')
 
 	// Macros manuales
