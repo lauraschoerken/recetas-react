@@ -364,6 +364,7 @@
 		"defaultUnit": "Default ({{unit}})",
 		"minQuantity": "Minimum quantity",
 		"minQuantityHint": "Receive alert when less than this quantity is at home",
+		"thresholdLabel": "Minimum alert",
 		"quantityPlaceholder": "Quantity",
 		"removeThreshold": "Remove minimum alert",
 		"stateHeader": "State",
