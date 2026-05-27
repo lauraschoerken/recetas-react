@@ -1,4 +1,4 @@
-﻿import './NutritionEditor.scss'
+import './NutritionEditor.scss'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -285,7 +285,7 @@ export function NutritionEditor({
 									return (
 										<div key={idx} className='nutrition-ingredient-row'>
 											<div className='nutrition-ingredient-info'>
-												<span className='nutrition-ingredient-icon'>🥬</span>
+												<span className='nutrition-ingredient-icon'>🥕</span>
 												<span className='nutrition-ingredient-name'>{ing.name}</span>
 												<span className='nutrition-ingredient-qty'>
 													{ing.quantity} {ing.unit}
@@ -372,7 +372,7 @@ export function NutritionEditor({
 																	</span>
 																</div>
 																<div className='nutrition-ingredient-info'>
-																	<span className='nutrition-ingredient-icon'>🥬</span>
+																	<span className='nutrition-ingredient-icon'>🥕</span>
 																	<span className='nutrition-ingredient-name'>{ing.name}</span>
 																	<span className='nutrition-ingredient-qty'>
 																		{ing.quantity} {ing.unit}

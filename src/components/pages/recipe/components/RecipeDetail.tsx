@@ -1,21 +1,21 @@
 import './RecipeDetail.scss'
 import '@uiw/react-markdown-preview/markdown.css'
 
+import MDPreview from '@uiw/react-markdown-preview'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { HiOutlineLockClosed } from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
-import MDPreview from '@uiw/react-markdown-preview'
 
+import {
+	PdfVariantsModal,
+	PdfVariantsModalQuestion,
+} from '@/components/shared/pdf-variants-modal/PdfVariantsModal'
 import { alertService } from '@/services/alert'
 import { pdfService } from '@/services/pdf'
 import { Recipe } from '@/services/recipe'
 import { shoppingService } from '@/services/shopping'
 import { useDialog } from '@/utils/dialog/DialogContext'
-import {
-	PdfVariantsModal,
-	PdfVariantsModalQuestion,
-} from '@/components/shared/pdf-variants-modal/PdfVariantsModal'
 
 interface RecipeDetailProps {
 	recipe: Recipe
@@ -487,7 +487,7 @@ export function RecipeDetail({
 											key={opt.id}
 											className={`component-option ${opt.isDefault ? 'default' : ''}`}>
 											<span className='option-icon'>
-												{opt.recipeId || opt.recipe ? '📖' : '🥬'}
+												{opt.recipeId || opt.recipe ? '📖' : '🥕'}
 											</span>
 											<span className='option-name'>
 												{opt.name ||

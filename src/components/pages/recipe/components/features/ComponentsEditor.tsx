@@ -3,12 +3,12 @@ import './ComponentsEditor.scss'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { IngredientFormModal } from '@/components/pages/ingredient/containers/IngredientFormModal'
 import { ChartIcon, CloseIcon, DotsIcon, ScaleIcon } from '@/components/shared/icons'
 import {
 	IngredientStatesPanel,
 	IngredientVariant,
 } from '@/components/shared/ingredient-states-panel'
-import { IngredientFormModal } from '@/components/pages/ingredient/containers/IngredientFormModal'
 import { api } from '@/services/api'
 import { Ingredient } from '@/services/ingredient'
 import {
@@ -614,7 +614,7 @@ export function ComponentsEditor({
 																	? t('recipes.switchToRecipe')
 																	: t('recipes.switchToIngredient')
 															}>
-															{optionType === 'ingredient' ? '🥬' : '📖'}
+															{optionType === 'ingredient' ? '🥕' : '📖'}
 														</button>
 														{optionType === 'recipe' ? (
 															<select
@@ -672,7 +672,7 @@ export function ComponentsEditor({
 																				onMouseDown={() =>
 																					selectSuggestion(compIndex, optIndex, s)
 																				}>
-																				<span className='suggestion-icon'>🥬</span>
+																				<span className='suggestion-icon'>🥕</span>
 																				<div className='suggestion-info'>
 																					<span className='suggestion-name'>
 																						{capitalizeFirst(s.name)}

@@ -43,7 +43,7 @@ export function DayCardRow({
 	const [dragOverDate, setDragOverDate] = useState<string | null>(null)
 
 	const getItemTitle = (plan: WeekPlan) => {
-		if (plan.ingredient) return `🥬 ${plan.ingredient.name}`
+		if (plan.ingredient) return `🥕 ${plan.ingredient.name}`
 		return plan.recipe?.title || t('noTitle')
 	}
 

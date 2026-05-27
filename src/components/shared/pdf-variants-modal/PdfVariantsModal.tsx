@@ -79,7 +79,7 @@ export function PdfVariantsModal({
 							{q.isOptional && <option value={0}>{t('recipes.pdfNoneOption')}</option>}
 							{q.options.map((opt: any) => (
 								<option key={opt.id} value={opt.id}>
-									{opt.recipeId || opt.recipe ? '📖' : '🥬'}{' '}
+									{opt.recipeId || opt.recipe ? '📖' : '🥕'}{' '}
 									{opt.name || opt.recipe?.title || opt.ingredient?.name}
 									{opt.isDefault ? ` (${t('default')})` : ''}
 								</option>

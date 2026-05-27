@@ -3,6 +3,8 @@ import './TagMultiSelect.scss'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { normalizeText } from '@/utils/normalize'
+
 export interface TagOption {
 	id: number
 	name: string
@@ -30,8 +32,8 @@ export function TagMultiSelect({
 	const [search, setSearch] = useState('')
 	const triState = excludedIds !== undefined
 
-	const lower = search.toLowerCase()
-	const filtered = search ? tags.filter((tag) => tag.name.toLowerCase().includes(lower)) : tags
+	const lower = normalizeText(search)
+	const filtered = search ? tags.filter((tag) => normalizeText(tag.name).includes(lower)) : tags
 
 	const selectedSet = new Set([...includedIds, ...(excludedIds ?? [])])
 	const selectedTags = tags.filter((tag) => selectedSet.has(tag.id))

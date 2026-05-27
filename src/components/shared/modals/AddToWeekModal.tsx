@@ -329,7 +329,7 @@ export function AddToWeekModal({
 												)}
 												<span className='awm-comp-name small'>
 													{sc.options.length === 1 && (
-														<span className='awm-icon'>{selectedOpt?.isRecipe ? '📖' : '🥬'}</span>
+														<span className='awm-icon'>{selectedOpt?.isRecipe ? '📖' : '🥕'}</span>
 													)}
 													{sc.componentName}
 												</span>
@@ -348,7 +348,7 @@ export function AddToWeekModal({
 													className='awm-select alt'>
 													{sc.options.map((opt) => (
 														<option key={opt.id} value={opt.id}>
-															{opt.isRecipe ? '📖' : '🥬'} {opt.name}
+															{opt.isRecipe ? '📖' : '🥕'} {opt.name}
 														</option>
 													))}
 												</select>
@@ -389,7 +389,7 @@ export function AddToWeekModal({
 												)}
 												<span className='awm-comp-name'>
 													{cs.options.length === 1 && (
-														<span className='awm-icon'>{selectedOpt?.isRecipe ? '📖' : '🥬'}</span>
+														<span className='awm-icon'>{selectedOpt?.isRecipe ? '📖' : '🥕'}</span>
 													)}
 													{cs.componentName}
 												</span>
@@ -413,7 +413,7 @@ export function AddToWeekModal({
 													className='awm-select'>
 													{cs.options.map((opt) => (
 														<option key={opt.id} value={opt.id}>
-															{opt.isRecipe ? '📖' : '🥬'} {opt.name}
+															{opt.isRecipe ? '📖' : '🥕'} {opt.name}
 														</option>
 													))}
 												</select>

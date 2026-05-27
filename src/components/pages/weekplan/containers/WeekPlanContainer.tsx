@@ -894,7 +894,7 @@ export function WeekPlanContainer() {
 										</span>
 										<span className='day-modal-plan-name'>
 											{plan.ingredient
-												? `🥬 ${plan.ingredient.name} (${plan.ingredientQty} ${plan.ingredientUnit})`
+												? `🥕 ${plan.ingredient.name} (${plan.ingredientQty} ${plan.ingredientUnit})`
 												: plan.recipe?.title || t('noTitle')}
 										</span>
 										<span className='day-modal-plan-servings'>
@@ -970,7 +970,7 @@ export function WeekPlanContainer() {
 										<ul className='suggestions-list'>
 											{filteredIngredientsForDay.slice(0, 8).map((ing) => (
 												<li key={ing.id} onClick={() => handleSelectIngredientForDay(ing)}>
-													🥬 {ing.name} <span className='text-secondary'>({ing.unit})</span>
+													🥕 {ing.name} <span className='text-secondary'>({ing.unit})</span>
 												</li>
 											))}
 										</ul>
