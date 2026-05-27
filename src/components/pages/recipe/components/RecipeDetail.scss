@@ -139,6 +139,18 @@
 		color: var(--primary-color) !important;
 	}
 
+	// Markdown images
+	.wmde-markdown img {
+		max-width: 100% !important;
+		max-height: 22rem !important;
+		width: auto !important;
+		height: auto !important;
+		object-fit: contain !important;
+		border-radius: 0.75rem;
+		display: block;
+		margin: 0.75rem auto;
+	}
+
 	// Table
 	.wmde-markdown table tr {
 		background: transparent !important;
