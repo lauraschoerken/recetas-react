@@ -269,6 +269,12 @@
 	gap: 0.25rem;
 }
 
+.option-duplicate-warning {
+	margin: 0 0.5rem;
+	font-size: 0.75rem;
+	color: var(--warning-fg);
+}
+
 .option-row {
 	display: grid;
 	grid-template-columns: 1fr 90px 80px 90px;

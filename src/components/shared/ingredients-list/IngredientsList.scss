@@ -437,6 +437,16 @@ input.has-error.form-input {
 	transform: translateX(2px);
 }
 
+.ingredient-suggestion-item.is-disabled {
+	cursor: not-allowed;
+	opacity: 0.65;
+}
+
+.ingredient-suggestion-item.is-disabled:hover {
+	background: transparent;
+	transform: none;
+}
+
 .suggestion-icon {
 	font-size: 1.1rem;
 	flex-shrink: 0;

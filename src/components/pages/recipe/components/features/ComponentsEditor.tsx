@@ -1,6 +1,6 @@
 import './ComponentsEditor.scss'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { IngredientFormModal } from '@/components/pages/ingredient/containers/IngredientFormModal'
@@ -17,6 +17,7 @@ import {
 	Recipe,
 	recipeService,
 } from '@/services/recipe'
+import { normalizeText } from '@/utils/normalize'
 
 interface UnitConversion {
 	id: number
@@ -44,6 +45,7 @@ interface ComponentsEditorProps {
 	components: CreateComponentData[]
 	onChange: (components: CreateComponentData[]) => void
 	currentRecipeId?: number
+	fixedIngredientNames?: string[]
 	onConvertToFixed?: (compIndex: number) => void
 	showErrors?: boolean
 }
@@ -71,10 +73,12 @@ export function ComponentsEditor({
 	components,
 	onChange,
 	currentRecipeId,
+	fixedIngredientNames = [],
 	onConvertToFixed,
 	showErrors = false,
 }: ComponentsEditorProps) {
 	const { t } = useTranslation()
+	const fixedIngredientSet = useMemo(() => new Set(fixedIngredientNames), [fixedIngredientNames])
 	const [availableRecipes, setAvailableRecipes] = useState<Recipe[]>([])
 	const [suggestions, setSuggestions] = useState<Record<string, IngredientSuggestion[]>>({})
 	const [activeInput, setActiveInput] = useState<string | null>(null)
@@ -411,6 +415,11 @@ export function ComponentsEditor({
 		}
 	}
 
+	const isOptionDuplicatedWithFixed = (opt: CreateComponentOptionData): boolean => {
+		const normalizedName = normalizeText(opt.ingredientName || '')
+		return normalizedName !== '' && fixedIngredientSet.has(normalizedName)
+	}
+
 	return (
 		<div className='components-editor'>
 			{components.length === 0 ? (
@@ -587,6 +596,8 @@ export function ComponentsEditor({
 											opt.isDefault && (!comp.isOptional || comp.defaultEnabled !== false)
 										const inputId = `${compIndex}-${optIndex}`
 										const hasSuggestions = suggestions[inputId]?.length > 0
+										const duplicatedWithFixed =
+											optionType === 'ingredient' && isOptionDuplicatedWithFixed(opt)
 
 										return (
 											<div key={optIndex} className='option-container'>
@@ -665,29 +676,38 @@ export function ComponentsEditor({
 																/>
 																{activeInput === inputId && hasSuggestions && (
 																	<ul className='ingredient-suggestions'>
-																		{suggestions[inputId].map((s) => (
-																			<li
-																				key={s.id}
-																				className='ingredient-suggestion-item'
-																				onMouseDown={() =>
-																					selectSuggestion(compIndex, optIndex, s)
-																				}>
-																				<span className='suggestion-icon'>🥕</span>
-																				<div className='suggestion-info'>
-																					<span className='suggestion-name'>
-																						{capitalizeFirst(s.name)}
-																					</span>
-																					{s.variants && s.variants.length > 1 && (
-																						<span className='suggestion-detail'>
-																							{t('ingredients.statesCount', {
-																								count: s.variants.length,
-																							})}
-																						</span>
-																					)}
-																				</div>
-																				<span className='suggestion-unit'>{s.unit}</span>
-																			</li>
-																		))}
+																		{suggestions[inputId].map((s) => {
+																			const existsInFixed = fixedIngredientSet.has(normalizeText(s.name))
+																			return (
+																				<li
+																					key={s.id}
+																					className='ingredient-suggestion-item'
+																					onMouseDown={() => selectSuggestion(compIndex, optIndex, s)}
+																					title={
+																						existsInFixed
+																							? t('recipes.ingredientAlreadyInFixedSuggestion')
+																							: undefined
+																					}>
+																					<span className='suggestion-icon'>🥕</span>
+																					<div className='suggestion-info'>
+																						<span className='suggestion-name'>{capitalizeFirst(s.name)}</span>
+																						{existsInFixed && (
+																							<span className='suggestion-detail'>
+																								{t('recipes.ingredientAlreadyInFixedSuggestion')}
+																							</span>
+																						)}
+																						{s.variants && s.variants.length > 1 && (
+																							<span className='suggestion-detail'>
+																								{t('ingredients.statesCount', {
+																									count: s.variants.length,
+																								})}
+																							</span>
+																						)}
+																					</div>
+																					<span className='suggestion-unit'>{s.unit}</span>
+																				</li>
+																			)
+																		})}
 																	</ul>
 																)}
 															</div>
@@ -838,6 +858,14 @@ export function ComponentsEditor({
 																			)}
 																		</div>
 																	)}
+																{duplicatedWithFixed && (
+																	<p className='option-duplicate-warning'>
+																		⚠{' '}
+																		{t('recipes.ingredientAlreadyInFixedInfo', {
+																			name: opt.ingredientName,
+																		})}
+																	</p>
+																)}
 																</div>
 															</>
 														)}

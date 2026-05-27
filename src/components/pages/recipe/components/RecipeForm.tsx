@@ -302,8 +302,13 @@ export function RecipeForm({
 	}
 
 	// --- Detección de duplicados entre ingredientes fijos y opciones ---
+	const normalizedFixedIngredientNames = useMemo(
+		() => [...new Set(ingredients.map((i) => normalizeText(i.name)).filter(Boolean))],
+		[ingredients]
+	)
+
 	const duplicateIngredients = useMemo(() => {
-		const fixedNames = new Set(ingredients.map((i) => normalizeText(i.name)).filter(Boolean))
+		const fixedNames = new Set(normalizedFixedIngredientNames)
 		const found: string[] = []
 		for (const comp of components) {
 			for (const opt of comp.options) {
@@ -314,7 +319,7 @@ export function RecipeForm({
 			}
 		}
 		return [...new Set(found)]
-	}, [ingredients, components])
+	}, [normalizedFixedIngredientNames, components])
 
 	// --- Validación del formulario ---
 	const [formErrors, setFormErrors] = useState<FormErrors>({})
@@ -1023,6 +1028,7 @@ export function RecipeForm({
 							components={components}
 							onChange={setComponents}
 							currentRecipeId={initialData?.id}
+							fixedIngredientNames={normalizedFixedIngredientNames}
 							onConvertToFixed={handleConvertToFixed}
 							showErrors={!!formErrors.components}
 						/>

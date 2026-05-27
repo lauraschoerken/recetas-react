@@ -11,6 +11,7 @@ import {
 } from '@/components/shared/ingredient-states-panel'
 import { api } from '@/services/api'
 import { Ingredient } from '@/services/ingredient'
+import { normalizeText } from '@/utils/normalize'
 
 interface UnitConversion {
 	id: number
@@ -198,6 +199,15 @@ export function IngredientsList({
 		)
 	}
 
+	const isSuggestionAlreadySelected = (ingredientId: string, suggestion: Suggestion): boolean => {
+		const normalizedSuggestionName = normalizeText(suggestion.name)
+		return ingredients.some((ing) => {
+			if (ing.id === ingredientId) return false
+			if (ing.databaseId && ing.databaseId === suggestion.id) return true
+			return normalizeText(ing.name) === normalizedSuggestionName
+		})
+	}
+
 	const getAvailableUnits = (ing: IngredientItem): string[] => {
 		if (ing.isFromDatabase && ing.conversions) {
 			const conversionUnits = ing.conversions.map((c) => c.unitName)
@@ -348,23 +358,36 @@ export function IngredientsList({
 										/>
 										{activeInputId === ing.id && suggestions[ing.id]?.length > 0 && (
 											<ul className='ingredient-suggestions'>
-												{suggestions[ing.id].map((s) => (
-													<li
-														key={s.id}
-														className='ingredient-suggestion-item'
-														onMouseDown={() => handleSuggestionClick(ing.id, s)}>
-														<span className='suggestion-icon'>🥕</span>
-														<div className='suggestion-info'>
-															<span className='suggestion-name'>{capitalizeFirst(s.name)}</span>
-															{s.variants && s.variants.length > 1 && (
-																<span className='suggestion-detail'>
-																	{t('ingredients.statesCount', { count: s.variants.length })}
-																</span>
-															)}
-														</div>
-														<span className='suggestion-unit'>{s.unit}</span>
-													</li>
-												))}
+												{suggestions[ing.id].map((s) => {
+													const isDisabled = isSuggestionAlreadySelected(ing.id, s)
+													return (
+														<li
+															key={s.id}
+															className={`ingredient-suggestion-item${isDisabled ? ' is-disabled' : ''}`}
+															onMouseDown={() => {
+																if (!isDisabled) {
+																	handleSuggestionClick(ing.id, s)
+																}
+															}}
+															title={isDisabled ? t('ingredients.duplicateFixedIngredientTitle') : undefined}>
+															<span className='suggestion-icon'>🥕</span>
+															<div className='suggestion-info'>
+																<span className='suggestion-name'>{capitalizeFirst(s.name)}</span>
+																{isDisabled && (
+																	<span className='suggestion-detail'>
+																		{t('ingredients.duplicateFixedIngredientHint')}
+																	</span>
+																)}
+																{s.variants && s.variants.length > 1 && (
+																	<span className='suggestion-detail'>
+																		{t('ingredients.statesCount', { count: s.variants.length })}
+																	</span>
+																)}
+															</div>
+															<span className='suggestion-unit'>{s.unit}</span>
+														</li>
+													)
+												})}
 											</ul>
 										)}
 									</div>
