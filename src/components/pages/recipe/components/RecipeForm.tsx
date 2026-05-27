@@ -94,7 +94,14 @@ export function RecipeForm({
 	const [cookTimeMinutes, setCookTimeMinutes] = useState(initialData?.cookTimeMinutes || 0)
 	const [difficulty, setDifficulty] = useState(initialData?.difficulty || '')
 	const [steps, setSteps] = useState<string[]>(
-		initialData?.instructions ? initialData.instructions.split('\n').filter((s) => s.trim()) : []
+		initialData?.instructions
+			? initialData.instructions.includes('\n---\n')
+				? initialData.instructions
+						.split('\n---\n')
+						.map((s) => s.trim())
+						.filter((s) => s)
+				: initialData.instructions.split('\n').filter((s) => s.trim())
+			: []
 	)
 	const [servings, setServings] = useState(initialData?.servings || 4)
 	const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true)
@@ -517,7 +524,7 @@ export function RecipeForm({
 		onSubmit({
 			title,
 			description: description || undefined,
-			instructions: steps.length > 0 ? steps.join('\n') : undefined,
+			instructions: steps.length > 0 ? steps.join('\n---\n') : undefined,
 			imageUrl: imageUrl || undefined,
 			cookTimeMinutes: cookTimeMinutes > 0 ? cookTimeMinutes : undefined,
 			difficulty: difficulty || undefined,

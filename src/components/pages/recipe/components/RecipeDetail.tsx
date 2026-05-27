@@ -521,7 +521,10 @@ export function RecipeDetail({
 				<div className='recipe-detail-section'>
 					<h2>{t('recipes.instructions')}</h2>
 					<div className='recipe-instructions'>
-						{recipe.instructions.split('\n').map((line, index) => (
+						{(recipe.instructions.includes('\n---\n')
+							? recipe.instructions.split('\n---\n')
+							: recipe.instructions.split('\n')
+						).map((line, index) => (
 							<p key={index}>{line}</p>
 						))}
 					</div>
