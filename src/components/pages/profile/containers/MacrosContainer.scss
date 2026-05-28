@@ -52,7 +52,15 @@
 }
 
 @media (max-width: 48rem) {
+	.macros-container {
+		padding: 1rem 0;
+	}
+
 	.macros-grid {
 		grid-template-columns: 1fr;
+	}
+
+	.macros-card {
+		padding: 1rem;
 	}
 }

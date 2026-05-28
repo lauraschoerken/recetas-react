@@ -284,6 +284,10 @@
 }
 
 @media (max-width: 48rem) {
+	.settings-container {
+		padding: 1rem 0;
+	}
+
 	.settings-layout {
 		flex-direction: column;
 	}
@@ -292,6 +296,12 @@
 		flex-direction: row;
 		overflow-x: auto;
 		min-width: unset;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
 	}
 
 	.settings-nav-item {
@@ -305,7 +315,25 @@
 	}
 
 	.goal-options {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	.settings-card {
+		padding: 1rem;
+	}
+
+	.settings-actions {
+		margin-top: 1.25rem;
+	}
+}
+
+@media (max-width: 40rem) {
+	.goal-options {
 		grid-template-columns: 1fr;
+	}
+
+	.settings-card {
+		border-radius: var(--radius);
 	}
 }
 

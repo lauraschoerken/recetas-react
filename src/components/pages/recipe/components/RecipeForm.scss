@@ -377,4 +377,29 @@
 	.ingredients-header {
 		display: none;
 	}
+
+	.form-tabs {
+		gap: 0;
+
+		.form-tab {
+			padding: t.$space-3 t.$space-3;
+			font-size: 0.9rem;
+		}
+	}
+
+	.ingredients-section {
+		padding: t.$space-3;
+	}
+
+	.form-actions {
+		flex-direction: column;
+		gap: t.$space-3;
+		margin-top: t.$space-6;
+		padding-top: t.$space-4;
+
+		.btn {
+			min-width: unset;
+			width: 100%;
+		}
+	}
 }

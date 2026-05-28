@@ -198,7 +198,7 @@
 		background: var(--bg);
 		flex-direction: column;
 		align-items: flex-start;
-		padding: 1.5rem 1rem;
+		padding: 0.5rem 0;
 		gap: 0;
 		z-index: 150;
 		border-top: 1px solid var(--border);
@@ -220,21 +220,25 @@
 		button {
 			display: block;
 			width: 100%;
-			padding: 0.875rem 0.5rem;
-			font-size: 1.05rem;
+			padding: 0.875rem 1rem;
+			font-size: 1rem;
 			border-bottom: 1px solid var(--border);
 		}
 	}
 
 	.nav__actions {
 		padding-left: 0;
-		padding-top: 1rem;
+		padding-top: 0.75rem;
+		padding-bottom: 0.75rem;
+		padding-inline: 1rem;
 		gap: 0.5rem;
 		flex-wrap: wrap;
+		border-top: 1px solid var(--border);
+		width: 100%;
 	}
 
 	.main {
-		padding: 1rem 0.5rem;
+		padding: 0.75rem 0.5rem;
 	}
 
 	.container {

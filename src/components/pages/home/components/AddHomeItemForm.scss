@@ -132,4 +132,12 @@
 	.quantity-row {
 		grid-template-columns: 1fr 1fr;
 	}
+
+	.form-row {
+		flex-wrap: wrap;
+	}
+
+	.add-home-item-form {
+		padding: 0.875rem;
+	}
 }

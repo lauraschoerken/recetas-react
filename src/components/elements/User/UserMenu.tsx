@@ -6,7 +6,11 @@ import { useTranslation } from 'react-i18next'
 
 import { authService } from '@/services/auth'
 
-export function UserMenu() {
+interface UserMenuProps {
+	onClose?: () => void
+}
+
+export function UserMenu({ onClose }: UserMenuProps) {
 	const { t } = useTranslation()
 	const [open, setOpen] = useState(false)
 	const navigate = useNavigate()
@@ -26,6 +30,7 @@ export function UserMenu() {
 	}, [])
 
 	const handleLogout = () => {
+		onClose?.()
 		authService.logout()
 		navigate('/login')
 	}
@@ -48,10 +53,22 @@ export function UserMenu() {
 
 			{open && (
 				<div className='user-dropdown'>
-					<Link to='/macros' className='user-dropdown-item'>
+					<Link
+						to='/macros'
+						className='user-dropdown-item'
+						onClick={() => {
+							setOpen(false)
+							onClose?.()
+						}}>
 						{t('nav.profile')}
 					</Link>
-					<Link to='/settings' className='user-dropdown-item'>
+					<Link
+						to='/settings'
+						className='user-dropdown-item'
+						onClick={() => {
+							setOpen(false)
+							onClose?.()
+						}}>
 						{t('nav.settings')}
 					</Link>
 					<button className='user-dropdown-item danger' onClick={handleLogout}>

@@ -69,7 +69,7 @@ export const Header = () => {
 					<div className='nav__actions'>
 						<AlertBell /> <ThemeToggle />
 						<LanguageSelect />
-						<UserMenu />
+						<UserMenu onClose={() => setMenuOpen(false)} />
 					</div>
 				</nav>
 			</div>

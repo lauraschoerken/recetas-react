@@ -123,6 +123,14 @@
 }
 
 @media (max-width: 37.5rem) {
+	.alerts-container {
+		padding: 0;
+	}
+
+	.alert-card {
+		padding: 1rem;
+	}
+
 	.alert-details {
 		flex-wrap: wrap;
 		gap: 0.5rem 1rem;

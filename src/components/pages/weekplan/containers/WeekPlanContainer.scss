@@ -308,6 +308,11 @@
 	display: flex;
 	gap: 8rem;
 	align-items: center;
+
+	@media (max-width: 40rem) {
+		flex-direction: column;
+		gap: 1rem;
+	}
 }
 
 .macro-progress-grid {

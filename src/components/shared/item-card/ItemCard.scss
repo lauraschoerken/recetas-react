@@ -363,3 +363,29 @@
 	transform: translateY(-2px);
 	pointer-events: auto;
 }
+
+// ── Touch devices: always show actions (no hover) ────────
+@media (hover: none) {
+	.item-card-bottom-bar {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	.item-card-select {
+		opacity: 1;
+	}
+
+	.item-card-lock {
+		opacity: 0.85;
+		pointer-events: auto;
+	}
+}
+
+// ── Mobile card sizing ───────────────────────────────────
+@media (max-width: 40rem) {
+	.item-card {
+		height: 180px;
+		min-height: 180px;
+		max-height: 180px;
+	}
+}

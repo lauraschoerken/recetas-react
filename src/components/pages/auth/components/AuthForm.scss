@@ -4,6 +4,7 @@
 	align-items: center;
 	justify-content: center;
 	margin: -2rem;
+	padding: 1rem;
 	background-color: var(--background-color);
 }
 
@@ -14,6 +15,22 @@
 	padding: 2.5rem;
 	width: 100%;
 	max-width: 400px;
+}
+
+@media (max-width: 40rem) {
+	.auth-container {
+		margin: -0.75rem -0.5rem;
+		align-items: flex-start;
+		padding-top: 2.5rem;
+	}
+
+	.auth-card {
+		padding: 1.75rem 1.25rem;
+		border-radius: var(--radius-sm);
+		box-shadow: none;
+		border: none;
+		background: transparent;
+	}
 }
 
 .auth-title {

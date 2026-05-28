@@ -378,6 +378,18 @@
 	flex-shrink: 0;
 }
 
+// ── Touch devices: always show actions ───────────────────
+@media (hover: none) {
+	.card-quick-actions {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	.card-tags {
+		opacity: 1;
+	}
+}
+
 .btn-icon-small {
 	background: none;
 	border: none;

@@ -99,6 +99,42 @@
 	gap: 0.75rem;
 }
 
+@media (max-width: 40rem) {
+	.add-ingredient-form {
+		padding: 1rem;
+	}
+
+	.macros-row {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.variant-create-macros {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.bulk-ingredient-row {
+		grid-template-columns: 24px 1fr 70px 28px;
+		gap: 0.35rem;
+	}
+
+	.add-ingredient-form .form-row {
+		grid-template-columns: 1fr;
+	}
+
+	.conversions-section,
+	.variants-section {
+		padding: 0.75rem;
+	}
+
+	.form-actions {
+		flex-wrap: wrap;
+
+		.btn {
+			flex: 1;
+		}
+	}
+}
+
 .macro-input {
 	display: flex;
 	flex-direction: column;
@@ -495,18 +531,50 @@
 
 @media (max-width: 40rem) {
 	.search-and-controls {
+		gap: 0.4rem;
+		margin-bottom: 0.5rem;
+
 		.search-input {
-			max-width: 100%;
+			max-width: unset;
+			flex: 1;
 		}
 	}
 
 	.sort-pills {
 		order: 3;
+		flex: none;
 		width: 100%;
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+		padding: 0.375rem 0.625rem;
+		background: var(--surface-1);
+		border: 1px solid var(--border-color);
+		border-radius: var(--radius);
+
+		&::-webkit-scrollbar {
+			display: none;
+		}
+	}
+
+	.sort-pill {
+		flex-shrink: 0;
+		padding: 0.25rem 0.55rem;
+		font-size: 0.76rem;
 	}
 
 	.filter-grid {
 		grid-template-columns: 1fr 1fr;
+	}
+
+	.filter-panel {
+		padding: 0.75rem;
+	}
+
+	.ingredient-stats {
+		margin-bottom: 0.625rem;
+		font-size: 0.8rem;
 	}
 }
 
@@ -524,6 +592,20 @@
 	display: grid;
 	grid-template-columns: repeat(5, 1fr);
 	gap: 0.75rem;
+	margin-bottom: 1.5rem;
+
+	@media (max-width: 60rem) {
+		grid-template-columns: repeat(4, 1fr);
+	}
+
+	@media (max-width: 48rem) {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	@media (max-width: 40rem) {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 0.5rem;
+	}
 }
 
 .empty-state {
@@ -581,27 +663,6 @@
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
-}
-
-/* Grid de ingredientes */
-.ingredients-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-	gap: 0.75rem;
-	margin-bottom: 1.5rem;
-}
-
-@media (max-width: 40rem) {
-	.ingredients-grid {
-		grid-template-columns: repeat(2, 1fr);
-		gap: 0.625rem;
-	}
-}
-
-@media (max-width: 28rem) {
-	.ingredients-grid {
-		grid-template-columns: 1fr;
-	}
 }
 
 @media (max-width: 48rem) {
