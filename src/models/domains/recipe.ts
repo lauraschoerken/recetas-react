@@ -74,6 +74,7 @@ export interface CreateComponentOptionData {
 	recipeId?: number | null
 	ingredientName?: string
 	ingredientId?: number
+	ingredientBaseUnit?: string
 	ingredientVariants?: IngredientVariant[]
 	ingredientConversions?: UnitConversion[]
 	cookedVariantId?: number | null

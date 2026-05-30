@@ -29,12 +29,14 @@ interface IngredientSuggestion {
 	id: number
 	name: string
 	unit: string
+	preferredUnit?: string | null
 	conversions?: UnitConversion[]
 	variants?: IngredientVariant[]
 }
 
 interface OptionIngredientData {
 	databaseId?: number
+	baseUnit?: string
 	variants?: IngredientVariant[]
 	conversions?: UnitConversion[]
 	variantId?: number | null
@@ -125,6 +127,7 @@ export function ComponentsEditor({
 						opt.ingredientVariants?.find((v) => v.isDefault) || opt.ingredientVariants?.[0]
 					newData[inputId] = {
 						databaseId: opt.ingredientId,
+						baseUnit: opt.ingredientBaseUnit,
 						variants: opt.ingredientVariants,
 						conversions: opt.ingredientConversions,
 						variantId: defaultVariant?.id,
@@ -328,7 +331,7 @@ export function ComponentsEditor({
 		const capitalized = capitalizeFirst(suggestion.name)
 		opt.ingredientName = capitalized
 		opt.name = capitalized
-		opt.unit = suggestion.unit
+		opt.unit = suggestion.preferredUnit ?? suggestion.unit
 		opt.ingredientId = suggestion.id
 		opt.ingredientVariants = suggestion.variants
 		opt.ingredientConversions = suggestion.conversions
@@ -344,6 +347,7 @@ export function ComponentsEditor({
 			...prev,
 			[inputId]: {
 				databaseId: suggestion.id,
+				baseUnit: suggestion.unit,
 				variants: suggestion.variants,
 				conversions: suggestion.conversions,
 				variantId: defaultVariant?.id,
@@ -394,6 +398,7 @@ export function ComponentsEditor({
 				[inputId]: {
 					...prev[inputId],
 					databaseId: createdIng.id,
+					baseUnit: createdIng.unit,
 					variants: createdIng.variants,
 					conversions: createdIng.conversions,
 					variantId: defaultVariant?.id,
@@ -763,11 +768,25 @@ export function ComponentsEditor({
 																		e.target.value
 																	)
 																}>
-																<option value='g'>g</option>
-																<option value='ml'>ml</option>
-																<option value='kg'>kg</option>
-																<option value='l'>l</option>
-																<option value='unidad'>ud</option>
+																{ingredientData[inputId]?.baseUnit ? (
+																	<>
+																		<option value={ingredientData[inputId].baseUnit!}>{ingredientData[inputId].baseUnit}</option>
+																		{(ingredientData[inputId].conversions ?? []).map((c) => (
+																			<option key={c.unitName} value={c.unitName}>{c.unitName}</option>
+																		))}
+																	</>
+																) : (
+																	<>
+																		<option value='g'>g</option>
+																		<option value='ml'>ml</option>
+																		<option value='kg'>kg</option>
+																		<option value='l'>l</option>
+																		<option value='unidad'>ud</option>
+																		{ingredientData[inputId]?.conversions?.map((c) => (
+																			<option key={c.unitName} value={c.unitName}>{c.unitName}</option>
+																		))}
+																	</>
+																)}
 															</select>
 														)}
 													</div>
@@ -858,14 +877,6 @@ export function ComponentsEditor({
 																			)}
 																		</div>
 																	)}
-																{duplicatedWithFixed && (
-																	<p className='option-duplicate-warning'>
-																		⚠{' '}
-																		{t('recipes.ingredientAlreadyInFixedInfo', {
-																			name: opt.ingredientName,
-																		})}
-																	</p>
-																)}
 																</div>
 															</>
 														)}
@@ -878,6 +889,14 @@ export function ComponentsEditor({
 														</button>
 													</div>
 												</div>
+												{duplicatedWithFixed && (
+													<p className='option-duplicate-warning'>
+														⚠{' '}
+														{t('recipes.ingredientAlreadyInFixedInfo', {
+															name: opt.ingredientName,
+														})}
+													</p>
+												)}
 												{showConversionsId === inputId && ingredientData[inputId]?.conversions && (
 													<div className='option-info-panel'>
 														<div className='info-panel-header'>{t('recipes.unitConversions')}</div>

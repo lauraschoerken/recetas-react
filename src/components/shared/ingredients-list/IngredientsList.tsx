@@ -53,6 +53,7 @@ interface Suggestion {
 	id: number
 	name: string
 	unit: 'g' | 'ml'
+	preferredUnit?: string | null
 	conversions?: UnitConversion[]
 	variants?: IngredientVariant[]
 }
@@ -153,7 +154,7 @@ export function IngredientsList({
 					? {
 							...ing,
 							name: capitalizeFirst(suggestion.name),
-							unit: suggestion.unit,
+						unit: suggestion.preferredUnit ?? suggestion.unit,
 							baseUnit: suggestion.unit,
 							isFromDatabase: true,
 							databaseId: suggestion.id,
