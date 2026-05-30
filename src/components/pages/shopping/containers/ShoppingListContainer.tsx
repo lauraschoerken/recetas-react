@@ -99,7 +99,17 @@ function getEffectiveQtyAndUnit(
 		return { quantity: qtyOverride, unit: activeUnit }
 	}
 
-	// Sin override de cantidad: devolver en la unidad activa (preferida o base)
+	// Si hay unidad preferida con cantidad ya calculada (Math.ceil al pack de compra),
+	// usarla directamente — es lo que el usuario ve en pantalla y lo que ha comprado realmente
+	if (
+		item.preferredUnit != null &&
+		item.preferredQuantity != null &&
+		activeUnit.toLowerCase() === item.preferredUnit.toLowerCase()
+	) {
+		return { quantity: item.preferredQuantity, unit: activeUnit }
+	}
+
+	// Sin unidad preferida: devolver en la unidad base
 	if (activeUnit.toLowerCase() === item.unit.toLowerCase()) {
 		return { quantity: item.quantityToBuy, unit: item.unit }
 	}
