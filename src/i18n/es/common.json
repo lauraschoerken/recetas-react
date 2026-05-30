@@ -620,6 +620,7 @@
 		"inGrams": "En gramos",
 		"neededQty": "necesitas",
 		"buyingQty": "compras",
+		"surplus": "sobran",
 		"excludeItem": "Excluir de la lista",
 		"reviewTitle": "Revisar ingredientes",
 		"reviewSubtitle": "Desmarca los ingredientes que ya tienes en casa",

@@ -616,6 +616,7 @@
 		"inGrams": "In grams",
 		"neededQty": "need",
 		"buyingQty": "buying",
+		"surplus": "leftover",
 		"excludeItem": "Exclude from list",
 		"reviewTitle": "Review ingredients",
 		"reviewSubtitle": "Uncheck ingredients you already have at home",

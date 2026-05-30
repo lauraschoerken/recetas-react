@@ -82,6 +82,11 @@ export function ShoppingItemRow({
 		activeConversion && activeConversion.gramsPerUnit > 0
 			? effectiveDisplayQty * activeConversion.gramsPerUnit
 			: null
+	// Sobrante: lo que compras de más respecto a lo que realmente necesitabas
+	const surplus =
+		purchaseTotal != null
+			? Math.round((purchaseTotal - item.quantityToBuy) * 10) / 10
+			: null
 	// Conversión para la unidad activa: puede ser una conversión normal o la de la propia unidad base
 	const activeUnitConversion =
 		activeConversion ??
@@ -249,7 +254,11 @@ export function ShoppingItemRow({
 									<>
 										({t('shopping.neededQty')} {formatQuantity(item.quantityToBuy)} {item.unit}
 										{' · '}
-										{t('shopping.buyingQty')} {formatQuantity(purchaseTotal)} {item.unit})
+										{t('shopping.buyingQty')} {formatQuantity(purchaseTotal)} {item.unit}
+										{surplus != null && surplus > 0.1 && (
+											<> · {t('shopping.surplus')} {formatQuantity(surplus)} {item.unit}</>
+										)}
+										)
 									</>
 								) : (
 									<>
