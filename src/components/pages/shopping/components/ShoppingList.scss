@@ -42,6 +42,12 @@
 	gap: 0.5rem;
 }
 
+.excluded-item-row {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
 .excluded-item-tag {
 	display: inline-flex;
 	align-items: center;
@@ -71,6 +77,29 @@
 	justify-content: center;
 	font-size: 0.9rem;
 	font-weight: bold;
+}
+
+.excluded-delete-btn {
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	background: transparent;
+	border: 1px solid var(--border-color);
+	border-radius: 50%;
+	cursor: pointer;
+	color: var(--text-muted);
+	font-size: 0.75rem;
+	line-height: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s;
+
+	&:hover {
+		background: var(--danger-light);
+		border-color: var(--danger-color);
+		color: var(--danger-fg);
+	}
 }
 
 .shopping-actions {

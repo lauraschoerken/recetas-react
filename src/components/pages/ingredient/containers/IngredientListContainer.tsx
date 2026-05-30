@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 
 import { Pagination } from '@/components/shared/pagination/Pagination'
+import { ShoppingCartIcon } from '@/components/shared/icons'
 import { TagMultiSelect } from '@/components/shared/tag-multi-select/TagMultiSelect'
 import { alertService, IngredientThreshold } from '@/services/alert'
 import { Ingredient, ingredientService, UpdateIngredientData } from '@/services/ingredient'
@@ -50,6 +51,10 @@ export function IngredientListContainer() {
 		() => new Date().toISOString().split('T')[0]
 	)
 	const [addingToWeekPlan, setAddingToWeekPlan] = useState(false)
+
+	// Modo compra
+	const [shoppingMode, setShoppingMode] = useState(false)
+	const [shoppingQuantities, setShoppingQuantities] = useState<Record<number, number>>({})
 
 	// ── Leer filtros desde URL params ──
 	const search = searchParams.get('q') || ''
@@ -221,6 +226,19 @@ export function IngredientListContainer() {
 		setLocalSearch(search)
 	}, [search])
 
+	// Re-sincronizar modo compra cuando el usuario vuelve a la pestaña (datos obsoletos)
+	useEffect(() => {
+		if (!shoppingMode) return
+		const handleVisibility = () => {
+			if (document.visibilityState === 'visible') {
+				syncShoppingQuantities().catch(() => {})
+			}
+		}
+		document.addEventListener('visibilitychange', handleVisibility)
+		return () => document.removeEventListener('visibilitychange', handleVisibility)
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [shoppingMode])
+
 	// ── Helpers para actualizar URL params ──
 	const updateParam = (key: string, value: string | null) => {
 		setSearchParams(
@@ -363,15 +381,101 @@ export function IngredientListContainer() {
 		}
 	}
 
+	// Calcula cantidad en unidad base equivalente a 1 unidad preferida (o 1 unidad base si no hay preferida)
+	const computeShoppingAdd = (ingredient: Ingredient): { quantity: number; unit: string } => {
+		const unit = ingredient.unit
+		let quantity = 1
+		if (ingredient.preferredUnit) {
+			const conv = (ingredient.conversions ?? []).find(
+				(c) => c.unitName.toLowerCase() === ingredient.preferredUnit!.toLowerCase()
+			)
+			if (conv && conv.gramsPerUnit > 0) {
+				quantity = conv.gramsPerUnit
+			}
+		}
+		return { quantity, unit }
+	}
+
 	const handleAddToShopping = async (ingredient: Ingredient) => {
+		const { quantity, unit } = computeShoppingAdd(ingredient)
 		try {
-			await shoppingService.addManualItems([
-				{ ingredientId: ingredient.id, quantity: 1, unit: ingredient.unit },
-			])
+			await shoppingService.addManualItems([{ ingredientId: ingredient.id, quantity, unit }])
 			toast.success(t('ingredients.addedToShopping'))
 		} catch {
 			toast.error(t('ingredients.addToShoppingError'))
 		}
+	}
+
+	// ── Handlers modo compra ──────────────────────────────────
+
+	// Carga cantidades desde la lista de la compra y las sincroniza con shoppingQuantities
+	const syncShoppingQuantities = async () => {
+		const list = await shoppingService.getShoppingList()
+		// Ignorar los ingredientes que el usuario excluyó en la lista de la compra
+		const storedExcluded = localStorage.getItem('shopping_excluded')
+		const excludedIds = new Set<number>(
+			storedExcluded ? (JSON.parse(storedExcluded) as number[]) : []
+		)
+		const updated: Record<number, number> = {}
+		for (const item of list) {
+			if (item.totalQuantity > 0 && !excludedIds.has(item.ingredientId)) {
+				const qty =
+					item.preferredUnit && item.preferredQuantity != null && item.preferredQuantity > 0
+						? Math.max(1, item.preferredQuantity)
+						: 1
+				updated[item.ingredientId] = qty
+			}
+		}
+		setShoppingQuantities(updated)
+	}
+
+	const handleToggleShoppingMode = async () => {
+		if (!shoppingMode) {
+			try {
+				await syncShoppingQuantities()
+			} catch {
+				setShoppingQuantities({})
+			}
+			setShoppingMode(true)
+		} else {
+			setShoppingMode(false)
+			setShoppingQuantities({})
+		}
+	}
+
+	const handleShoppingAdd = async (ingredient: Ingredient) => {
+		const { quantity, unit } = computeShoppingAdd(ingredient)
+		try {
+			await shoppingService.addManualItems([{ ingredientId: ingredient.id, quantity, unit }])
+			setShoppingQuantities((prev) => ({ ...prev, [ingredient.id]: 1 }))
+		} catch {
+			toast.error(t('ingredients.addToShoppingError'))
+		}
+	}
+
+	const handleShoppingIncrement = async (ingredient: Ingredient) => {
+		const { quantity, unit } = computeShoppingAdd(ingredient)
+		try {
+			await shoppingService.addManualItems([{ ingredientId: ingredient.id, quantity, unit }])
+			setShoppingQuantities((prev) => ({
+				...prev,
+				[ingredient.id]: (prev[ingredient.id] || 0) + 1,
+			}))
+		} catch {
+			toast.error(t('ingredients.addToShoppingError'))
+		}
+	}
+
+	const handleShoppingRemove = (ingredient: Ingredient) => {
+		setShoppingQuantities((prev) => {
+			const current = prev[ingredient.id] || 0
+			if (current <= 1) {
+				const next = { ...prev }
+				delete next[ingredient.id]
+				return next
+			}
+			return { ...prev, [ingredient.id]: current - 1 }
+		})
 	}
 
 	const handleOpenAddToWeekPlan = (ingredient: Ingredient) => {
@@ -413,9 +517,17 @@ export function IngredientListContainer() {
 		<div className='ingredient-list-container'>
 			<div className='page-header'>
 				<h1 className='page-title'>{t('ingredients.title')}</h1>
-				<button className='btn btn-primary' onClick={() => setShowCreateModal(true)}>
-					{t('ingredients.new')}
-				</button>
+				<div className='page-header-actions'>
+					<button
+						className={`btn${shoppingMode ? ' btn-primary' : ' btn-outline'} shopping-mode-toggle`}
+						onClick={handleToggleShoppingMode}>
+						<ShoppingCartIcon size={16} aria-hidden='true' />
+						{t('ingredients.shoppingMode')}
+					</button>
+					<button className='btn btn-primary' onClick={() => setShowCreateModal(true)}>
+						{t('ingredients.new')}
+					</button>
+				</div>
 			</div>
 
 			{/* Modal creacion */}
@@ -736,7 +848,7 @@ export function IngredientListContainer() {
 				</div>
 			) : (
 				<>
-					<div className='ingredients-grid'>
+					<div className={`ingredients-grid${shoppingMode ? ' shopping-mode' : ''}`}>
 						{ingredients.map((ingredient) => (
 							<IngredientCard
 								key={ingredient.id}
@@ -766,6 +878,11 @@ export function IngredientListContainer() {
 								onThresholdChange={loadThresholds}
 								onAddToShopping={handleAddToShopping}
 								onAddToWeekPlan={handleOpenAddToWeekPlan}
+								shoppingMode={shoppingMode}
+								shoppingQty={shoppingQuantities[ingredient.id] ?? 0}
+								onShoppingAdd={handleShoppingAdd}
+								onShoppingIncrement={handleShoppingIncrement}
+								onShoppingRemove={handleShoppingRemove}
 							/>
 						))}
 					</div>

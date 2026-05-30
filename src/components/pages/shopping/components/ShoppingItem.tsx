@@ -68,13 +68,20 @@ export function ShoppingItemRow({
 	const activeConversion = conversionsWithoutBase.find(
 		(c) => c.unitName.toLowerCase() === activeUnit.toLowerCase()
 	)
+	// Ceiling: si necesitas 10g y 1 pack = 250g, hay que comprar 1 pack (no 0 packs)
 	const computedQtyInActiveUnit =
 		activeConversion && activeConversion.gramsPerUnit > 0
-			? Math.round((quantityInGrams / activeConversion.gramsPerUnit) * 10) / 10
+			? Math.ceil(quantityInGrams / activeConversion.gramsPerUnit)
 			: item.quantityToBuy
 
 	// Cantidad efectiva en la unidad mostrada (respeta override del usuario)
 	const effectiveDisplayQty = quantityOverride ?? computedQtyInActiveUnit
+
+	// Total real a comprar en unidad base (p.ej. 1 block × 250g = 250g)
+	const purchaseTotal =
+		activeConversion && activeConversion.gramsPerUnit > 0
+			? effectiveDisplayQty * activeConversion.gramsPerUnit
+			: null
 	// Conversión para la unidad activa: puede ser una conversión normal o la de la propia unidad base
 	const activeUnitConversion =
 		activeConversion ??
@@ -238,7 +245,17 @@ export function ShoppingItemRow({
 
 						{activeUnit !== item.unit && (
 							<span className='shopping-item-base-qty' title={t('shopping.inGrams')}>
-								({formatQuantity(item.quantityToBuy)} {item.unit})
+								{purchaseTotal != null && Math.abs(purchaseTotal - item.quantityToBuy) > 0.1 ? (
+									<>
+										({t('shopping.neededQty')} {formatQuantity(item.quantityToBuy)} {item.unit}
+										{' · '}
+										{t('shopping.buyingQty')} {formatQuantity(purchaseTotal)} {item.unit})
+									</>
+								) : (
+									<>
+										({formatQuantity(item.quantityToBuy)} {item.unit})
+									</>
+								)}
 							</span>
 						)}
 					</>

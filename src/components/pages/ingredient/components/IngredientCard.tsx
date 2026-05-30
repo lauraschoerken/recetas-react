@@ -20,6 +20,12 @@ interface IngredientCardProps {
 	onThresholdChange?: () => void
 	onAddToShopping?: (ingredient: Ingredient) => void
 	onAddToWeekPlan?: (ingredient: Ingredient) => void
+	// Modo compra
+	shoppingMode?: boolean
+	shoppingQty?: number
+	onShoppingAdd?: (ingredient: Ingredient) => void
+	onShoppingIncrement?: (ingredient: Ingredient) => void
+	onShoppingRemove?: (ingredient: Ingredient) => void
 }
 
 export function IngredientCard({
@@ -31,6 +37,11 @@ export function IngredientCard({
 	onEdit,
 	onAddToShopping,
 	onAddToWeekPlan,
+	shoppingMode = false,
+	shoppingQty = 0,
+	onShoppingAdd,
+	onShoppingIncrement,
+	onShoppingRemove,
 }: IngredientCardProps) {
 	const { t } = useTranslation()
 
@@ -48,6 +59,83 @@ export function IngredientCard({
 
 	const capitalizedName = ingredient.name.charAt(0).toUpperCase() + ingredient.name.slice(1)
 
+	// ── Render: modo compra ──────────────────────────────────
+	if (shoppingMode) {
+		const isInList = shoppingQty > 0
+		return (
+			<div className={`ingredient-card shopping-mode${isInList ? ' is-in-list' : ''}`}>
+				{/* Zona imagen */}
+				<div className='shopping-img-area'>
+					{ingredient.imageUrl ? (
+						<img
+							className='shopping-img'
+							src={ingredient.imageUrl}
+							alt={capitalizedName}
+							loading='lazy'
+						/>
+					) : (
+						<div className='shopping-img-placeholder'>
+							<span className='shopping-img-initial'>{capitalizedName[0]}</span>
+						</div>
+					)}
+					{ingredient.status === 'PRIVATE' && (
+						<span
+							className='card-pending-badge card-pending-badge--private'
+							title={t('ingredients.privateIngredient')}>
+							{t('ingredients.privateBadge')}
+						</span>
+					)}
+					{ingredient.status === 'PENDING' && (
+						<span className='card-pending-badge' title={t('ingredients.pendingReview')}>
+							{t('ingredients.pendingBadge')}
+						</span>
+					)}
+				</div>
+
+				{/* Nombre y macros */}
+				<div className='shopping-info'>
+					<p className='shopping-name'>{capitalizedName}</p>
+					{defaultVariant && (
+						<p className='shopping-macros'>
+							{formatMacros(defaultVariant) || t('ingredients.noNutrition')}
+						</p>
+					)}
+				</div>
+
+				{/* Acción */}
+				<div className='shopping-action'>
+					{isInList ? (
+						<div className='shopping-controls'>
+							<button
+								className='shopping-ctrl-btn shopping-ctrl-btn--remove'
+								onClick={() => onShoppingRemove?.(ingredient)}
+								title={t('delete')}
+								aria-label={t('delete')}>
+								<DeleteIcon size={14} />
+							</button>
+							<span className='shopping-ctrl-qty'>
+								{t('ingredients.inList')} <strong>{shoppingQty}</strong>{' '}
+								{ingredient.preferredUnit ?? t('ingredients.inListUnit')}
+							</span>
+							<button
+								className='shopping-ctrl-btn shopping-ctrl-btn--add'
+								onClick={() => onShoppingIncrement?.(ingredient)}
+								title='+'
+								aria-label='+'>
+								+
+							</button>
+						</div>
+					) : (
+						<button className='shopping-add-btn' onClick={() => onShoppingAdd?.(ingredient)}>
+							{t('ingredients.addToShopping')}
+						</button>
+					)}
+				</div>
+			</div>
+		)
+	}
+
+	// ── Render: modo normal ──────────────────────────────────
 	return (
 		<div className='ingredient-card'>
 			<div

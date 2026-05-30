@@ -606,6 +606,28 @@
 		grid-template-columns: repeat(2, 1fr);
 		gap: 0.5rem;
 	}
+
+	&.shopping-mode {
+		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+		gap: 0.875rem;
+
+		@media (max-width: 40rem) {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 0.625rem;
+		}
+	}
+}
+
+.page-header-actions {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+.shopping-mode-toggle {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
 }
 
 .empty-state {

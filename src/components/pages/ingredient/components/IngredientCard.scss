@@ -23,6 +23,164 @@
 	box-shadow: var(--shadow-lg);
 }
 
+// ── Shopping mode card ──────────────────────────────────
+.ingredient-card.shopping-mode {
+	height: 240px;
+	cursor: default;
+
+	&:hover {
+		border-color: var(--border-color);
+		box-shadow: none;
+	}
+
+	&.is-in-list {
+		border-color: var(--primary-color);
+		box-shadow: 0 0 0 1.5px var(--primary-color);
+	}
+
+	&.is-in-list:hover {
+		border-color: var(--primary-color);
+		box-shadow: 0 0 0 1.5px var(--primary-color);
+	}
+}
+
+.shopping-img-area {
+	flex: 1;
+	position: relative;
+	overflow: hidden;
+	min-height: 0;
+}
+
+.shopping-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.shopping-img-placeholder {
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(135deg, var(--surface-1) 0%, var(--surface-2) 100%);
+	border-left: 3px solid var(--primary-color);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.shopping-img-initial {
+	font-size: 2.5rem;
+	font-weight: 800;
+	color: var(--primary-color);
+	opacity: 0.3;
+	text-transform: uppercase;
+	user-select: none;
+}
+
+.shopping-info {
+	padding: 0.4rem 0.6rem 0.2rem;
+	flex-shrink: 0;
+}
+
+.shopping-name {
+	font-size: 0.82rem;
+	font-weight: 700;
+	color: var(--text-primary);
+	margin: 0 0 0.1rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.shopping-macros {
+	font-size: 0.67rem;
+	color: var(--text-secondary);
+	margin: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.shopping-action {
+	padding: 0.25rem 0.5rem 0.45rem;
+	flex-shrink: 0;
+}
+
+.shopping-add-btn {
+	width: 100%;
+	padding: 0.38rem 0.5rem;
+	background: transparent;
+	border: 1.5px solid var(--border-strong);
+	border-radius: 2rem;
+	font-size: 0.78rem;
+	font-weight: 600;
+	color: var(--text-primary);
+	cursor: pointer;
+	transition:
+		border-color 0.15s,
+		background 0.15s,
+		color 0.15s;
+
+	&:hover {
+		border-color: var(--primary-color);
+		color: var(--primary-color);
+		background: var(--primary-light);
+	}
+}
+
+.shopping-controls {
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+}
+
+.shopping-ctrl-qty {
+	flex: 1;
+	font-size: 0.74rem;
+	color: var(--text-primary);
+	text-align: center;
+	white-space: nowrap;
+
+	strong {
+		font-weight: 700;
+	}
+}
+
+.shopping-ctrl-btn {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	font-size: 1.1rem;
+	font-weight: 700;
+	line-height: 1;
+	transition: background 0.15s;
+
+	&--remove {
+		background: var(--surface-2);
+		color: var(--text-secondary);
+
+		&:hover {
+			background: var(--danger-light);
+			color: var(--danger-fg);
+		}
+	}
+
+	&--add {
+		background: var(--primary-color);
+		color: #fff;
+
+		&:hover {
+			background: var(--primary-hover);
+		}
+	}
+}
+
 // ── Clickable header area ────────────────────────────────
 .card-clickable {
 	cursor: pointer;

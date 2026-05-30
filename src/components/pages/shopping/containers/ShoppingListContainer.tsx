@@ -257,6 +257,22 @@ export function ShoppingListContainer() {
 		localStorage.setItem(STORAGE_KEY_EXCLUDED, JSON.stringify([...newExcluded]))
 	}
 
+	const handleDeleteExcluded = async (id: number) => {
+		// Quitar de excluidos
+		const newExcluded = new Set(excludedItems)
+		newExcluded.delete(id)
+		setExcludedItems(newExcluded)
+		localStorage.setItem(STORAGE_KEY_EXCLUDED, JSON.stringify([...newExcluded]))
+		// Quitar de la lista local
+		setAllItems((prev) => prev.filter((i) => i.ingredientId !== id))
+		// Intentar borrar del backend (solo afecta items manuales)
+		try {
+			await shoppingService.deleteManualItem(id)
+		} catch {
+			// Si falla (era item de receta, no existe en backend) se ignora silenciosamente
+		}
+	}
+
 	const handleQuantityOverride = (id: number, qty: number) => {
 		const newOverrides = { ...quantityOverrides, [id]: qty }
 		setQuantityOverrides(newOverrides)
@@ -500,13 +516,20 @@ export function ShoppingListContainer() {
 					<p className='text-sm text-secondary mb-1'>{t('shopping.excludedHint')}</p>
 					<div className='excluded-items-list'>
 						{excludedItemsList.map((item) => (
-							<button
-								key={item.ingredientId}
-								className='excluded-item-tag'
-								onClick={() => handleRestoreItem(item.ingredientId)}>
-								{item.name} ({item.totalQuantity} {item.unit})
-								<span className='restore-icon'>+</span>
-							</button>
+							<div key={item.ingredientId} className='excluded-item-row'>
+								<button
+									className='excluded-item-tag'
+									onClick={() => handleRestoreItem(item.ingredientId)}>
+									{item.name} ({item.totalQuantity} {item.unit})
+									<span className='restore-icon'>+</span>
+								</button>
+								<button
+									className='excluded-delete-btn'
+									title={t('shopping.deleteExcluded')}
+									onClick={() => handleDeleteExcluded(item.ingredientId)}>
+									✕
+								</button>
+							</div>
 						))}
 					</div>
 				</div>

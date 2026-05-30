@@ -66,6 +66,10 @@ export const shoppingService = {
 		return api.post<{ added: number }>('/shopping-list/add', { items })
 	},
 
+	async deleteManualItem(ingredientId: number): Promise<void> {
+		return api.delete<void>(`/shopping-list/manual/${ingredientId}`)
+	},
+
 	async downloadShoppingPdf(
 		items: { name: string; quantityToBuy: number; unit: string }[],
 		weekLabel?: string

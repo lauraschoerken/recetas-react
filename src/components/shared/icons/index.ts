@@ -9,6 +9,7 @@ import {
 	HiOutlineEyeSlash,
 	HiOutlineInformationCircle,
 	HiOutlinePencilSquare,
+	HiOutlineShoppingCart,
 	HiOutlineStar,
 	HiOutlineTrash,
 	HiOutlineXMark,
@@ -29,6 +30,7 @@ export {
 	HiOutlineEyeSlash as HideIcon,
 	HiOutlineInformationCircle as InfoIcon,
 	FaBalanceScale as ScaleIcon,
+	HiOutlineShoppingCart as ShoppingCartIcon,
 	HiOutlineStar as StarIcon,
 	HiOutlineExclamationTriangle as WarningIcon,
 }
