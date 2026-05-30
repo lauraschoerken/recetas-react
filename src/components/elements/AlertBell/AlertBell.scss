@@ -98,6 +98,36 @@
 	}
 }
 
+@media (max-width: 40rem) {
+	.alert-bell-dropdown {
+		position: fixed;
+		top: 3.4rem;
+		left: 0.5rem;
+		right: 0.5rem;
+		width: auto;
+		max-height: 70dvh;
+		overflow-y: auto;
+		border-radius: var(--radius);
+	}
+
+	.alert-bell-list {
+		max-height: none;
+	}
+
+	.alert-bell-message {
+		font-size: 0.82rem;
+	}
+
+	.alert-bell-actions {
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+
+	.alert-action-icon {
+		padding: 0.45rem;
+	}
+}
+
 .alert-action-icon {
 	position: relative;
 	background: none;
