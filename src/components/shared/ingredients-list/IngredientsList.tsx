@@ -154,7 +154,7 @@ export function IngredientsList({
 					? {
 							...ing,
 							name: capitalizeFirst(suggestion.name),
-						unit: suggestion.preferredUnit ?? suggestion.unit,
+							unit: suggestion.preferredUnit ?? suggestion.unit,
 							baseUnit: suggestion.unit,
 							isFromDatabase: true,
 							databaseId: suggestion.id,
@@ -370,7 +370,11 @@ export function IngredientsList({
 																	handleSuggestionClick(ing.id, s)
 																}
 															}}
-															title={isDisabled ? t('ingredients.duplicateFixedIngredientTitle') : undefined}>
+															title={
+																isDisabled
+																	? t('ingredients.duplicateFixedIngredientTitle')
+																	: undefined
+															}>
 															<span className='suggestion-icon'>🥕</span>
 															<div className='suggestion-info'>
 																<span className='suggestion-name'>{capitalizeFirst(s.name)}</span>

@@ -682,12 +682,16 @@ export function ComponentsEditor({
 																{activeInput === inputId && hasSuggestions && (
 																	<ul className='ingredient-suggestions'>
 																		{suggestions[inputId].map((s) => {
-																			const existsInFixed = fixedIngredientSet.has(normalizeText(s.name))
+																			const existsInFixed = fixedIngredientSet.has(
+																				normalizeText(s.name)
+																			)
 																			return (
 																				<li
 																					key={s.id}
 																					className='ingredient-suggestion-item'
-																					onMouseDown={() => selectSuggestion(compIndex, optIndex, s)}
+																					onMouseDown={() =>
+																						selectSuggestion(compIndex, optIndex, s)
+																					}
 																					title={
 																						existsInFixed
 																							? t('recipes.ingredientAlreadyInFixedSuggestion')
@@ -695,7 +699,9 @@ export function ComponentsEditor({
 																					}>
 																					<span className='suggestion-icon'>🥕</span>
 																					<div className='suggestion-info'>
-																						<span className='suggestion-name'>{capitalizeFirst(s.name)}</span>
+																						<span className='suggestion-name'>
+																							{capitalizeFirst(s.name)}
+																						</span>
 																						{existsInFixed && (
 																							<span className='suggestion-detail'>
 																								{t('recipes.ingredientAlreadyInFixedSuggestion')}
@@ -770,9 +776,13 @@ export function ComponentsEditor({
 																}>
 																{ingredientData[inputId]?.baseUnit ? (
 																	<>
-																		<option value={ingredientData[inputId].baseUnit!}>{ingredientData[inputId].baseUnit}</option>
+																		<option value={ingredientData[inputId].baseUnit!}>
+																			{ingredientData[inputId].baseUnit}
+																		</option>
 																		{(ingredientData[inputId].conversions ?? []).map((c) => (
-																			<option key={c.unitName} value={c.unitName}>{c.unitName}</option>
+																			<option key={c.unitName} value={c.unitName}>
+																				{c.unitName}
+																			</option>
 																		))}
 																	</>
 																) : (
@@ -783,7 +793,9 @@ export function ComponentsEditor({
 																		<option value='l'>l</option>
 																		<option value='unidad'>ud</option>
 																		{ingredientData[inputId]?.conversions?.map((c) => (
-																			<option key={c.unitName} value={c.unitName}>{c.unitName}</option>
+																			<option key={c.unitName} value={c.unitName}>
+																				{c.unitName}
+																			</option>
 																		))}
 																	</>
 																)}
