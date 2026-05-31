@@ -1,0 +1,59 @@
+[
+	{
+		"id": 1,
+		"location": "nevera",
+		"quantity": 500,
+		"unit": "g",
+		"addedAt": "2024-01-01T00:00:00.000Z",
+		"expiresAt": "2024-01-10T00:00:00.000Z",
+		"userId": 1,
+		"ingredientId": 1,
+		"productId": null,
+		"ingredient": {
+			"id": 1,
+			"name": "Patata",
+			"unit": "g",
+			"imageUrl": null
+		},
+		"product": null,
+		"variant": null
+	},
+	{
+		"id": 2,
+		"location": "nevera",
+		"quantity": 6,
+		"unit": "ud",
+		"addedAt": "2024-01-01T00:00:00.000Z",
+		"expiresAt": null,
+		"userId": 1,
+		"ingredientId": 2,
+		"productId": null,
+		"ingredient": {
+			"id": 2,
+			"name": "Huevo",
+			"unit": "ud",
+			"imageUrl": null
+		},
+		"product": null,
+		"variant": null
+	},
+	{
+		"id": 3,
+		"location": "congelador",
+		"quantity": 200,
+		"unit": "g",
+		"addedAt": "2024-01-01T00:00:00.000Z",
+		"expiresAt": null,
+		"userId": 1,
+		"ingredientId": 3,
+		"productId": null,
+		"ingredient": {
+			"id": 3,
+			"name": "Lechuga",
+			"unit": "g",
+			"imageUrl": null
+		},
+		"product": null,
+		"variant": null
+	}
+]

@@ -1,0 +1,22 @@
+[
+	{
+		"id": 1,
+		"ingredientId": 1,
+		"name": "Patata",
+		"unit": "g",
+		"preferredUnit": null,
+		"quantity": 300,
+		"quantityToBuy": 300,
+		"purchased": false
+	},
+	{
+		"id": 2,
+		"ingredientId": 2,
+		"name": "Huevo",
+		"unit": "ud",
+		"preferredUnit": null,
+		"quantity": 4,
+		"quantityToBuy": 4,
+		"purchased": false
+	}
+]

@@ -1,0 +1,111 @@
+{
+	"data": [
+		{
+			"id": 1,
+			"title": "Tortilla de Patatas",
+			"description": "Receta clásica española con patatas y huevo",
+			"instructions": "Pela las patatas, córtalas en rodajas finas...",
+			"imageUrl": null,
+			"cookTimeMinutes": 30,
+			"difficulty": "media",
+			"servings": 4,
+			"isPublic": true,
+			"userId": 1,
+			"authorName": "Test User",
+			"defaultLocation": "nevera",
+			"tags": [{ "id": 1, "name": "Vegetariana", "color": "#4caf50" }],
+			"ingredients": [
+				{
+					"id": 1,
+					"name": "Patata",
+					"unit": "g",
+					"quantity": 300,
+					"variantId": null,
+					"variantName": null,
+					"cookedVariantId": null,
+					"calories": 77,
+					"protein": 2,
+					"carbs": 17,
+					"fat": 0.1,
+					"fiber": 2.2
+				},
+				{
+					"id": 2,
+					"name": "Huevo",
+					"unit": "ud",
+					"quantity": 4,
+					"variantId": null,
+					"variantName": null,
+					"cookedVariantId": null,
+					"calories": 155,
+					"protein": 13,
+					"carbs": 1.1,
+					"fat": 11,
+					"fiber": 0
+				}
+			],
+			"components": [],
+			"totalCalories": 400,
+			"caloriesPerServing": 100,
+			"nutrition": { "calories": 400, "protein": 30, "carbs": 40, "fat": 15, "fiber": 5 },
+			"nutritionPerServing": {
+				"calories": 100,
+				"protein": 7.5,
+				"carbs": 10,
+				"fat": 3.75,
+				"fiber": 1.25
+			},
+			"customCalories": null,
+			"customProtein": null,
+			"customCarbs": null,
+			"customFat": null,
+			"customFiber": null,
+			"createdAt": "2024-01-01T00:00:00.000Z",
+			"updatedAt": "2024-01-01T00:00:00.000Z"
+		},
+		{
+			"id": 2,
+			"title": "Ensalada César",
+			"description": "Ensalada fresca con aderezo César",
+			"instructions": null,
+			"imageUrl": null,
+			"cookTimeMinutes": 15,
+			"difficulty": "fácil",
+			"servings": 2,
+			"isPublic": false,
+			"userId": 1,
+			"authorName": "Test User",
+			"defaultLocation": null,
+			"tags": [],
+			"ingredients": [
+				{
+					"id": 3,
+					"name": "Lechuga",
+					"unit": "g",
+					"quantity": 200,
+					"variantId": null,
+					"variantName": null,
+					"cookedVariantId": null,
+					"calories": 15,
+					"protein": 1.4,
+					"carbs": 2.9,
+					"fat": 0.2,
+					"fiber": 1.3
+				}
+			],
+			"components": [],
+			"totalCalories": 150,
+			"caloriesPerServing": 75,
+			"nutrition": { "calories": 150, "protein": 10, "carbs": 8, "fat": 8, "fiber": 2 },
+			"nutritionPerServing": { "calories": 75, "protein": 5, "carbs": 4, "fat": 4, "fiber": 1 },
+			"customCalories": null,
+			"customProtein": null,
+			"customCarbs": null,
+			"customFat": null,
+			"customFiber": null,
+			"createdAt": "2024-01-02T00:00:00.000Z",
+			"updatedAt": "2024-01-02T00:00:00.000Z"
+		}
+	],
+	"total": 2
+}

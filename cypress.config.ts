@@ -16,30 +16,42 @@ export default defineConfig({
 			// Task para limpiar usuario por email
 			on('task', {
 				async cleanupUser(email: string) {
-					const response = await fetch(`${API_URL}/api/test/cleanup`, {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ email, secret: TEST_SECRET }),
-					})
-					return response.json()
+					try {
+						const response = await fetch(`${API_URL}/api/test/cleanup`, {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ email, secret: TEST_SECRET }),
+						})
+						return response.json()
+					} catch {
+						return { success: false, message: 'Backend no disponible (modo mock)' }
+					}
 				},
 
 				async cleanupAllTestData() {
-					const response = await fetch(`${API_URL}/api/test/cleanup-all-test-data`, {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ secret: TEST_SECRET }),
-					})
-					return response.json()
+					try {
+						const response = await fetch(`${API_URL}/api/test/cleanup-all-test-data`, {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ secret: TEST_SECRET }),
+						})
+						return response.json()
+					} catch {
+						return { success: false, message: 'Backend no disponible (modo mock)' }
+					}
 				},
 
 				async cleanupTestIngredients() {
-					const response = await fetch(`${API_URL}/api/test/cleanup-test-ingredients`, {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ secret: TEST_SECRET }),
-					})
-					return response.json()
+					try {
+						const response = await fetch(`${API_URL}/api/test/cleanup-test-ingredients`, {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ secret: TEST_SECRET }),
+						})
+						return response.json()
+					} catch {
+						return { success: false, message: 'Backend no disponible (modo mock)' }
+					}
 				},
 
 				log(message: string) {

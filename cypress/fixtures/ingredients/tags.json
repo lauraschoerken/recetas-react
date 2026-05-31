@@ -1,0 +1,5 @@
+[
+	{ "id": 1, "name": "Vegetariana", "color": "#4caf50" },
+	{ "id": 2, "name": "Sin Gluten", "color": "#ff9800" },
+	{ "id": 3, "name": "Proteína", "color": "#2196f3" }
+]
