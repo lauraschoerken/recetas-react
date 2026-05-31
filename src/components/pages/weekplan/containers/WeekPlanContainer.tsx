@@ -198,10 +198,14 @@ export function WeekPlanContainer() {
 		}
 	}
 
-	const handleConsume = async (planId: number) => {
+	const handleConsume = async (
+		planId: number,
+		options?: { myPercentage?: number; householdShares?: { userId: number; percentage: number }[] }
+	) => {
 		try {
-			await shoppingService.markAsConsumed(planId)
-			setWeekPlans(weekPlans.map((p) => (p.id === planId ? { ...p, consumed: true } : p)))
+			await shoppingService.markAsConsumed(planId, options)
+			// Recargar el plan para obtener las raciones actualizadas del backend
+			await loadWeekPlan()
 			loadWeeklyNutrition()
 			toast.success(t('weekPlan.consumed'))
 		} catch {

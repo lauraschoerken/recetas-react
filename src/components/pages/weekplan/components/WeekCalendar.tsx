@@ -12,7 +12,10 @@ interface WeekCalendarProps {
 	onRemove: (id: number) => void
 	onMovePlan?: (planId: number, newDate: string) => void
 	onCook?: (planId: number, leftoverServings: number, leftoverLocation: string) => void
-	onConsume?: (planId: number) => void
+	onConsume?: (
+		planId: number,
+		options?: { myPercentage?: number; householdShares?: { userId: number; percentage: number }[] }
+	) => void
 	onDayClick?: (dateStr: string) => void
 }
 

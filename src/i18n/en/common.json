@@ -586,7 +586,19 @@
 		"quickAddHint": "Choose whether you want to add a recipe or an ingredient",
 		"quickModeRecipe": "Recipe",
 		"quickModeIngredient": "Ingredient",
-		"searchRecipe": "Type the recipe name..."
+		"searchRecipe": "Type the recipe name...",
+		"consumeTitle": "Mark as consumed",
+		"consumeServings": "Servings to consume:",
+		"shareToggle": "Share with household",
+		"shareToggleHint": "Indicate what percentage each person eats",
+		"shareYou": "You",
+		"shareRemainder": "Remainder",
+		"shareTotalConsumed": "Total consumed: {{pct}}%",
+		"shareLeftovers": "{{servings}} serv. will be stored ({{pct}}%)",
+		"shareConsumeRemainder": "{{servings}} serv. ({{pct}}%) remain at home",
+		"shareNoLeftovers": "Nothing will remain",
+		"shareLoadingMembers": "Loading household members...",
+		"shareNoHousehold": "You don't belong to any household"
 	},
 	"shopping": {
 		"title": "Shopping List",

@@ -590,7 +590,19 @@
 		"quickAddHint": "Elige si quieres añadir una receta o un ingrediente",
 		"quickModeRecipe": "Receta",
 		"quickModeIngredient": "Ingrediente",
-		"searchRecipe": "Escribe el nombre de la receta..."
+		"searchRecipe": "Escribe el nombre de la receta...",
+		"consumeTitle": "Marcar como consumido",
+		"consumeServings": "Raciones a consumir:",
+		"shareToggle": "Repartir entre el hogar",
+		"shareToggleHint": "Indica qué porcentaje come cada persona",
+		"shareYou": "Tú",
+		"shareRemainder": "Sobra",
+		"shareTotalConsumed": "Total consumido: {{pct}}%",
+		"shareLeftovers": "Se guardarán {{servings}} rac. ({{pct}}%)",
+		"shareConsumeRemainder": "{{servings}} rac. ({{pct}}%) quedan en casa",
+		"shareNoLeftovers": "No sobrará nada",
+		"shareLoadingMembers": "Cargando miembros del hogar...",
+		"shareNoHousehold": "No perteneces a ningún hogar"
 	},
 	"shopping": {
 		"title": "Lista de la Compra",

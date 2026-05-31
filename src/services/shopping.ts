@@ -56,8 +56,11 @@ export const shoppingService = {
 		return api.post<CookResult>(`/week-plan/${planId}/cook`, { leftoverServings, leftoverLocation })
 	},
 
-	async markAsConsumed(planId: number): Promise<ConsumeResult> {
-		return api.post<ConsumeResult>(`/week-plan/${planId}/consume`, {})
+	async markAsConsumed(
+		planId: number,
+		options?: { myPercentage?: number; householdShares?: { userId: number; percentage: number }[] }
+	): Promise<ConsumeResult> {
+		return api.post<ConsumeResult>(`/week-plan/${planId}/consume`, options ?? {})
 	},
 
 	async addManualItems(
