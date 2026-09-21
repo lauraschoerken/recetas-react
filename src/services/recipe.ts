@@ -126,8 +126,47 @@ export const recipeService = {
 		)
 	},
 
+	async reviewImportJson(file: File): Promise<{
+		needsReview: boolean
+		conflicts: Array<{
+			key: string
+			recipeTitle: string
+			ingredientName: string
+			importedId: number | null
+			importedName: string
+			candidates: Array<{ id: number; name: string }>
+		}>
+	}> {
+		const text = await file.text()
+		const parsed = JSON.parse(text)
+		const recipes = Array.isArray(parsed)
+			? parsed
+			: Array.isArray(parsed?.recipes)
+				? parsed.recipes
+				: Array.isArray(parsed?.data)
+					? parsed.data
+					: parsed && typeof parsed === 'object' && (parsed.title || parsed.id)
+						? [parsed]
+						: []
+		return api.post<{
+			needsReview: boolean
+			conflicts: Array<{
+				key: string
+				recipeTitle: string
+				ingredientName: string
+				importedId: number | null
+				importedName: string
+				candidates: Array<{ id: number; name: string }>
+			}>
+		}>('/recipes/import/json/review', { recipes })
+	},
+
 	async importFromJson(
-		file: File
+		file: File,
+		ingredientResolutions: Record<
+			string,
+			{ ingredientId?: number | null; name?: string; createNew?: boolean }
+		> = {}
 	): Promise<{ importedCount: number; skipped: { title: string; id: number }[] }> {
 		const text = await file.text()
 		const parsed = JSON.parse(text)
@@ -142,7 +181,7 @@ export const recipeService = {
 						: []
 		return api.post<{ importedCount: number; skipped: { title: string; id: number }[] }>(
 			'/recipes/import/json',
-			{ recipes }
+			{ recipes, ingredientResolutions }
 		)
 	},
 }
