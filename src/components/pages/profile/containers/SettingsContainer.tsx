@@ -36,6 +36,7 @@ type SettingsSection =
 	| 'thresholds'
 	| 'pdf'
 	| 'backup'
+	| 'additional'
 	| 'display'
 	| 'stores'
 	| 'tags'
@@ -54,6 +55,7 @@ export function SettingsContainer() {
 		{ id: 'tags', label: t('settings.tagsSection'), icon: '🏷️' },
 		{ id: 'pdf', label: t('settings.pdfSettings'), icon: '📄' },
 		{ id: 'backup', label: t('settings.importExport'), icon: '💾' },
+		{ id: 'additional', label: t('settings.additionalSection'), icon: '🤖' },
 		{ id: 'display', label: t('settings.displaySection'), icon: '🎛️' },
 	]
 
@@ -148,6 +150,163 @@ export function SettingsContainer() {
 	)
 	const [pdfShowVisibility, setPdfShowVisibility] = useState(
 		() => localStorage.getItem('pdfShowVisibility') === 'true'
+	)
+
+	const aiRecipeTemplate = JSON.stringify(
+		{
+			title: 'Nombre de la receta',
+			description:
+				'Descripción breve de la receta. Puedes poner cualquier dato útil: texto, notas, tags, referencias, imágenes, etc.',
+			instructions: '1. Preparar\n2. Mezclar\n3. Cocinar',
+			cookTimeMinutes: 35,
+			difficulty: 'media',
+			servings: 4,
+			isPublic: false,
+			defaultLocation: null,
+			imageUrl: 'https://example.com/recipe.jpg',
+			tags: ['fácil', 'desayuno', 'semana'],
+			customCalories: null,
+			customProtein: null,
+			customCarbs: null,
+			customFat: null,
+			customFiber: null,
+			ingredients: [
+				{
+					name: 'Huevo',
+					description: 'Se puede usar crudo o cocido; el estado importa para distinguir variantes.',
+					imageUrl: 'https://example.com/egg.jpg',
+					quantity: 2,
+					unit: 'ud',
+					ingredientBaseUnit: 'ud',
+					variantName: 'Crudo',
+					cookedVariantName: 'Cocido',
+					weightFactor: 1,
+					calories: 70,
+					protein: 6,
+					carbs: 0.4,
+					fat: 5,
+					fiber: 0,
+					variants: [
+						{
+							name: 'Crudo',
+							isDefault: true,
+							weightFactor: 1,
+							calories: 70,
+							protein: 6,
+							carbs: 0.4,
+							fat: 5,
+							fiber: 0,
+						},
+						{
+							name: 'Cocido',
+							isDefault: false,
+							weightFactor: 0.93,
+							calories: 80,
+							protein: 6.5,
+							carbs: 0.5,
+							fat: 5.4,
+							fiber: 0,
+						},
+					],
+					conversions: [
+						{ unitName: 'kg', gramsPerUnit: 1000 },
+						{ unitName: 'cucharada', gramsPerUnit: 15 },
+					],
+				},
+				{
+					name: 'Arroz',
+					description: 'Se puede usar cocido o crudo según la receta.',
+					imageUrl: 'https://example.com/rice.jpg',
+					quantity: 200,
+					unit: 'g',
+					ingredientBaseUnit: 'g',
+					variantName: 'Crudo',
+					cookedVariantName: 'Cocido',
+					weightFactor: 1,
+					calories: 365,
+					protein: 7,
+					carbs: 80,
+					fat: 1,
+					fiber: 2,
+					variants: [
+						{
+							name: 'Crudo',
+							isDefault: true,
+							weightFactor: 1,
+							calories: 365,
+							protein: 7,
+							carbs: 80,
+							fat: 1,
+							fiber: 2,
+						},
+						{
+							name: 'Cocido',
+							isDefault: false,
+							weightFactor: 2.3,
+							calories: 130,
+							protein: 2.5,
+							carbs: 28,
+							fat: 0.3,
+							fiber: 0.8,
+						},
+					],
+					conversions: [
+						{ unitName: 'cucharada', gramsPerUnit: 14 },
+						{ unitName: 'taza', gramsPerUnit: 185 },
+					],
+				},
+			],
+			components: [
+				{
+					name: 'Salsa',
+					sortOrder: 1,
+					isOptional: false,
+					defaultEnabled: true,
+					options: [
+						{
+							name: 'Salsa de tomate',
+							isDefault: true,
+							ingredientName: 'Tomate triturado',
+							quantity: 150,
+							unit: 'g',
+							variantName: 'Crudo',
+						},
+						{
+							name: 'Salsa de nata',
+							isDefault: false,
+							ingredientName: 'Nata',
+							quantity: 80,
+							unit: 'ml',
+							variantName: 'Cruda',
+						},
+						{
+							name: 'Receta anidada',
+							isDefault: false,
+							recipe: {
+								title: 'Salsa base',
+								description: 'Receta interna que se usa como opción del componente.',
+								servings: 2,
+								cookTimeMinutes: 20,
+								isPublic: false,
+								ingredients: [
+									{
+										name: 'Cebolla',
+										description: 'Puede ser cruda o sofrita; el estado debe quedar claro.',
+										imageUrl: 'https://example.com/onion.jpg',
+										quantity: 100,
+										unit: 'g',
+										variantName: 'Cruda',
+										conversions: [{ unitName: 'ud', gramsPerUnit: 80 }],
+									},
+								],
+							},
+						},
+					],
+				},
+			],
+		},
+		null,
+		2
 	)
 
 	useEffect(() => {
@@ -763,6 +922,15 @@ export function SettingsContainer() {
 		}
 	}
 
+	const copyAiTemplate = async () => {
+		try {
+			await navigator.clipboard.writeText(aiRecipeTemplate)
+			toast.success(t('settings.templateCopied'))
+		} catch {
+			toast.error(t('settings.templateCopyError'))
+		}
+	}
+
 	if (loading) {
 		return <div className='loading'>{t('loading')}</div>
 	}
@@ -1151,6 +1319,40 @@ export function SettingsContainer() {
 									</label>
 								</div>
 							</div>
+						</div>
+					)}
+
+					{activeSection === 'additional' && (
+						<div className='settings-card'>
+							<h2 className='settings-card-title'>{t('settings.additionalSection')}</h2>
+							<p className='settings-card-description'>{t('settings.additionalSectionDesc')}</p>
+							<p className='settings-card-description' style={{ marginTop: '-0.25rem' }}>
+								{t('settings.additionalSectionHint')}
+							</p>
+
+							<div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+								<button className='btn btn-outline btn-sm' onClick={copyAiTemplate}>
+									{t('settings.copyTemplate')}
+								</button>
+							</div>
+
+							<textarea
+								readOnly
+								value={aiRecipeTemplate}
+								style={{
+									width: '100%',
+									height: '560px',
+									padding: '1rem',
+									borderRadius: '14px',
+									border: '1px solid var(--border-color)',
+									background: 'var(--surface-1)',
+									color: 'var(--text-primary)',
+									fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+									fontSize: '0.81rem',
+									lineHeight: 1.5,
+									resize: 'vertical',
+								}}
+							/>
 						</div>
 					)}
 
