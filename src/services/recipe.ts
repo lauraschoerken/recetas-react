@@ -96,6 +96,26 @@ export const recipeService = {
 		URL.revokeObjectURL(url)
 	},
 
+	async exportJson(ids: number[]): Promise<void> {
+		const token = localStorage.getItem('token')
+		const response = await fetch(`${RECIPE_API_URL}/recipes/export/json?ids=${ids.join(',')}`, {
+			headers: {
+				...(token ? { Authorization: `Bearer ${token}` } : {}),
+			},
+		})
+		if (!response.ok) throw new Error('Error al exportar JSON')
+		const blob = await response.blob()
+		const url = URL.createObjectURL(blob)
+		const a = document.createElement('a')
+		a.href = url
+		a.download = 'recetas.json'
+		a.style.display = 'none'
+		document.body.appendChild(a)
+		a.click()
+		a.remove()
+		URL.revokeObjectURL(url)
+	},
+
 	async importFromCsv(
 		file: File
 	): Promise<{ importedCount: number; skipped: { title: string; id: number }[] }> {
@@ -103,6 +123,26 @@ export const recipeService = {
 		return api.post<{ importedCount: number; skipped: { title: string; id: number }[] }>(
 			'/recipes/import/csv',
 			{ csv }
+		)
+	},
+
+	async importFromJson(
+		file: File
+	): Promise<{ importedCount: number; skipped: { title: string; id: number }[] }> {
+		const text = await file.text()
+		const parsed = JSON.parse(text)
+		const recipes = Array.isArray(parsed)
+			? parsed
+			: Array.isArray(parsed?.recipes)
+				? parsed.recipes
+				: Array.isArray(parsed?.data)
+					? parsed.data
+					: parsed && typeof parsed === 'object' && (parsed.title || parsed.id)
+						? [parsed]
+						: []
+		return api.post<{ importedCount: number; skipped: { title: string; id: number }[] }>(
+			'/recipes/import/json',
+			{ recipes }
 		)
 	},
 }

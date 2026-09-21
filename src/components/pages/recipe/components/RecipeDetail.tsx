@@ -13,9 +13,10 @@ import {
 } from '@/components/shared/pdf-variants-modal/PdfVariantsModal'
 import { alertService } from '@/services/alert'
 import { pdfService } from '@/services/pdf'
-import { Recipe } from '@/services/recipe'
+import { Recipe, recipeService } from '@/services/recipe'
 import { shoppingService } from '@/services/shopping'
 import { useDialog } from '@/utils/dialog/DialogContext'
+import { downloadJson } from '@/utils/exporters'
 
 interface RecipeDetailProps {
 	recipe: Recipe
@@ -35,6 +36,7 @@ export function RecipeDetail({
 	const [minServings, setMinServings] = useState('')
 	const [hasThreshold, setHasThreshold] = useState(false)
 	const [showPdfOptions, setShowPdfOptions] = useState(false)
+	const [showExportFormatModal, setShowExportFormatModal] = useState(false)
 	const [pdfComponentSelections, setPdfComponentSelections] = useState<Record<string, number>>({})
 	const [pdfQuestions, setPdfQuestions] = useState<PdfVariantsModalQuestion[]>([])
 	const [pdfRecipeCache, setPdfRecipeCache] = useState<Record<number, any>>({})
@@ -231,6 +233,17 @@ export function RecipeDetail({
 					? t('recipes.difficultyHard')
 					: null
 
+	const handleExportJson = async () => {
+		try {
+			const data = await recipeService.getById(recipe.id)
+			downloadJson(data, `receta-${recipe.title}-${new Date().toISOString().slice(0, 10)}.json`)
+			setShowExportFormatModal(false)
+			toast.success(t('recipes.jsonDownloaded'))
+		} catch {
+			toast.error(t('recipes.exportError'))
+		}
+	}
+
 	const handleExportPdf = async () => {
 		try {
 			setLoadingPdfOptions(true)
@@ -241,6 +254,7 @@ export function RecipeDetail({
 					showAuthor: localStorage.getItem('pdfShowAuthor') === 'true',
 					showVisibility: localStorage.getItem('pdfShowVisibility') === 'true',
 				})
+				setShowExportFormatModal(false)
 				toast.success(t('recipes.pdfDownloaded'))
 				return
 			}
@@ -250,6 +264,7 @@ export function RecipeDetail({
 			setPdfComponentSelections(built.selections)
 			setPdfQuestions(built.questions)
 			setShowPdfOptions(true)
+			setShowExportFormatModal(false)
 		} catch {
 			toast.error(t('recipes.pdfError'))
 		} finally {
@@ -340,7 +355,7 @@ export function RecipeDetail({
 					<button className='btn btn-outline' onClick={handleAddToShopping}>
 						{t('recipes.addToShopping')}
 					</button>
-					<button className='btn btn-outline' onClick={handleExportPdf}>
+					<button className='btn btn-outline' onClick={() => setShowExportFormatModal(true)}>
 						{t('recipes.downloadPdf')}
 					</button>
 					{isOwner && (

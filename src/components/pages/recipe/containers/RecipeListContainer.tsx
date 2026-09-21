@@ -18,6 +18,7 @@ import { normalizeText } from '@/utils/normalize'
 
 import { RecipeList } from '../components/RecipeList'
 import { RecipeFilters, RecipeFilterValues, DEFAULT_FILTERS } from '../components/RecipeFilters'
+import { downloadJson } from '@/utils/exporters'
 
 // ── Tipos para el modal de selección de variantes al exportar PDF ──
 interface MultiPdfModalState {
@@ -339,7 +340,6 @@ export function RecipeListContainer() {
 			const built = await buildMultiPdfQuestions(rootIds, {}, {})
 
 			if (built.questions.length === 0) {
-				// Sin variantes — descarga directa
 				const pdfOptions = {
 					showAuthor: localStorage.getItem('pdfShowAuthor') === 'true',
 					showVisibility: localStorage.getItem('pdfShowVisibility') === 'true',
@@ -362,6 +362,18 @@ export function RecipeListContainer() {
 			})
 		} catch {
 			toast.error(t('recipes.pdfError'))
+		}
+	}
+
+	const handleExportSelectedJson = async () => {
+		if (selectedIds.size === 0) return
+		try {
+			const ids = Array.from(selectedIds)
+			const data = await Promise.all(ids.map((id) => recipeService.getById(id)))
+			downloadJson(data, `recetas-${new Date().toISOString().slice(0, 10)}.json`)
+			toast.success(t('recipes.jsonDownloaded'))
+		} catch {
+			toast.error(t('recipes.exportError'))
 		}
 	}
 
@@ -451,10 +463,13 @@ export function RecipeListContainer() {
 		if (selectedIds.size === 0) return
 		try {
 			await recipeService.exportCsv(Array.from(selectedIds))
+			setShowExportModal(false)
 		} catch {
 			toast.error(t('recipes.exportError'))
 		}
 	}
+
+	const [showExportModal, setShowExportModal] = useState(false)
 
 	const handleImportCsv = async (file: File, inputEl: HTMLInputElement) => {
 		try {
@@ -483,6 +498,30 @@ export function RecipeListContainer() {
 			}
 		} catch (err: unknown) {
 			toast.error(err instanceof Error ? err.message : t('recipes.importCsvError'))
+		} finally {
+			loadRecipes()
+			inputEl.value = ''
+		}
+	}
+
+	const handleImportJson = async (file: File, inputEl: HTMLInputElement) => {
+		try {
+			const result = await recipeService.importFromJson(file)
+			if (result.importedCount > 0) {
+				toast.success(t('recipes.importedJson', { count: result.importedCount }))
+			}
+			if (result.skipped.length > 0) {
+				toast.info(
+					t('recipes.skippedMany', {
+						count: result.skipped.length,
+						titles: result.skipped.map((s) => s.title).join(', '),
+					})
+				)
+			} else if (result.importedCount === 0) {
+				toast.info(t('recipes.importedNone'))
+			}
+		} catch (err: unknown) {
+			toast.error(err instanceof Error ? err.message : t('recipes.importJsonError'))
 		} finally {
 			loadRecipes()
 			inputEl.value = ''
@@ -525,12 +564,16 @@ export function RecipeListContainer() {
 	const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
 		if (!file) return
-		const isCsv = file.name.endsWith('.csv') || file.type === 'text/csv'
-		if (isCsv) {
+		const lower = file.name.toLowerCase()
+		if (lower.endsWith('.csv') || file.type === 'text/csv') {
 			await handleImportCsv(file, e.target)
-		} else {
-			await handleImportPdf(file, e.target)
+			return
 		}
+		if (lower.endsWith('.json') || file.type === 'application/json') {
+			await handleImportJson(file, e.target)
+			return
+		}
+		await handleImportPdf(file, e.target)
 	}
 
 	if (loading && initialLoad) return <div className='loading'>{t('recipes.loading')}</div>
@@ -567,7 +610,7 @@ export function RecipeListContainer() {
 						{t('recipes.import')}
 						<input
 							type='file'
-							accept='.pdf,application/pdf,.csv,text/csv'
+							accept='.pdf,application/pdf,.csv,text/csv,.json,application/json'
 							ref={importFileRef}
 							onChange={handleImportFile}
 							style={{ display: 'none' }}
@@ -589,11 +632,8 @@ export function RecipeListContainer() {
 						onClick={() => setSelectedIds(new Set(visibleRecipes.map((r) => r.id)))}>
 						{t('recipes.selectAll')}
 					</button>
-					<button className='btn btn-outline btn-sm' onClick={handleExportSelectedPdf}>
+					<button className='btn btn-outline btn-sm' onClick={() => setShowExportModal(true)}>
 						{t('recipes.exportPdfSelected')}
-					</button>
-					<button className='btn btn-outline btn-sm' onClick={handleExportSelectedCsv}>
-						{t('recipes.exportCsv')}
 					</button>
 					<button className='btn btn-outline btn-sm' onClick={() => setSelectedIds(new Set())}>
 						{t('recipes.deselectAll')}
@@ -640,6 +680,42 @@ export function RecipeListContainer() {
 				onToggleSelect={handleToggleSelect}
 			/>
 
+			{showExportModal && (
+				<div className='modal-overlay' onClick={() => setShowExportModal(false)}>
+					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
+						<h3>{t('recipes.exportPdfSelected')}</h3>
+						<div className='export-modal-actions'>
+							<button
+								className='btn btn-outline'
+								onClick={() => {
+									setShowExportModal(false)
+									void handleExportSelectedPdf()
+								}}>
+								{t('recipes.exportPdfSelected')}
+							</button>
+							<button
+								className='btn btn-outline'
+								onClick={() => {
+									setShowExportModal(false)
+									void handleExportSelectedJson()
+								}}>
+								{t('recipes.exportJson')}
+							</button>
+							<button
+								className='btn btn-outline'
+								onClick={() => {
+									setShowExportModal(false)
+									void handleExportSelectedCsv()
+								}}>
+								{t('recipes.exportCsv')}
+							</button>
+							<button className='btn btn-secondary' onClick={() => setShowExportModal(false)}>
+								{t('cancel')}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 			<Pagination
 				currentPage={currentPage}
 				total={total}

@@ -9,8 +9,9 @@ import {
 	PdfVariantsModalQuestion,
 } from '@/components/shared/pdf-variants-modal/PdfVariantsModal'
 import { pdfService } from '@/services/pdf'
-import { Recipe } from '@/services/recipe'
+import { Recipe, recipeService } from '@/services/recipe'
 import { useDialog } from '@/utils/dialog/DialogContext'
+import { downloadJson } from '@/utils/exporters'
 
 interface RecipeCardProps {
 	recipe: Recipe
@@ -32,6 +33,7 @@ export function RecipeCard({
 	const { t } = useTranslation()
 	const { toast } = useDialog()
 	const [showPdfOptions, setShowPdfOptions] = useState(false)
+	const [showExportModal, setShowExportModal] = useState(false)
 	const [pdfComponentSelections, setPdfComponentSelections] = useState<Record<string, number>>({})
 	const [pdfQuestions, setPdfQuestions] = useState<PdfVariantsModalQuestion[]>([])
 	const [pdfRecipeCache, setPdfRecipeCache] = useState<Record<number, any>>({})
@@ -177,6 +179,17 @@ export function RecipeCard({
 		}
 	}
 
+	const handleExportJson = async () => {
+		try {
+			const data = await recipeService.getById(recipe.id)
+			downloadJson(data, `receta-${recipe.title}-${new Date().toISOString().slice(0, 10)}.json`)
+			setShowExportModal(false)
+			toast.success(t('recipes.jsonDownloaded'))
+		} catch {
+			toast.error(t('recipes.exportError'))
+		}
+	}
+
 	const handleDownloadPdf = async () => {
 		try {
 			setLoadingPdfOptions(true)
@@ -189,6 +202,7 @@ export function RecipeCard({
 				setPdfComponentSelections(built.selections)
 				setPdfQuestions(built.questions)
 				setShowPdfOptions(true)
+				setShowExportModal(false)
 				return
 			}
 
@@ -196,6 +210,7 @@ export function RecipeCard({
 				showAuthor: localStorage.getItem('pdfShowAuthor') === 'true',
 				showVisibility: localStorage.getItem('pdfShowVisibility') === 'true',
 			})
+			setShowExportModal(false)
 			toast.success(t('recipes.pdfDownloaded'))
 		} catch {
 			toast.error(t('recipes.pdfError'))
@@ -250,12 +265,41 @@ export function RecipeCard({
 				currentUserId={currentUserId}
 				onDelete={onDelete}
 				onAddToWeek={() => onAddToWeek(recipe)}
-				onDownloadPdf={handleDownloadPdf}
+				onDownloadPdf={() => setShowExportModal(true)}
 				editPath={`/recipes/${recipe.id}/edit`}
 				detailPath={`/recipes/${recipe.id}`}
 				isSelected={isSelected}
 				onSelect={onSelect ? () => onSelect(recipe.id) : undefined}
 			/>
+
+			{showExportModal && (
+				<div className='modal-overlay' onClick={() => setShowExportModal(false)}>
+					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
+						<h3>{t('recipes.exportPdfSelected')}</h3>
+						<div className='export-modal-actions'>
+							<button
+								className='btn btn-outline'
+								onClick={() => {
+									setShowExportModal(false)
+									void handleDownloadPdf()
+								}}>
+								{t('recipes.exportPdfSelected')}
+							</button>
+							<button
+								className='btn btn-outline'
+								onClick={() => {
+									setShowExportModal(false)
+									void handleExportJson()
+								}}>
+								{t('recipes.exportJson')}
+							</button>
+							<button className='btn btn-secondary' onClick={() => setShowExportModal(false)}>
+								{t('cancel')}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 
 			<PdfVariantsModal
 				isOpen={showPdfOptions && pdfQuestions.length > 0}

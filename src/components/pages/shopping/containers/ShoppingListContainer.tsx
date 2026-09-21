@@ -8,6 +8,7 @@ import { ingredientTagService } from '@/services/ingredientExtras'
 import { ShoppingItem, shoppingService } from '@/services/shopping'
 import { storeService, UserStore } from '@/services/store'
 import { useDialog } from '@/utils/dialog/DialogContext'
+import { downloadJson } from '@/utils/exporters'
 import { normalizeText } from '@/utils/normalize'
 
 import { ShoppingList } from '../components/ShoppingList'
@@ -441,6 +442,27 @@ export function ShoppingListContainer() {
 		}
 	}
 
+	const handleExportJson = async () => {
+		setExporting(true)
+		try {
+			const payload = exportItems.map((i) => {
+				const { quantity, unit } = getEffectiveQtyAndUnit(i, quantityOverrides, unitOverrides)
+				return {
+					name: i.name,
+					quantity: Number(quantity.toFixed(2)),
+					unit,
+					ingredientId: i.ingredientId,
+				}
+			})
+			downloadJson(payload, `lista-compra-${new Date().toISOString().slice(0, 10)}.json`)
+			setShowExportModal(false)
+		} catch {
+			toast.error(t('shopping.exportError'))
+		} finally {
+			setExporting(false)
+		}
+	}
+
 	const excludedItemsList = allItems.filter((item) => excludedItems.has(item.ingredientId))
 
 	return (
@@ -718,6 +740,12 @@ export function ShoppingListContainer() {
 								disabled={exporting || exportItems.length === 0}
 								onClick={handleExportClipboard}>
 								📋 {t('shopping.exportClipboard')}
+							</button>
+							<button
+								className='btn btn-outline'
+								disabled={exporting || exportItems.length === 0}
+								onClick={handleExportJson}>
+								🧾 {t('shopping.exportJson')}
 							</button>
 							<button
 								className='btn btn-primary'
