@@ -375,22 +375,22 @@ export function IngredientFormModal({
 	const [imageUrl, setImageUrl] = useState('')
 	const [location, setLocation] = useState('')
 
+	const createDefaultVariantDraft = (): VariantDraft => ({
+		id: 'v0',
+		name: 'Crudo',
+		isDefault: true,
+		calories: '',
+		protein: '',
+		carbs: '',
+		fat: '',
+		fiber: '',
+	})
+
 	// Estado creacion
 	const [addMode, setAddMode] = useState<'single' | 'multiple'>('single')
 	const [newUnit, setNewUnit] = useState<'g' | 'ml'>('g')
 	const [newMinQuantity, setNewMinQuantity] = useState('')
-	const [newVariants, setNewVariants] = useState<VariantDraft[]>([
-		{
-			id: 'v0',
-			name: 'Crudo',
-			isDefault: true,
-			calories: '',
-			protein: '',
-			carbs: '',
-			fat: '',
-			fiber: '',
-		},
-	])
+	const [newVariants, setNewVariants] = useState<VariantDraft[]>([createDefaultVariantDraft()])
 	const [showConversions, setShowConversions] = useState(false)
 	const [newConversions, setNewConversions] = useState<ConversionDraft[]>([])
 	const [newPreferredUnit, setNewPreferredUnit] = useState('')
@@ -492,18 +492,8 @@ export function IngredientFormModal({
 			setAddMode('single')
 			setNewUnit('g')
 			setNewMinQuantity('')
-			setNewVariants([
-				{
-					id: 'v0',
-					name: 'Crudo',
-					isDefault: true,
-					calories: '',
-					protein: '',
-					carbs: '',
-					fat: '',
-					fiber: '',
-				},
-			])
+			const hasExplicitCreationPayload = Boolean(defaultName?.trim())
+			setNewVariants(hasExplicitCreationPayload ? [] : [createDefaultVariantDraft()])
 			setShowConversions(false)
 			setNewConversions([])
 			setNewPreferredUnit('')
@@ -582,6 +572,19 @@ export function IngredientFormModal({
 		e.preventDefault()
 		if (!name.trim()) return
 
+		const hasExplicitVariantInfo = newVariants.some(
+			(v) =>
+				v.name.trim() ||
+				v.calories.trim() ||
+				v.protein.trim() ||
+				v.carbs.trim() ||
+				v.fat.trim() ||
+				v.fiber.trim()
+		)
+		const shouldUseDefaultRawVariant =
+			!defaultName?.trim() &&
+			!hasExplicitVariantInfo
+
 		const validVariants = newVariants
 			.filter((v) => v.name.trim())
 			.map((v) => ({
@@ -593,7 +596,7 @@ export function IngredientFormModal({
 				fat: v.fat ? Number(v.fat) : undefined,
 				fiber: v.fiber ? Number(v.fiber) : undefined,
 			}))
-		if (validVariants.length === 0) {
+		if (validVariants.length === 0 && shouldUseDefaultRawVariant) {
 			validVariants.push({
 				name: 'Crudo',
 				isDefault: true,
@@ -604,7 +607,7 @@ export function IngredientFormModal({
 				fiber: undefined,
 			})
 		}
-		if (!validVariants.some((v) => v.isDefault)) validVariants[0].isDefault = true
+		if (!validVariants.some((v) => v.isDefault) && validVariants.length > 0) validVariants[0].isDefault = true
 
 		try {
 			const created = await ingredientService.create({

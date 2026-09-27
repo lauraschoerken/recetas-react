@@ -6,6 +6,15 @@ const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(
 const API_PREFIX = (import.meta.env.VITE_API_PREFIX as string | undefined) ?? '/api'
 const RECIPE_API_URL = API_MODE === 'mock' ? '' : `${API_BASE}${API_PREFIX}`
 
+const normalizeRecipeJsonPayload = (payload: unknown): unknown[] => {
+	const parsed = typeof payload === 'string' ? JSON.parse(payload) : payload
+	if (Array.isArray(parsed)) return parsed
+	if (Array.isArray(parsed?.recipes)) return parsed.recipes
+	if (Array.isArray(parsed?.data)) return parsed.data
+	if (parsed && typeof parsed === 'object' && (parsed.title || parsed.id)) return [parsed]
+	return []
+}
+
 export type {
 	CreateComponentData,
 	CreateComponentOptionData,
@@ -138,16 +147,21 @@ export const recipeService = {
 		}>
 	}> {
 		const text = await file.text()
-		const parsed = JSON.parse(text)
-		const recipes = Array.isArray(parsed)
-			? parsed
-			: Array.isArray(parsed?.recipes)
-				? parsed.recipes
-				: Array.isArray(parsed?.data)
-					? parsed.data
-					: parsed && typeof parsed === 'object' && (parsed.title || parsed.id)
-						? [parsed]
-						: []
+		return this.reviewImportJsonText(text)
+	},
+
+	async reviewImportJsonText(text: string): Promise<{
+		needsReview: boolean
+		conflicts: Array<{
+			key: string
+			recipeTitle: string
+			ingredientName: string
+			importedId: number | null
+			importedName: string
+			candidates: Array<{ id: number; name: string }>
+		}>
+	}> {
+		const recipes = normalizeRecipeJsonPayload(text)
 		return api.post<{
 			needsReview: boolean
 			conflicts: Array<{
@@ -169,16 +183,17 @@ export const recipeService = {
 		> = {}
 	): Promise<{ importedCount: number; skipped: { title: string; id: number }[] }> {
 		const text = await file.text()
-		const parsed = JSON.parse(text)
-		const recipes = Array.isArray(parsed)
-			? parsed
-			: Array.isArray(parsed?.recipes)
-				? parsed.recipes
-				: Array.isArray(parsed?.data)
-					? parsed.data
-					: parsed && typeof parsed === 'object' && (parsed.title || parsed.id)
-						? [parsed]
-						: []
+		return this.importFromJsonText(text, ingredientResolutions)
+	},
+
+	async importFromJsonText(
+		text: string,
+		ingredientResolutions: Record<
+			string,
+			{ ingredientId?: number | null; name?: string; createNew?: boolean }
+		> = {}
+	): Promise<{ importedCount: number; skipped: { title: string; id: number }[] }> {
+		const recipes = normalizeRecipeJsonPayload(text)
 		return api.post<{ importedCount: number; skipped: { title: string; id: number }[] }>(
 			'/recipes/import/json',
 			{ recipes, ingredientResolutions }

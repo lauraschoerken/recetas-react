@@ -339,6 +339,10 @@ export function RecipeListContainer() {
 	}
 
 	const importFileRef = useRef<HTMLInputElement>(null)
+	const [showImportSourceModal, setShowImportSourceModal] = useState(false)
+	const [showImportTextModal, setShowImportTextModal] = useState(false)
+	const [importJsonText, setImportJsonText] = useState('')
+	const [importJsonTextError, setImportJsonTextError] = useState('')
 
 	const handleToggleSelect = (id: number) => {
 		setSelectedIds((prev) => {
@@ -555,6 +559,59 @@ export function RecipeListContainer() {
 		}
 	}
 
+	const handleImportJsonText = async () => {
+		const text = importJsonText.trim()
+		if (!text) {
+			setImportJsonTextError(t('recipes.importJsonTextEmpty'))
+			return
+		}
+		try {
+			JSON.parse(text)
+		} catch {
+			setImportJsonTextError(t('recipes.importJsonTextInvalid'))
+			return
+		}
+
+		const file = new File([text], 'imported-recipes.json', { type: 'application/json' })
+		try {
+			const review = await recipeService.reviewImportJsonText(text)
+			if (review.needsReview && review.conflicts.length > 0) {
+				setImportReview({
+					file,
+					conflicts: review.conflicts,
+					resolutions: {},
+				})
+				setShowImportSourceModal(false)
+				setImportJsonText('')
+				setImportJsonTextError('')
+				return
+			}
+
+			const result = await recipeService.importFromJsonText(text)
+			if (result.importedCount > 0) {
+				toast.success(t('recipes.importedJson', { count: result.importedCount }))
+			}
+			if (result.skipped.length > 0) {
+				toast.info(
+					t('recipes.skippedMany', {
+						count: result.skipped.length,
+						titles: result.skipped.map((s) => s.title).join(', '),
+					})
+				)
+			} else if (result.importedCount === 0) {
+				toast.info(t('recipes.importedNone'))
+			}
+		} catch (err: unknown) {
+			toast.error(err instanceof Error ? err.message : t('recipes.importJsonError'))
+		} finally {
+			loadRecipes()
+			setShowImportSourceModal(false)
+			setShowImportTextModal(false)
+			setImportJsonText('')
+			setImportJsonTextError('')
+		}
+	}
+
 	const handleImportReviewConfirm = async () => {
 		if (!importReview) return
 		const hasUnresolved = importReview.conflicts.some(
@@ -675,21 +732,96 @@ export function RecipeListContainer() {
 			<div className='page-header'>
 				<h1 className='page-title'>{t('recipes.title')}</h1>
 				<div className='page-header-actions'>
-					<label className='btn btn-outline' style={{ cursor: 'pointer' }}>
+					<button
+						type='button'
+						className='btn btn-outline'
+						onClick={() => setShowImportSourceModal(true)}>
 						{t('recipes.import')}
-						<input
-							type='file'
-							accept='.pdf,application/pdf,.csv,text/csv,.json,application/json'
-							ref={importFileRef}
-							onChange={handleImportFile}
-							style={{ display: 'none' }}
-						/>
-					</label>
+					</button>
 					<Link to='/recipes/new' className='btn btn-primary'>
 						{t('recipes.new')}
 					</Link>
 				</div>
 			</div>
+
+			{showImportSourceModal && (
+				<div className='modal-overlay' onClick={() => setShowImportSourceModal(false)}>
+					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
+						<h3>{t('recipes.importSourceTitle')}</h3>
+						<div
+							className='export-modal-actions'
+							style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+							<button
+								type='button'
+								className='btn btn-primary'
+								onClick={() => {
+									setShowImportSourceModal(false)
+									requestAnimationFrame(() => importFileRef.current?.click())
+								}}>
+								{t('recipes.importFromFile')}
+							</button>
+							<button
+								type='button'
+								className='btn btn-outline'
+								onClick={() => {
+									setImportJsonTextError('')
+									setShowImportSourceModal(false)
+									setShowImportTextModal(true)
+								}}>
+								{t('recipes.importFromText')}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{showImportTextModal && (
+				<div className='modal-overlay' onClick={() => setShowImportTextModal(false)}>
+					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
+						<h3>{t('recipes.importJsonTextTitle')}</h3>
+						<textarea
+							id='recipe-json-paste-box'
+							className='form-input'
+							value={importJsonText}
+							onChange={(e) => setImportJsonText(e.target.value)}
+							placeholder={t('recipes.importJsonTextPlaceholder')}
+							rows={18}
+							style={{ width: '100%', minHeight: '260px', resize: 'vertical' }}
+						/>
+						{importJsonTextError && <div className='field-error'>{importJsonTextError}</div>}
+						<div
+							className='export-modal-actions'
+							style={{
+								display: 'flex',
+								justifyContent: 'flex-end',
+								gap: '0.75rem',
+								marginTop: '1rem',
+							}}>
+							<button type='button' className='btn btn-primary' onClick={handleImportJsonText}>
+								{t('recipes.importJsonTextAction')}
+							</button>
+							<button
+								type='button'
+								className='btn btn-outline'
+								onClick={() => {
+									setShowImportTextModal(false)
+									setImportJsonText('')
+									setImportJsonTextError('')
+								}}>
+								{t('common.cancel')}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			<input
+				type='file'
+				accept='.pdf,application/pdf,.csv,text/csv,.json,application/json'
+				ref={importFileRef}
+				onChange={handleImportFile}
+				style={{ display: 'none' }}
+			/>
 
 			{selectedIds.size > 0 && (
 				<div className='recipe-selection-bar'>
