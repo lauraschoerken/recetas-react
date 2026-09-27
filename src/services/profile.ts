@@ -1,11 +1,4 @@
-import type {
-	ActivityLevel,
-	DailyNutrition,
-	Goal,
-	RecommendedMacros,
-	UserProfile,
-	WeeklyNutrition,
-} from '@/models'
+import type { DailyNutrition, RecommendedMacros, UserProfile, WeeklyNutrition } from '@/models'
 import { api } from '@/services/api'
 
 export type {
@@ -16,20 +9,6 @@ export type {
 	UserProfile,
 	WeeklyNutrition,
 } from '@/models'
-
-export const ACTIVITY_LEVEL_LABELS: Record<ActivityLevel, string> = {
-	sedentary: 'Sedentario (poco o nada de ejercicio)',
-	light: 'Ligero (ejercicio 1-3 días/semana)',
-	moderate: 'Moderado (ejercicio 3-5 días/semana)',
-	active: 'Activo (ejercicio 6-7 días/semana)',
-	very_active: 'Muy activo (ejercicio intenso diario)',
-}
-
-export const GOAL_LABELS: Record<Goal, string> = {
-	maintain: 'Mantener peso',
-	lose: 'Perder peso',
-	gain: 'Ganar peso/músculo',
-}
 
 class ProfileService {
 	async getProfile(): Promise<UserProfile> {

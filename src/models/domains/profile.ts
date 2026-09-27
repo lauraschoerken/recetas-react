@@ -12,10 +12,10 @@ export interface UserProfile {
 	gender?: Gender
 	activityLevel?: ActivityLevel
 	goal?: Goal
-	customCalories?: number
-	customProtein?: number
-	customCarbs?: number
-	customFat?: number
+	customCalories?: number | null
+	customProtein?: number | null
+	customCarbs?: number | null
+	customFat?: number | null
 }
 
 export interface RecommendedMacros {
@@ -23,8 +23,14 @@ export interface RecommendedMacros {
 	protein: number
 	carbs: number
 	fat: number
+	fiber: number
 	bmr: number
 	tdee: number
+	method: 'Mifflin-St Jeor'
+	proteinPerKg: number
+	referenceWeight: number
+	calorieAdjustmentPercent: number
+	calorieFloorApplied: boolean
 }
 
 export interface WeeklyNutrition {

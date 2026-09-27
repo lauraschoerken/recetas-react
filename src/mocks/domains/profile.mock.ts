@@ -22,8 +22,14 @@ export const mockRecommendedMacros = (
 	protein: 140,
 	carbs: 220,
 	fat: 65,
+	fiber: 25,
 	bmr: 1450,
 	tdee: 2150,
+	method: 'Mifflin-St Jeor',
+	proteinPerKg: 1.4,
+	referenceWeight: 70,
+	calorieAdjustmentPercent: 0,
+	calorieFloorApplied: false,
 	...overrides,
 })
 

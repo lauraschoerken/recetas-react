@@ -5,10 +5,8 @@ import { useTranslation } from 'react-i18next'
 
 import { authService } from '@/services/auth'
 import {
-	ACTIVITY_LEVEL_LABELS,
 	ActivityLevel,
 	Goal,
-	GOAL_LABELS,
 	profileService,
 	RecommendedMacros,
 	UserProfile,
@@ -16,6 +14,9 @@ import {
 import { useDialog } from '@/utils/dialog/DialogContext'
 
 type ProfileSection = 'macros' | 'account'
+
+const ACTIVITY_LEVELS: ActivityLevel[] = ['sedentary', 'light', 'moderate', 'active', 'very_active']
+const GOALS: Goal[] = ['maintain', 'lose', 'gain']
 
 export function MacrosContainer() {
 	const { t } = useTranslation()
@@ -75,13 +76,14 @@ export function MacrosContainer() {
 			const dataToSave = { ...profile }
 
 			if (!useCustomMacros) {
-				dataToSave.customCalories = undefined
-				dataToSave.customProtein = undefined
-				dataToSave.customCarbs = undefined
-				dataToSave.customFat = undefined
+				dataToSave.customCalories = null
+				dataToSave.customProtein = null
+				dataToSave.customCarbs = null
+				dataToSave.customFat = null
 			}
 
-			await profileService.updateProfile(dataToSave)
+			const savedProfile = await profileService.updateProfile(dataToSave)
+			setProfile(savedProfile)
 			const macros = await profileService.getRecommendedMacros()
 			setRecommendedMacros(macros)
 			toast.success(t('profile.saved'))
@@ -141,7 +143,14 @@ export function MacrosContainer() {
 		return <div className='loading'>{t('settings.loading')}</div>
 	}
 
-	const hasRequiredData = profile.weight && profile.height && profile.age && profile.gender
+	const hasRequiredData = Boolean(
+		profile.weight &&
+			profile.height &&
+			profile.age &&
+			profile.gender &&
+			profile.activityLevel &&
+			profile.goal
+	)
 
 	return (
 		<div className='macros-container'>
@@ -183,6 +192,8 @@ export function MacrosContainer() {
 													}
 													placeholder='70'
 													step='0.1'
+													min='25'
+													max='350'
 												/>
 											</div>
 											<div className='form-group'>
@@ -195,6 +206,8 @@ export function MacrosContainer() {
 														handleChange('height', parseFloat(e.target.value) || undefined)
 													}
 													placeholder='175'
+													min='100'
+													max='250'
 												/>
 											</div>
 										</div>
@@ -210,6 +223,8 @@ export function MacrosContainer() {
 														handleChange('age', parseInt(e.target.value) || undefined)
 													}
 													placeholder='30'
+													min='18'
+													max='120'
 												/>
 											</div>
 											<div className='form-group'>
@@ -234,13 +249,14 @@ export function MacrosContainer() {
 											<label className='form-label'>{t('profile.activityLevel')}</label>
 											<select
 												className='form-input'
-												value={profile.activityLevel || 'moderate'}
+												value={profile.activityLevel || ''}
 												onChange={(e) =>
 													handleChange('activityLevel', e.target.value as ActivityLevel)
 												}>
-												{Object.entries(ACTIVITY_LEVEL_LABELS).map(([value, label]) => (
+												<option value=''>{t('profile.selectActivity')}</option>
+												{ACTIVITY_LEVELS.map((value) => (
 													<option key={value} value={value}>
-														{label}
+														{t(`profile.activityLevels.${value}`)}
 													</option>
 												))}
 											</select>
@@ -249,13 +265,13 @@ export function MacrosContainer() {
 										<div className='form-group'>
 											<label className='form-label'>{t('profile.goal')}</label>
 											<div className='goal-options'>
-												{Object.entries(GOAL_LABELS).map(([value, label]) => (
+												{GOALS.map((value) => (
 													<button
 														key={value}
 														type='button'
 														className={`goal-btn ${profile.goal === value ? 'active' : ''}`}
 														onClick={() => handleChange('goal', value as Goal)}>
-														<span>{label}</span>
+														<span>{t(`profile.goals.${value}`)}</span>
 													</button>
 												))}
 											</div>
@@ -299,6 +315,22 @@ export function MacrosContainer() {
 												<span className='macro-label'>{t('profile.fat')}</span>
 												<span className='macro-value'>{recommendedMacros.fat}g</span>
 											</div>
+											<div className='macro-row'>
+												<span className='macro-label'>{t('profile.fiber')}</span>
+												<span className='macro-value'>{recommendedMacros.fiber}g</span>
+											</div>
+											<p className='macros-method-note'>
+												{t('profile.calculationDetails', {
+													method: recommendedMacros.method,
+													adjustment: recommendedMacros.calorieAdjustmentPercent,
+													protein: recommendedMacros.proteinPerKg,
+													referenceWeight: recommendedMacros.referenceWeight,
+												})}
+											</p>
+											{recommendedMacros.calorieFloorApplied && (
+												<p className='macros-method-note'>{t('profile.calorieFloorNote')}</p>
+											)}
+											<p className='macros-method-note'>{t('profile.estimateDisclaimer')}</p>
 										</div>
 									) : null}
 

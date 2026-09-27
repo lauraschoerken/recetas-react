@@ -752,7 +752,20 @@
 		"male": "Male",
 		"female": "Female",
 		"activityLevel": "Activity Level",
+		"selectActivity": "Select activity...",
+		"activityLevels": {
+			"sedentary": "Sedentary (little or no exercise)",
+			"light": "Light (exercise 1-3 days/week)",
+			"moderate": "Moderate (exercise 3-5 days/week)",
+			"active": "Active (exercise 6-7 days/week)",
+			"very_active": "Very active (intense exercise daily)"
+		},
 		"goal": "Goal",
+		"goals": {
+			"maintain": "Maintain weight",
+			"lose": "Lose weight",
+			"gain": "Gain weight/muscle"
+		},
 		"recommendedMacros": "Recommended Macros",
 		"completeData": "Complete your personal data to see recommended macros",
 		"bmr": "Basal Metabolic Rate (BMR)",
@@ -761,6 +774,10 @@
 		"protein": "Protein",
 		"carbs": "Carbohydrates",
 		"fat": "Fat",
+		"fiber": "Fiber",
+		"calculationDetails": "{{method}} · calorie adjustment {{adjustment}}% · protein {{protein}} g/kg using {{referenceWeight}} kg reference weight.",
+		"calorieFloorNote": "The configured calorie safety floor has been applied.",
+		"estimateDisclaimer": "This is a starting estimate, not medical advice. Review your trend over 2-3 weeks and adjust if weight or performance is not following the goal.",
 		"useCustomMacros": "Use custom macros",
 		"dailyCalories": "Daily calories",
 		"proteinG": "Protein (g)",

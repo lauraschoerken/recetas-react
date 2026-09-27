@@ -1,13 +1,13 @@
 ﻿.macros-container {
-	max-width: 900px;
+	max-width: 1280px;
 	margin: 0 auto;
 	padding: 2rem;
 }
 
 .macros-grid {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 1.5rem;
+	grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.9fr);
+	gap: 2rem;
 	margin-top: 1.5rem;
 }
 
@@ -15,7 +15,7 @@
 	background: var(--card-background);
 	border: 1px solid var(--border-color);
 	border-radius: var(--radius-lg);
-	padding: 1.5rem;
+	padding: 2rem;
 }
 
 .macros-card-title {
@@ -34,7 +34,39 @@
 .macros-form {
 	display: flex;
 	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.macros-card .form-row {
 	gap: 1rem;
+}
+
+.macros-card .form-input {
+	width: 100%;
+}
+
+.macros-card .macros-display {
+	padding: 0;
+	background: radial-gradient(
+		circle at center,
+		color-mix(in srgb, var(--primary-color) 8%, transparent),
+		transparent 68%
+	);
+	border: 0;
+	box-shadow: none;
+}
+
+.macros-card .macro-row {
+	gap: 1.5rem;
+	padding: 0.625rem 0;
+}
+
+.macros-card .macro-label {
+	line-height: 1.4;
+}
+
+.macros-card .macro-value {
+	flex-shrink: 0;
 }
 
 .macros-empty {
@@ -45,10 +77,31 @@
 	border-radius: var(--radius);
 }
 
+.macros-method-note {
+	margin: 1.25rem 0 0;
+	padding-top: 1rem;
+	border-top: 1px solid var(--border-color);
+	font-size: 0.8125rem;
+	line-height: 1.55;
+	color: var(--text-secondary);
+}
+
+.macros-method-note + .macros-method-note {
+	margin-top: 0.75rem;
+	padding-top: 0;
+	border-top: 0;
+}
+
 .macros-actions {
 	margin-top: 2rem;
 	display: flex;
 	justify-content: center;
+}
+
+@media (min-width: 48.0625rem) and (max-width: 64rem) {
+	.macros-grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 @media (max-width: 48rem) {

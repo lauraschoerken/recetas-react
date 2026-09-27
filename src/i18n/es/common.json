@@ -756,7 +756,20 @@
 		"male": "Hombre",
 		"female": "Mujer",
 		"activityLevel": "Nivel de Actividad",
+		"selectActivity": "Seleccionar actividad...",
+		"activityLevels": {
+			"sedentary": "Sedentario (poco o nada de ejercicio)",
+			"light": "Ligero (ejercicio 1-3 días/semana)",
+			"moderate": "Moderado (ejercicio 3-5 días/semana)",
+			"active": "Activo (ejercicio 6-7 días/semana)",
+			"very_active": "Muy activo (ejercicio intenso diario)"
+		},
 		"goal": "Objetivo",
+		"goals": {
+			"maintain": "Mantener peso",
+			"lose": "Perder peso",
+			"gain": "Ganar peso/músculo"
+		},
 		"recommendedMacros": "Macros Recomendados",
 		"completeData": "Completa tus datos personales para ver los macros recomendados",
 		"bmr": "Metabolismo Basal (BMR)",
@@ -765,6 +778,10 @@
 		"protein": "Proteína",
 		"carbs": "Carbohidratos",
 		"fat": "Grasa",
+		"fiber": "Fibra",
+		"calculationDetails": "{{method}} · ajuste calórico {{adjustment}}% · proteína {{protein}} g/kg sobre {{referenceWeight}} kg de referencia.",
+		"calorieFloorNote": "Se ha aplicado el mínimo calórico de seguridad configurado.",
+		"estimateDisclaimer": "Es una estimación inicial, no una prescripción médica. Revisa la evolución durante 2-3 semanas y ajusta si tu peso o rendimiento no siguen el objetivo.",
 		"useCustomMacros": "Usar macros personalizados",
 		"dailyCalories": "Calorías diarias",
 		"proteinG": "Proteína (g)",
