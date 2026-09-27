@@ -47,7 +47,7 @@ export function RecipeJsonTextModal({
 						{t('recipes.importJsonTextAction')}
 					</button>
 					<button type='button' className='btn btn-outline' onClick={onClose}>
-						{t('common.cancel')}
+						{t('cancel')}
 					</button>
 				</div>
 			</div>
