@@ -356,7 +356,7 @@ export function RecipeDetail({
 						{t('recipes.addToShopping')}
 					</button>
 					<button className='btn btn-outline' onClick={() => setShowExportFormatModal(true)}>
-						{t('recipes.downloadPdf')}
+						{t('recipes.exportPdfSelected')}
 					</button>
 					{isOwner && (
 						<>
@@ -542,6 +542,35 @@ export function RecipeDetail({
 						).map((line, index) => (
 							<p key={index}>{line}</p>
 						))}
+					</div>
+				</div>
+			)}
+
+			{showExportFormatModal && (
+				<div className='modal-overlay' onClick={() => setShowExportFormatModal(false)}>
+					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
+						<h3>{t('recipes.exportPdfSelected')}</h3>
+						<div className='export-modal-actions'>
+							<button
+								className='btn btn-outline'
+								onClick={() => {
+									setShowExportFormatModal(false)
+									void handleExportPdf()
+								}}>
+								{t('recipes.exportPdfSelected')}
+							</button>
+							<button
+								className='btn btn-outline'
+								onClick={() => {
+									setShowExportFormatModal(false)
+									void handleExportJson()
+								}}>
+								{t('recipes.exportJson')}
+							</button>
+							<button className='btn btn-secondary' onClick={() => setShowExportFormatModal(false)}>
+								{t('cancel')}
+							</button>
+						</div>
 					</div>
 				</div>
 			)}
