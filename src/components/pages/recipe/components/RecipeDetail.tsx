@@ -11,6 +11,7 @@ import {
 	PdfVariantsModal,
 	PdfVariantsModalQuestion,
 } from '@/components/shared/pdf-variants-modal/PdfVariantsModal'
+import { RecipeExportModal } from '@/components/shared/recipe-export-modal/RecipeExportModal'
 import { alertService } from '@/services/alert'
 import { pdfService } from '@/services/pdf'
 import { Recipe, recipeService } from '@/services/recipe'
@@ -546,34 +547,12 @@ export function RecipeDetail({
 				</div>
 			)}
 
-			{showExportFormatModal && (
-				<div className='modal-overlay' onClick={() => setShowExportFormatModal(false)}>
-					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
-						<h3>{t('recipes.exportPdfSelected')}</h3>
-						<div className='export-modal-actions'>
-							<button
-								className='btn btn-outline'
-								onClick={() => {
-									setShowExportFormatModal(false)
-									void handleExportPdf()
-								}}>
-								{t('recipes.exportPdfSelected')}
-							</button>
-							<button
-								className='btn btn-outline'
-								onClick={() => {
-									setShowExportFormatModal(false)
-									void handleExportJson()
-								}}>
-								{t('recipes.exportJson')}
-							</button>
-							<button className='btn btn-secondary' onClick={() => setShowExportFormatModal(false)}>
-								{t('cancel')}
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
+			<RecipeExportModal
+				isOpen={showExportFormatModal}
+				onClose={() => setShowExportFormatModal(false)}
+				onExportPdf={() => void handleExportPdf()}
+				onExportJson={() => void handleExportJson()}
+			/>
 
 			<PdfVariantsModal
 				isOpen={showPdfOptions && pdfQuestions.length > 0}
