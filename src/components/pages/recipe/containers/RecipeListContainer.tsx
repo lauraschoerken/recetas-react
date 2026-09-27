@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
 import { Pagination } from '@/components/shared/pagination/Pagination'
@@ -8,17 +8,19 @@ import {
 	PdfVariantsModal,
 	PdfVariantsModalQuestion,
 } from '@/components/shared/pdf-variants-modal/PdfVariantsModal'
+import { RecipeImportSourceModal } from '@/components/shared/recipe-import-modal/RecipeImportSourceModal'
+import { RecipeJsonTextModal } from '@/components/shared/recipe-import-modal/RecipeJsonTextModal'
 import { authService } from '@/services/auth'
-import { Recipe, recipeService } from '@/services/recipe'
-import { pdfService } from '@/services/pdf'
 import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras'
+import { pdfService } from '@/services/pdf'
+import { Recipe, recipeService } from '@/services/recipe'
 import { useDialog } from '@/utils/dialog/DialogContext'
-import { getStoredPageSize } from '@/utils/pagination/usePagination'
-import { normalizeText } from '@/utils/normalize'
-
-import { RecipeList } from '../components/RecipeList'
-import { RecipeFilters, RecipeFilterValues, DEFAULT_FILTERS } from '../components/RecipeFilters'
 import { downloadJson } from '@/utils/exporters'
+import { normalizeText } from '@/utils/normalize'
+import { getStoredPageSize } from '@/utils/pagination/usePagination'
+
+import { DEFAULT_FILTERS, RecipeFilters, RecipeFilterValues } from '../components/RecipeFilters'
+import { RecipeList } from '../components/RecipeList'
 
 // ── Tipos para el modal de selección de variantes al exportar PDF ──
 interface MultiPdfModalState {
@@ -744,76 +746,30 @@ export function RecipeListContainer() {
 				</div>
 			</div>
 
-			{showImportSourceModal && (
-				<div className='modal-overlay' onClick={() => setShowImportSourceModal(false)}>
-					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
-						<h3>{t('recipes.importSourceTitle')}</h3>
-						<div
-							className='export-modal-actions'
-							style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-							<button
-								type='button'
-								className='btn btn-primary'
-								onClick={() => {
-									setShowImportSourceModal(false)
-									requestAnimationFrame(() => importFileRef.current?.click())
-								}}>
-								{t('recipes.importFromFile')}
-							</button>
-							<button
-								type='button'
-								className='btn btn-outline'
-								onClick={() => {
-									setImportJsonTextError('')
-									setShowImportSourceModal(false)
-									setShowImportTextModal(true)
-								}}>
-								{t('recipes.importFromText')}
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
+			<RecipeImportSourceModal
+				isOpen={showImportSourceModal}
+				onClose={() => setShowImportSourceModal(false)}
+				onImportFromFile={() => {
+					requestAnimationFrame(() => importFileRef.current?.click())
+				}}
+				onImportFromText={() => {
+					setImportJsonTextError('')
+					setShowImportTextModal(true)
+				}}
+			/>
 
-			{showImportTextModal && (
-				<div className='modal-overlay' onClick={() => setShowImportTextModal(false)}>
-					<div className='modal-card' onClick={(e) => e.stopPropagation()}>
-						<h3>{t('recipes.importJsonTextTitle')}</h3>
-						<textarea
-							id='recipe-json-paste-box'
-							className='form-input'
-							value={importJsonText}
-							onChange={(e) => setImportJsonText(e.target.value)}
-							placeholder={t('recipes.importJsonTextPlaceholder')}
-							rows={18}
-							style={{ width: '100%', minHeight: '260px', resize: 'vertical' }}
-						/>
-						{importJsonTextError && <div className='field-error'>{importJsonTextError}</div>}
-						<div
-							className='export-modal-actions'
-							style={{
-								display: 'flex',
-								justifyContent: 'flex-end',
-								gap: '0.75rem',
-								marginTop: '1rem',
-							}}>
-							<button type='button' className='btn btn-primary' onClick={handleImportJsonText}>
-								{t('recipes.importJsonTextAction')}
-							</button>
-							<button
-								type='button'
-								className='btn btn-outline'
-								onClick={() => {
-									setShowImportTextModal(false)
-									setImportJsonText('')
-									setImportJsonTextError('')
-								}}>
-								{t('common.cancel')}
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
+			<RecipeJsonTextModal
+				isOpen={showImportTextModal}
+				value={importJsonText}
+				error={importJsonTextError}
+				onChange={setImportJsonText}
+				onClose={() => {
+					setShowImportTextModal(false)
+					setImportJsonText('')
+					setImportJsonTextError('')
+				}}
+				onSubmit={handleImportJsonText}
+			/>
 
 			<input
 				type='file'
