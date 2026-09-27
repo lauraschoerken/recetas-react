@@ -44,10 +44,12 @@ export function WeekCalendar({
 		date.setDate(date.getDate() + i)
 
 		const dateStr = formatLocalDate(date)
-		const plansForDay = weekPlans.filter((plan) => {
-			const planDate = new Date(plan.plannedDate)
-			return formatLocalDate(planDate) === dateStr
-		})
+		const plansForDay = weekPlans
+			.filter((plan) => {
+				const planDate = new Date(plan.plannedDate)
+				return formatLocalDate(planDate) === dateStr
+			})
+			.sort((a, b) => (a.mealTime || '99:99').localeCompare(b.mealTime || '99:99'))
 
 		days.push({
 			date,

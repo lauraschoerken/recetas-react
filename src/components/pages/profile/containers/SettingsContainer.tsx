@@ -590,6 +590,45 @@ export function SettingsContainer() {
 		2
 	)
 
+	const aiWeekPlanTemplate = JSON.stringify(
+		{
+			entries: [
+				{
+					kind: 'manual',
+					date: '2026-09-27',
+					time: '08:30',
+					title: 'Café con leche y tostada con tomate',
+					calories: 340,
+					protein: 14,
+					carbs: 43,
+					fat: 12,
+					fiber: 5,
+					notes: 'Cantidades aproximadas. Usa null o elimina un macro si no se conoce.',
+					consumed: true,
+				},
+				{
+					kind: 'recipe',
+					date: '2026-09-27',
+					time: '14:15',
+					recipeTitle: 'Lentejas con verduras',
+					servings: 1.5,
+					consumed: true,
+				},
+				{
+					kind: 'ingredient',
+					date: '2026-09-27',
+					time: '18:00',
+					ingredientName: 'Plátano',
+					quantity: 1,
+					unit: 'ud',
+					consumed: true,
+				},
+			],
+		},
+		null,
+		2
+	)
+
 	useEffect(() => {
 		loadAll()
 	}, [])
@@ -1212,6 +1251,15 @@ export function SettingsContainer() {
 		}
 	}
 
+	const copyAiWeekPlanTemplate = async () => {
+		try {
+			await navigator.clipboard.writeText(aiWeekPlanTemplate)
+			toast.success(t('settings.templateCopied'))
+		} catch {
+			toast.error(t('settings.templateCopyError'))
+		}
+	}
+
 	if (loading) {
 		return <div className='loading'>{t('loading')}</div>
 	}
@@ -1606,6 +1654,7 @@ export function SettingsContainer() {
 					{activeSection === 'additional' && (
 						<div className='settings-card'>
 							<h2 className='settings-card-title'>{t('settings.additionalSection')}</h2>
+							<h3 className='settings-subsection-title'>{t('settings.recipeJsonTemplate')}</h3>
 							<p className='settings-card-description'>{t('settings.additionalSectionDesc')}</p>
 							<p className='settings-card-description' style={{ marginTop: '-0.25rem' }}>
 								{t('settings.additionalSectionHint')}
@@ -1623,6 +1672,36 @@ export function SettingsContainer() {
 								style={{
 									width: '100%',
 									height: '560px',
+									padding: '1rem',
+									borderRadius: '14px',
+									border: '1px solid var(--border-color)',
+									background: 'var(--surface-1)',
+									color: 'var(--text-primary)',
+									fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+									fontSize: '0.81rem',
+									lineHeight: 1.5,
+									resize: 'vertical',
+								}}
+							/>
+
+							<h3 className='settings-subsection-title' style={{ marginTop: '2rem' }}>
+								{t('settings.weekPlanJsonTemplate')}
+							</h3>
+							<p className='settings-card-description'>{t('settings.weekPlanJsonTemplateDesc')}</p>
+							<p className='settings-card-description' style={{ marginTop: '-0.25rem' }}>
+								{t('settings.weekPlanJsonTemplateHint')}
+							</p>
+							<div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+								<button className='btn btn-outline btn-sm' onClick={copyAiWeekPlanTemplate}>
+									{t('settings.copyTemplate')}
+								</button>
+							</div>
+							<textarea
+								readOnly
+								value={aiWeekPlanTemplate}
+								style={{
+									width: '100%',
+									height: '460px',
 									padding: '1rem',
 									borderRadius: '14px',
 									border: '1px solid var(--border-color)',

@@ -613,6 +613,37 @@
 	font-weight: 500;
 }
 
+.manual-meal-form .form-group {
+	min-width: 0;
+}
+
+.manual-meal-macros {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap: 0.65rem;
+}
+
+.manual-meal-form input,
+.manual-meal-form textarea {
+	width: 100%;
+}
+
+.week-plan-file-button {
+	display: inline-flex;
+	margin-bottom: 0.75rem;
+	cursor: pointer;
+}
+
+.week-plan-file-button input {
+	display: none;
+}
+
+.week-plan-json-input {
+	width: 100%;
+	resize: vertical;
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 @media (max-width: 48rem) {
 	.nutrition-panel-header {
 		flex-direction: column;
@@ -657,6 +688,10 @@
 
 	.day-modal-segment {
 		grid-template-columns: 1fr;
+	}
+
+	.manual-meal-macros {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	.day-modal-plan-item {

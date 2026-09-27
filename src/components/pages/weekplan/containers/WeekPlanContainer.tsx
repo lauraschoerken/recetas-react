@@ -4,19 +4,21 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
+import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
+import { Ingredient,ingredientService } from '@/services/ingredient'
 import {
 	DailyNutrition,
 	profileService,
 	RecommendedMacros,
 	WeeklyNutrition,
 } from '@/services/profile'
-import { shoppingService, WeekPlan } from '@/services/shopping'
-import { ingredientService, Ingredient } from '@/services/ingredient'
 import { Recipe, recipeService } from '@/services/recipe'
+import { CreateWeekPlanData, shoppingService, WeekPlan } from '@/services/shopping'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
-import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
+import { ManualMealModal } from '../components/ManualMealModal'
 import { WeekCalendar } from '../components/WeekCalendar'
+import { WeekPlanImportModal } from '../components/WeekPlanImportModal'
 
 function getWeekStart(date: Date): Date {
 	const d = new Date(date)
@@ -39,6 +41,10 @@ function formatDateStr(date: Date): string {
 	const month = String(date.getMonth() + 1).padStart(2, '0')
 	const day = String(date.getDate()).padStart(2, '0')
 	return `${year}-${month}-${day}`
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+	return error instanceof Error ? error.message : fallback
 }
 
 export function WeekPlanContainer() {
@@ -79,6 +85,11 @@ export function WeekPlanContainer() {
 	const [addingIngredientFromDay, setAddingIngredientFromDay] = useState(false)
 	const [selectedRecipeForWeek, setSelectedRecipeForWeek] = useState<Recipe | null>(null)
 	const [selectedRecipeDate, setSelectedRecipeDate] = useState<string | null>(null)
+	const [showManualMeal, setShowManualMeal] = useState(false)
+	const [manualMealDate, setManualMealDate] = useState(selectedDay)
+	const [savingManualMeal, setSavingManualMeal] = useState(false)
+	const [showImport, setShowImport] = useState(false)
+	const [importingPlan, setImportingPlan] = useState(false)
 
 	useEffect(() => {
 		loadWeekPlan()
@@ -377,6 +388,40 @@ export function WeekPlanContainer() {
 		}
 	}
 
+	const openManualMeal = (date = selectedDay) => {
+		setManualMealDate(date)
+		setDayModalDate(null)
+		setShowManualMeal(true)
+	}
+
+	const handleAddManualMeal = async (data: CreateWeekPlanData) => {
+		setSavingManualMeal(true)
+		try {
+			await shoppingService.addToWeekPlan(data)
+			setShowManualMeal(false)
+			await Promise.all([loadWeekPlan(), loadWeeklyNutrition()])
+			toast.success(t('weekPlan.manualMealAdded'))
+		} catch (error: unknown) {
+			toast.error(getErrorMessage(error, t('weekPlan.addError')))
+		} finally {
+			setSavingManualMeal(false)
+		}
+	}
+
+	const handleImportPlan = async (json: string) => {
+		setImportingPlan(true)
+		try {
+			const result = await shoppingService.importWeekPlanJson(json)
+			setShowImport(false)
+			await Promise.all([loadWeekPlan(), loadWeeklyNutrition()])
+			toast.success(t('weekPlan.importSuccess', { count: result.importedCount }))
+		} catch (error: unknown) {
+			toast.error(getErrorMessage(error, t('weekPlan.importError')))
+		} finally {
+			setImportingPlan(false)
+		}
+	}
+
 	const canGoToPreviousDay = !!dayModalDate && dayModalDate > formatDateStr(currentWeekStart)
 	const canGoToNextDay =
 		!!dayModalDate && dayModalDate < formatDateStr(getWeekEnd(currentWeekStart))
@@ -465,6 +510,12 @@ export function WeekPlanContainer() {
 			<div className='page-header'>
 				<h1 className='page-title'>{t('weekPlan.title')}</h1>
 				<div className='page-header-actions'>
+					<button className='btn btn-outline' onClick={() => setShowImport(true)}>
+						{t('weekPlan.importJson')}
+					</button>
+					<button className='btn btn-primary' onClick={() => openManualMeal()}>
+						{t('weekPlan.addManualMeal')}
+					</button>
 					<button className='btn btn-outline' onClick={handleOpenAddIngredient}>
 						{t('weekPlan.addIngredient')}
 					</button>
@@ -897,12 +948,17 @@ export function WeekPlanContainer() {
 											{plan.type === 'meal' ? '🍽️' : '👩‍🍳'}
 										</span>
 										<span className='day-modal-plan-name'>
-											{plan.ingredient
+											{plan.manualTitle
+												? `✍️ ${plan.manualTitle}`
+												: plan.ingredient
 												? `🥕 ${plan.ingredient.name} (${plan.ingredientQty} ${plan.ingredientUnit})`
 												: plan.recipe?.title || t('noTitle')}
 										</span>
 										<span className='day-modal-plan-servings'>
-											{plan.servings > 0 && `${plan.servings} ${t('weekPlan.portions')}`}
+											{plan.mealTime && `${plan.mealTime} · `}
+											{plan.manualTitle
+												? plan.manualCalories != null && `${plan.manualCalories} kcal`
+												: plan.servings > 0 && `${plan.servings} ${t('weekPlan.portions')}`}
 										</span>
 									</div>
 								))}
@@ -1015,6 +1071,9 @@ export function WeekPlanContainer() {
 						</div>
 
 						<div className='modal-actions'>
+							<button className='btn btn-outline' onClick={() => dayModalDate && openManualMeal(dayModalDate)}>
+								{t('weekPlan.addManualMeal')}
+							</button>
 							{dayModalMode === 'ingredient' && (
 								<button
 									className='btn btn-primary'
@@ -1054,6 +1113,20 @@ export function WeekPlanContainer() {
 				}}
 				onSuccess={handleAddToWeekSuccess}
 				initialDate={selectedRecipeDate || undefined}
+			/>
+
+			<ManualMealModal
+				isOpen={showManualMeal}
+				initialDate={manualMealDate}
+				saving={savingManualMeal}
+				onClose={() => setShowManualMeal(false)}
+				onSubmit={handleAddManualMeal}
+			/>
+			<WeekPlanImportModal
+				isOpen={showImport}
+				importing={importingPlan}
+				onClose={() => setShowImport(false)}
+				onImport={handleImportPlan}
 			/>
 		</>
 	)

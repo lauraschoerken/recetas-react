@@ -5,6 +5,7 @@ import type {
 	CreateWeekPlanData,
 	ShoppingItem,
 	WeekPlan,
+	WeekPlanImportEntry,
 } from '@/models'
 import { api } from '@/services/api'
 
@@ -20,6 +21,7 @@ export type {
 	CreateWeekPlanData,
 	ShoppingItem,
 	WeekPlan,
+	WeekPlanImportEntry,
 	WeekPlanType,
 } from '@/models'
 
@@ -30,6 +32,17 @@ export const shoppingService = {
 
 	async addToWeekPlan(data: CreateWeekPlanData): Promise<AddWeekPlanResult> {
 		return api.post<AddWeekPlanResult>('/week-plan', data)
+	},
+
+	async importWeekPlanJson(payload: unknown): Promise<{ importedCount: number; entries: WeekPlan[] }> {
+		const parsed = typeof payload === 'string' ? JSON.parse(payload) : payload
+		const entries: WeekPlanImportEntry[] = Array.isArray(parsed)
+			? parsed
+			: Array.isArray((parsed as { entries?: unknown[] })?.entries)
+				? ((parsed as { entries: WeekPlanImportEntry[] }).entries ?? [])
+				: []
+		if (entries.length === 0) throw new Error('El JSON no contiene entradas')
+		return api.post<{ importedCount: number; entries: WeekPlan[] }>('/week-plan/import', { entries })
 	},
 
 	async removeFromWeekPlan(id: number): Promise<void> {

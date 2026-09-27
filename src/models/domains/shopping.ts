@@ -14,6 +14,14 @@ export interface WeekPlan {
 	ingredientId: number | null
 	ingredientQty: number | null
 	ingredientUnit: string | null
+	manualTitle: string | null
+	manualCalories: number | null
+	manualProtein: number | null
+	manualCarbs: number | null
+	manualFat: number | null
+	manualFiber: number | null
+	manualNotes: string | null
+	mealTime: string | null
 	createdAt: string
 	recipe: Recipe | null
 	ingredient: { id: number; name: string; unit: string; imageUrl?: string | null } | null
@@ -37,11 +45,54 @@ export interface CreateWeekPlanData {
 	ingredientId?: number
 	ingredientQty?: number
 	ingredientUnit?: string
+	manualTitle?: string
+	manualCalories?: number
+	manualProtein?: number
+	manualCarbs?: number
+	manualFat?: number
+	manualFiber?: number
+	manualNotes?: string
+	mealTime?: string
+	consumed?: boolean
 	plannedDate: string
 	servings?: number
 	type?: WeekPlanType
 	selections?: number[]
 }
+
+export type WeekPlanImportEntry =
+	| {
+			kind: 'manual'
+			date: string
+			time?: string
+			title: string
+			calories?: number
+			protein?: number
+			carbs?: number
+			fat?: number
+			fiber?: number
+			notes?: string
+			consumed?: boolean
+	  }
+	| {
+			kind: 'recipe'
+			date: string
+			time?: string
+			recipeId?: number
+			recipeTitle?: string
+			servings?: number
+			consumed?: boolean
+	  }
+	| {
+			kind: 'ingredient'
+			date: string
+			time?: string
+			ingredientId?: number
+			ingredientName?: string
+			quantity: number
+			unit?: string
+			consumed?: boolean
+	  }
 
 export interface AddWeekPlanResult extends WeekPlan {
 	autoPrepsCreated?: { recipeId: number; title: string; servings: number }[]

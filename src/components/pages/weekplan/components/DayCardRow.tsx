@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { CheckIcon, CookIcon, DeleteIcon } from '@/components/shared/icons'
+import { authService } from '@/services/auth'
 import { HouseholdMember, householdService } from '@/services/household'
 import { WeekPlan } from '@/services/shopping'
-import { authService } from '@/services/auth'
 
 interface DayData {
 	date: Date
@@ -88,6 +88,7 @@ export function DayCardRow({
 		Math.round(((plan.servings * leftoverPct) / 100) * 10) / 10
 
 	const getItemTitle = (plan: WeekPlan) => {
+		if (plan.manualTitle) return `✍️ ${plan.manualTitle}`
 		if (plan.ingredient) return `🥕 ${plan.ingredient.name}`
 		return plan.recipe?.title || t('noTitle')
 	}
@@ -201,6 +202,7 @@ export function DayCardRow({
 		return (
 			<div
 				key={plan.id}
+				title={plan.manualNotes || undefined}
 				className={`row-plan-item ${hasComponents(plan) ? 'has-components' : ''} ${isCompleted ? 'is-done' : ''}`}
 				draggable={canDrag}
 				onClick={(e) => e.stopPropagation()}
@@ -212,13 +214,21 @@ export function DayCardRow({
 							<CheckIcon size={14} aria-hidden='true' />
 						</span>
 					)}
-					<Link to={getItemLink(plan)} className='row-plan-title'>
-						{getItemTitle(plan)}
-					</Link>
+					{plan.recipe ? (
+						<Link to={getItemLink(plan)} className='row-plan-title'>
+							{getItemTitle(plan)}
+						</Link>
+					) : (
+						<span className='row-plan-title'>{getItemTitle(plan)}</span>
+					)}
 				</div>
 				<div className='row-plan-footer'>
 					<span className='row-plan-servings'>
-						{isIngredientPlan(plan)
+						{plan.manualTitle
+							? [plan.mealTime, plan.manualCalories != null ? `${plan.manualCalories} kcal` : null]
+									.filter(Boolean)
+									.join(' · ')
+							: isIngredientPlan(plan)
 							? `${plan.ingredientQty} ${plan.ingredientUnit}`
 							: `${parseFloat(plan.servings.toFixed(2))} ${t('weekPlan.portions')}`}
 					</span>
