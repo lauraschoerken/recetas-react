@@ -1,11 +1,11 @@
 import './WeekPlanContainer.scss'
 
-import { useEffect, useState } from 'react'
+import { CSSProperties, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
-import { Ingredient,ingredientService } from '@/services/ingredient'
+import { Ingredient, ingredientService } from '@/services/ingredient'
 import {
 	DailyNutrition,
 	profileService,
@@ -480,12 +480,16 @@ export function WeekPlanContainer() {
 		const fatCal = fat * 9
 		const totalCal = proteinCal + carbsCal + fatCal
 
-		if (totalCal === 0) return { protein: 0, carbs: 0, fat: 0 }
+		if (totalCal === 0) return { protein: 0, carbs: 0, fat: 0, total: 0 }
+
+		const proteinPercent = (proteinCal / totalCal) * 100
+		const carbsPercent = (carbsCal / totalCal) * 100
 
 		return {
-			protein: Math.round((proteinCal / totalCal) * 100),
-			carbs: Math.round((carbsCal / totalCal) * 100),
-			fat: Math.round((fatCal / totalCal) * 100),
+			protein: proteinPercent,
+			carbs: carbsPercent,
+			fat: 100 - proteinPercent - carbsPercent,
+			total: totalCal,
 		}
 	}
 
@@ -495,7 +499,7 @@ export function WeekPlanContainer() {
 				selectedDayNutrition.carbs,
 				selectedDayNutrition.fat
 			)
-		: { protein: 0, carbs: 0, fat: 0 }
+		: { protein: 0, carbs: 0, fat: 0, total: 0 }
 
 	const weeklyMacroDistribution = weeklyNutrition
 		? getMacroDistribution(
@@ -503,7 +507,7 @@ export function WeekPlanContainer() {
 				weeklyNutrition.averages.carbs,
 				weeklyNutrition.averages.fat
 			)
-		: { protein: 0, carbs: 0, fat: 0 }
+		: { protein: 0, carbs: 0, fat: 0, total: 0 }
 
 	return (
 		<>
@@ -619,39 +623,70 @@ export function WeekPlanContainer() {
 											/>
 										</div>
 									</div>
+
+									<div className='macro-progress-item'>
+										<div className='macro-progress-header'>
+											<span className='macro-progress-label'>{t('weekPlan.fiber')}</span>
+											<span className='macro-progress-values'>
+												<strong>{selectedDayNutrition.fiber}g</strong> / {recommendedMacros.fiber}g
+											</span>
+										</div>
+										<div className='progress-bar'>
+											<div
+												className={`progress-fill fiber ${getProgressColor(getProgressPercent(selectedDayNutrition.fiber, recommendedMacros.fiber))}`}
+												style={{
+													width: `${getProgressPercent(selectedDayNutrition.fiber, recommendedMacros.fiber)}%`,
+												}}
+											/>
+										</div>
+									</div>
 								</div>
 
 								{selectedDayNutrition.calories > 0 && (
 									<div className='macro-chart-container'>
 										<div
-											className='macro-donut-chart'
-											style={{
-												background: `conic-gradient(
-                          #2563eb 0% ${macroDistribution.protein}%,
-                          #16a34a ${macroDistribution.protein}% ${macroDistribution.protein + macroDistribution.carbs}%,
-                          #db2777 ${macroDistribution.protein + macroDistribution.carbs}% 100%
-                        )`,
-											}}>
-											<div className='macro-donut-hole'>
-												<span className='macro-donut-calories'>
-													{selectedDayNutrition.calories}
-												</span>
-												<span className='macro-donut-label'>{t('weekPlan.kcal')}</span>
+											className='macro-donut-shell'
+											style={
+												{
+													'--fiber-progress': `${getProgressPercent(selectedDayNutrition.fiber, recommendedMacros.fiber)}%`,
+													'--protein-end': `${macroDistribution.protein}%`,
+													'--carbs-end': `${macroDistribution.protein + macroDistribution.carbs}%`,
+												} as CSSProperties
+											}>
+											<div
+												className={`macro-donut-chart ${macroDistribution.total === 0 ? 'empty' : ''}`}>
+												<div className='macro-donut-hole'>
+													<span className='macro-donut-calories'>
+														{selectedDayNutrition.calories}
+													</span>
+													<span className='macro-donut-label'>{t('weekPlan.kcal')}</span>
+												</div>
 											</div>
 										</div>
 										<div className='macro-chart-legend'>
 											<div className='legend-item'>
 												<span className='legend-color protein'></span>
-												<span className='legend-text'>Prot {macroDistribution.protein}%</span>
+												<span className='legend-text'>
+													Prot {Math.round(macroDistribution.protein)}%
+												</span>
 											</div>
 											<div className='legend-item'>
 												<span className='legend-color carbs'></span>
-												<span className='legend-text'>Carbs {macroDistribution.carbs}%</span>
+												<span className='legend-text'>
+													Carbs {Math.round(macroDistribution.carbs)}%
+												</span>
 											</div>
 											<div className='legend-item'>
 												<span className='legend-color fat'></span>
 												<span className='legend-text'>
-													{t('weekPlan.fat')} {macroDistribution.fat}%
+													{t('weekPlan.fat')} {Math.round(macroDistribution.fat)}%
+												</span>
+											</div>
+											<div className='legend-item'>
+												<span className='legend-color fiber'></span>
+												<span className='legend-text'>
+													{t('weekPlan.fiber')} {selectedDayNutrition.fiber}g /{' '}
+													{recommendedMacros.fiber}g
 												</span>
 											</div>
 										</div>
@@ -682,6 +717,10 @@ export function WeekPlanContainer() {
 								<div className='nutrition-macro macro-fat'>
 									<span className='nutrition-value'>{selectedDayNutrition.fat}g</span>
 									<span className='nutrition-label'>{t('weekPlan.fatShort')}</span>
+								</div>
+								<div className='nutrition-macro macro-fiber'>
+									<span className='nutrition-value'>{selectedDayNutrition.fiber}g</span>
+									<span className='nutrition-label'>{t('weekPlan.fiber')}</span>
 								</div>
 							</div>
 						) : (
@@ -721,6 +760,10 @@ export function WeekPlanContainer() {
 												<span className='stat-value fat'>{weeklyNutrition.averages.fat}g</span>
 												<span className='stat-label'>{t('weekPlan.fatShort')}</span>
 											</div>
+											<div className='weekly-stat'>
+												<span className='stat-value fiber'>{weeklyNutrition.averages.fiber}g</span>
+												<span className='stat-label'>{t('weekPlan.fiber')}</span>
+											</div>
 										</div>
 									</div>
 
@@ -745,6 +788,10 @@ export function WeekPlanContainer() {
 												<span className='stat-value'>{weeklyNutrition.totals.fat}g</span>
 												<span className='stat-label'>{t('weekPlan.fatShort')}</span>
 											</div>
+											<div className='weekly-stat'>
+												<span className='stat-value fiber'>{weeklyNutrition.totals.fiber}g</span>
+												<span className='stat-label'>{t('weekPlan.fiber')}</span>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -752,34 +799,48 @@ export function WeekPlanContainer() {
 								{weeklyNutrition.averages.calories > 0 && (
 									<div className='macro-chart-container'>
 										<div
-											className='macro-donut-chart'
-											style={{
-												background: `conic-gradient(
-                          #2563eb 0% ${weeklyMacroDistribution.protein}%,
-                          #16a34a ${weeklyMacroDistribution.protein}% ${weeklyMacroDistribution.protein + weeklyMacroDistribution.carbs}%,
-                          #db2777 ${weeklyMacroDistribution.protein + weeklyMacroDistribution.carbs}% 100%
-                        )`,
-											}}>
-											<div className='macro-donut-hole'>
-												<span className='macro-donut-calories'>
-													{weeklyNutrition.averages.calories}
-												</span>
-												<span className='macro-donut-label'>{t('weekPlan.avgPerDay')}</span>
+											className='macro-donut-shell'
+											style={
+												{
+													'--fiber-progress': `${getProgressPercent(weeklyNutrition.averages.fiber, recommendedMacros?.fiber ?? 25)}%`,
+													'--protein-end': `${weeklyMacroDistribution.protein}%`,
+													'--carbs-end': `${weeklyMacroDistribution.protein + weeklyMacroDistribution.carbs}%`,
+												} as CSSProperties
+											}>
+											<div
+												className={`macro-donut-chart ${weeklyMacroDistribution.total === 0 ? 'empty' : ''}`}>
+												<div className='macro-donut-hole'>
+													<span className='macro-donut-calories'>
+														{weeklyNutrition.averages.calories}
+													</span>
+													<span className='macro-donut-label'>{t('weekPlan.avgPerDay')}</span>
+												</div>
 											</div>
 										</div>
 										<div className='macro-chart-legend'>
 											<div className='legend-item'>
 												<span className='legend-color protein'></span>
-												<span className='legend-text'>Prot {weeklyMacroDistribution.protein}%</span>
+												<span className='legend-text'>
+													Prot {Math.round(weeklyMacroDistribution.protein)}%
+												</span>
 											</div>
 											<div className='legend-item'>
 												<span className='legend-color carbs'></span>
-												<span className='legend-text'>Carbs {weeklyMacroDistribution.carbs}%</span>
+												<span className='legend-text'>
+													Carbs {Math.round(weeklyMacroDistribution.carbs)}%
+												</span>
 											</div>
 											<div className='legend-item'>
 												<span className='legend-color fat'></span>
 												<span className='legend-text'>
-													{t('weekPlan.fat')} {weeklyMacroDistribution.fat}%
+													{t('weekPlan.fat')} {Math.round(weeklyMacroDistribution.fat)}%
+												</span>
+											</div>
+											<div className='legend-item'>
+												<span className='legend-color fiber'></span>
+												<span className='legend-text'>
+													{t('weekPlan.fiber')} {weeklyNutrition.averages.fiber}g /{' '}
+													{recommendedMacros?.fiber ?? 25}g
 												</span>
 											</div>
 										</div>
@@ -951,8 +1012,8 @@ export function WeekPlanContainer() {
 											{plan.manualTitle
 												? `✍️ ${plan.manualTitle}`
 												: plan.ingredient
-												? `🥕 ${plan.ingredient.name} (${plan.ingredientQty} ${plan.ingredientUnit})`
-												: plan.recipe?.title || t('noTitle')}
+													? `🥕 ${plan.ingredient.name} (${plan.ingredientQty} ${plan.ingredientUnit})`
+													: plan.recipe?.title || t('noTitle')}
 										</span>
 										<span className='day-modal-plan-servings'>
 											{plan.mealTime && `${plan.mealTime} · `}
@@ -1071,7 +1132,9 @@ export function WeekPlanContainer() {
 						</div>
 
 						<div className='modal-actions'>
-							<button className='btn btn-outline' onClick={() => dayModalDate && openManualMeal(dayModalDate)}>
+							<button
+								className='btn btn-outline'
+								onClick={() => dayModalDate && openManualMeal(dayModalDate)}>
 								{t('weekPlan.addManualMeal')}
 							</button>
 							{dayModalMode === 'ingredient' && (

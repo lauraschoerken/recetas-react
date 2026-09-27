@@ -12,6 +12,7 @@ export const mockUserProfile = (overrides: Partial<UserProfile> = {}): UserProfi
 	customProtein: 140,
 	customCarbs: 220,
 	customFat: 65,
+	customFiber: 25,
 	...overrides,
 })
 

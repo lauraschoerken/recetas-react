@@ -16,6 +16,7 @@ export interface UserProfile {
 	customProtein?: number | null
 	customCarbs?: number | null
 	customFat?: number | null
+	customFiber?: number | null
 }
 
 export interface RecommendedMacros {

@@ -1,5 +1,6 @@
-import { api } from '@/services/api'
 import JSZip from 'jszip'
+
+import { api } from '@/services/api'
 
 interface BackupData {
 	exportDate: string
@@ -306,6 +307,7 @@ class BackupService {
 				customProtein: this.parseNumber(row.customProtein),
 				customCarbs: this.parseNumber(row.customCarbs),
 				customFat: this.parseNumber(row.customFat),
+				customFiber: this.parseNumber(row.customFiber),
 				planningAlertScope: row.planningAlertScope || null,
 			}
 		}

@@ -783,6 +783,7 @@
 		"proteinG": "Protein (g)",
 		"carbsG": "Carbs (g)",
 		"fatG": "Fat (g)",
+		"fiberG": "Fiber (g)",
 		"saving": "Saving...",
 		"saveChanges": "Save Changes",
 		"saved": "Profile saved successfully",

@@ -138,6 +138,10 @@
 	background: var(--macro-fat);
 }
 
+.progress-fill.fiber {
+	background: var(--macro-fiber);
+}
+
 .progress-fill.progress-low {
 	opacity: 0.7;
 }
@@ -213,6 +217,10 @@
 
 .stat-value.fat {
 	color: var(--macro-fat);
+}
+
+.stat-value.fiber {
+	color: var(--macro-fiber);
 }
 
 .stat-label {
@@ -304,6 +312,15 @@
 	color: var(--macro-fat);
 }
 
+.nutrition-macro.macro-fiber {
+	background: var(--accent-bg);
+}
+
+.nutrition-macro.macro-fiber .nutrition-value,
+.nutrition-macro.macro-fiber .nutrition-label {
+	color: var(--macro-fiber);
+}
+
 .nutrition-with-chart {
 	display: flex;
 	gap: 8rem;
@@ -330,14 +347,36 @@
 	flex-shrink: 0;
 }
 
+.macro-donut-shell {
+	width: 112px;
+	height: 112px;
+	padding: 6px;
+	box-sizing: border-box;
+	border-radius: 50%;
+	background: conic-gradient(
+		var(--macro-fiber) 0 var(--fiber-progress, 0%),
+		color-mix(in srgb, var(--border-color) 55%, transparent) var(--fiber-progress, 0%) 100%
+	);
+	display: grid;
+	place-items: center;
+}
+
 .macro-donut-chart {
 	width: 100px;
 	height: 100px;
 	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	position: relative;
+	background: conic-gradient(
+		var(--macro-protein) 0 var(--protein-end, 0%),
+		var(--macro-carbs) var(--protein-end, 0%) var(--carbs-end, 0%),
+		var(--macro-fat) var(--carbs-end, 0%) 100%
+	);
+	display: grid;
+	place-items: center;
+	box-shadow: 0 0 0 2px var(--card-background);
+}
+
+.macro-donut-chart.empty {
+	background: var(--border-color);
 }
 
 .macro-donut-hole {
@@ -349,6 +388,8 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
+	position: relative;
+	z-index: 1;
 }
 
 .macro-donut-calories {
@@ -367,6 +408,8 @@
 .macro-chart-legend {
 	display: flex;
 	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: center;
 }
 
 /* Week plan modals */
@@ -605,6 +648,10 @@
 
 .legend-color.fat {
 	background: var(--macro-fat);
+}
+
+.legend-color.fiber {
+	background: var(--macro-fiber);
 }
 
 .legend-text {

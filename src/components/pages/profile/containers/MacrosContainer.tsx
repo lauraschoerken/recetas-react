@@ -80,6 +80,7 @@ export function MacrosContainer() {
 				dataToSave.customProtein = null
 				dataToSave.customCarbs = null
 				dataToSave.customFat = null
+				dataToSave.customFiber = null
 			}
 
 			const savedProfile = await profileService.updateProfile(dataToSave)
@@ -394,6 +395,18 @@ export function MacrosContainer() {
 															handleChange('customFat', parseInt(e.target.value) || undefined)
 														}
 														placeholder='65'
+													/>
+												</div>
+												<div className='form-group'>
+													<label className='form-label'>{t('profile.fiberG')}</label>
+													<input
+														type='number'
+														className='form-input'
+														value={profile.customFiber || ''}
+														onChange={(e) =>
+															handleChange('customFiber', parseInt(e.target.value) || undefined)
+														}
+														placeholder='25'
 													/>
 												</div>
 											</div>
