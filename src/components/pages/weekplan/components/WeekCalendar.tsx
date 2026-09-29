@@ -62,51 +62,50 @@ export function WeekCalendar({
 
 	return (
 		<div className='week-calendar-split'>
-			{/* Cabecera de días — scroll horizontal en móvil */}
 			<div className='week-calendar-scroll-wrapper'>
-				<div className='week-calendar-header'>
-					<div className='week-calendar-label'></div>
-					{days.map((day, index) => {
-						const isToday = new Date().toDateString() === day.date.toDateString()
-						const displayDate = day.date.toLocaleDateString('es-ES', {
-							day: 'numeric',
-							month: 'short',
-						})
-						return (
-							<div
-								key={index}
-								className={`week-calendar-day-header ${isToday ? 'is-today' : ''}`}
-								onClick={() => onDayClick?.(day.dateStr)}
-								style={{ cursor: onDayClick ? 'pointer' : undefined }}>
-								<span className='day-name'>{day.dayName}</span>
-								<span className='day-date'>{displayDate}</span>
-							</div>
-						)
-					})}
+				<div className='week-calendar-track'>
+					<div className='week-calendar-header'>
+						<div className='week-calendar-label'></div>
+						{days.map((day, index) => {
+							const isToday = new Date().toDateString() === day.date.toDateString()
+							const displayDate = day.date.toLocaleDateString('es-ES', {
+								day: 'numeric',
+								month: 'short',
+							})
+							return (
+								<div
+									key={index}
+									className={`week-calendar-day-header ${isToday ? 'is-today' : ''}`}
+									onClick={() => onDayClick?.(day.dateStr)}
+									style={{ cursor: onDayClick ? 'pointer' : undefined }}>
+									<span className='day-name'>{day.dayName}</span>
+									<span className='day-date'>{displayDate}</span>
+								</div>
+							)
+						})}
+					</div>
+
+					<DayCardRow
+						title={t('weekPlan.meals')}
+						type='meal'
+						days={days}
+						onRemove={onRemove}
+						onMovePlan={onMovePlan}
+						onConsume={onConsume}
+						onDayClick={onDayClick}
+					/>
+
+					<DayCardRow
+						title={t('weekPlan.toPrep')}
+						type='prep'
+						days={days}
+						onRemove={onRemove}
+						onMovePlan={onMovePlan}
+						onCook={onCook}
+						onDayClick={onDayClick}
+					/>
 				</div>
 			</div>
-
-			{/* Fila de Comidas */}
-			<DayCardRow
-				title={t('weekPlan.meals')}
-				type='meal'
-				days={days}
-				onRemove={onRemove}
-				onMovePlan={onMovePlan}
-				onConsume={onConsume}
-				onDayClick={onDayClick}
-			/>
-
-			{/* Fila de A Preparar */}
-			<DayCardRow
-				title={t('weekPlan.toPrep')}
-				type='prep'
-				days={days}
-				onRemove={onRemove}
-				onMovePlan={onMovePlan}
-				onCook={onCook}
-				onDayClick={onDayClick}
-			/>
 		</div>
 	)
 }

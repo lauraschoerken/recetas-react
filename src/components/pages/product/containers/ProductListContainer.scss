@@ -15,11 +15,10 @@
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
 	gap: $space-3;
-}
 
-@media (min-width: 26rem) and (max-width: 40rem) {
-	.products-grid {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+	@media (max-width: 40rem) {
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
+		gap: $space-2;
 	}
 }
 

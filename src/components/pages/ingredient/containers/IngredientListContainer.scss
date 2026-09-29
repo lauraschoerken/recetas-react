@@ -594,6 +594,7 @@
 	margin-bottom: 1.5rem;
 
 	@media (max-width: 40rem) {
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
 		gap: 0.5rem;
 	}
 
@@ -602,15 +603,9 @@
 		gap: 0.875rem;
 
 		@media (max-width: 40rem) {
+			grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.25rem), 1fr));
 			gap: 0.625rem;
 		}
-	}
-}
-
-@media (min-width: 26rem) and (max-width: 40rem) {
-	.ingredients-grid,
-	.ingredients-grid.shopping-mode {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
 

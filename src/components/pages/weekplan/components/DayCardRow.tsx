@@ -271,7 +271,7 @@ export function DayCardRow({
 	}
 
 	return (
-		<div className='week-calendar-scroll-wrapper'>
+		<>
 			<div className={`day-card-row row-${type}`}>
 				<div className='row-label'>
 					<span>{title}</span>
@@ -548,6 +548,6 @@ export function DayCardRow({
 					</div>
 				)}
 			</div>
-		</div>
+		</>
 	)
 }
