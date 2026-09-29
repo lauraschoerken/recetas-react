@@ -531,6 +531,15 @@
 	},
 	"weekPlan": {
 		"title": "Week Plan",
+		"exportJson": "Export JSON",
+		"exporting": "Exporting...",
+		"exportPeriods": {
+			"day": "Selected day",
+			"week": "Visible week",
+			"month": "Selected month"
+		},
+		"exportSuccess": "Plan exported successfully",
+		"exportError": "The plan could not be exported",
 		"addRecipe": "+ Add recipe",
 		"deleteTitle": "Remove from plan",
 		"deleteConfirm": "Are you sure you want to remove this recipe from the plan?",

@@ -15,6 +15,12 @@ import {
 import { Recipe, recipeService } from '@/services/recipe'
 import { CreateWeekPlanData, shoppingService, WeekPlan } from '@/services/shopping'
 import { useDialog } from '@/utils/dialog/DialogContext'
+import {
+	buildWeekPlanExport,
+	downloadWeekPlanExport,
+	getWeekPlanExportRange,
+	WeekPlanExportPeriod,
+} from '@/utils/weekPlanExport'
 
 import { ManualMealModal } from '../components/ManualMealModal'
 import { WeekCalendar } from '../components/WeekCalendar'
@@ -90,6 +96,8 @@ export function WeekPlanContainer() {
 	const [savingManualMeal, setSavingManualMeal] = useState(false)
 	const [showImport, setShowImport] = useState(false)
 	const [importingPlan, setImportingPlan] = useState(false)
+	const [showExportMenu, setShowExportMenu] = useState(false)
+	const [exportingPeriod, setExportingPeriod] = useState<WeekPlanExportPeriod | null>(null)
 
 	useEffect(() => {
 		loadWeekPlan()
@@ -160,6 +168,35 @@ export function WeekPlanContainer() {
 			console.error('Error al cargar el plan semanal')
 		} finally {
 			setLoading(false)
+		}
+	}
+
+	const handleExportJson = async (period: WeekPlanExportPeriod) => {
+		setExportingPeriod(period)
+		setShowExportMenu(false)
+		try {
+			const range = getWeekPlanExportRange(period, selectedDay, currentWeekStart)
+			const [plans, nutrition, targets] = await Promise.all([
+				shoppingService.getWeekPlan(`${range.startDate}T00:00:00`, `${range.endDate}T23:59:59.999`),
+				profileService.getWeeklyNutrition(range.startDate, range.endDate),
+				profileService.getRecommendedMacros(),
+			])
+
+			downloadWeekPlanExport(
+				buildWeekPlanExport({
+					period,
+					...range,
+					plans,
+					nutrition,
+					targets,
+				})
+			)
+			toast.success(t('weekPlan.exportSuccess'))
+		} catch (error) {
+			console.error('Error exporting week plan:', error)
+			toast.error(t('weekPlan.exportError'))
+		} finally {
+			setExportingPeriod(null)
 		}
 	}
 
@@ -514,6 +551,23 @@ export function WeekPlanContainer() {
 			<div className='page-header'>
 				<h1 className='page-title'>{t('weekPlan.title')}</h1>
 				<div className='page-header-actions'>
+					<div className='week-plan-export'>
+						<button
+							className='btn btn-outline'
+							disabled={exportingPeriod !== null}
+							onClick={() => setShowExportMenu((open) => !open)}>
+							{exportingPeriod ? t('weekPlan.exporting') : t('weekPlan.exportJson')}
+						</button>
+						{showExportMenu && (
+							<div className='week-plan-export-menu' role='menu'>
+								{(['day', 'week', 'month'] as WeekPlanExportPeriod[]).map((period) => (
+									<button key={period} role='menuitem' onClick={() => handleExportJson(period)}>
+										{t(`weekPlan.exportPeriods.${period}`)}
+									</button>
+								))}
+							</div>
+						)}
+					</div>
 					<button className='btn btn-outline' onClick={() => setShowImport(true)}>
 						{t('weekPlan.importJson')}
 					</button>
