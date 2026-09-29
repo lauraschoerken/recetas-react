@@ -674,6 +674,8 @@
 		"purchased": "Purchased",
 		"totalNeeded": "Total needed",
 		"needed": "needed",
+		"recipeNeeds": "Needed for recipes",
+		"manualRequest": "Added manually",
 		"atHome": "at home",
 		"covered": "Covered",
 		"inGrams": "In grams",

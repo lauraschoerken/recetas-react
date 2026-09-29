@@ -35,6 +35,7 @@ export interface ShoppingItem {
 	totalQuantity: number
 	quantityAtHome: number
 	quantityToBuy: number
+	manualQuantity?: number
 	preferredUnit?: string | null
 	preferredQuantity?: number | null
 	conversions?: { unitName: string; gramsPerUnit: number }[]

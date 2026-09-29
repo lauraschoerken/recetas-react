@@ -10,6 +10,7 @@ import { storeService, UserStore } from '@/services/store'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import { downloadJson } from '@/utils/exporters'
 import { normalizeText } from '@/utils/normalize'
+import { convertUnitQuantity, getAvailableUnits, roundUnitQuantity } from '@/utils/unitConversion'
 
 import { ShoppingList } from '../components/ShoppingList'
 
@@ -100,8 +101,7 @@ function getEffectiveQtyAndUnit(
 		return { quantity: qtyOverride, unit: activeUnit }
 	}
 
-	// Si hay unidad preferida con cantidad ya calculada (Math.ceil al pack de compra),
-	// usarla directamente — es lo que el usuario ve en pantalla y lo que ha comprado realmente
+	// La API ya devuelve la cantidad exacta en la unidad de compra preferida.
 	if (
 		item.preferredUnit != null &&
 		item.preferredQuantity != null &&
@@ -115,24 +115,15 @@ function getEffectiveQtyAndUnit(
 		return { quantity: item.quantityToBuy, unit: item.unit }
 	}
 
-	// Hay que convertir a la unidad activa (misma lógica que ShoppingItem.tsx)
 	const conversions = item.conversions ?? []
-	const baseUnitConversion = conversions.find(
-		(c) => c.unitName.toLowerCase() === item.unit.toLowerCase()
+	const converted = convertUnitQuantity(
+		item.quantityToBuy,
+		item.unit,
+		activeUnit,
+		item.unit,
+		conversions
 	)
-	const quantityInGrams =
-		baseUnitConversion && baseUnitConversion.gramsPerUnit > 0
-			? item.quantityToBuy * baseUnitConversion.gramsPerUnit
-			: item.quantityToBuy
-	const activeConversion = conversions.find(
-		(c) =>
-			c.unitName.toLowerCase() !== item.unit.toLowerCase() &&
-			c.unitName.toLowerCase() === activeUnit.toLowerCase()
-	)
-	if (activeConversion && activeConversion.gramsPerUnit > 0) {
-		const converted = Math.round((quantityInGrams / activeConversion.gramsPerUnit) * 10) / 10
-		return { quantity: converted, unit: activeUnit }
-	}
+	if (converted != null) return { quantity: roundUnitQuantity(converted), unit: activeUnit }
 
 	return { quantity: item.quantityToBuy, unit: item.unit }
 }
@@ -327,8 +318,22 @@ export function ShoppingListContainer() {
 
 	const handleSelectAddIngredient = (ing: Ingredient) => {
 		setAddSelectedIngredient(ing)
-		setAddUnit(ing.unit)
+		setAddUnit(ing.preferredUnit ?? ing.unit)
+		setAddQty(1)
 		setAddSearch(ing.name)
+	}
+
+	const handleAddUnitChange = (unit: string) => {
+		if (!addSelectedIngredient) return
+		const converted = convertUnitQuantity(
+			addQty,
+			addUnit,
+			unit,
+			addSelectedIngredient.unit,
+			addSelectedIngredient.conversions ?? []
+		)
+		setAddUnit(unit)
+		if (converted != null) setAddQty(roundUnitQuantity(converted))
 	}
 
 	const handleAddItem = async () => {
@@ -801,13 +806,13 @@ export function ShoppingListContainer() {
 								</div>
 								<div className='form-group'>
 									<label>{t('ingredients.unitHeader')}</label>
-									<select value={addUnit} onChange={(e) => setAddUnit(e.target.value)}>
-										<option value={addSelectedIngredient.unit}>{addSelectedIngredient.unit}</option>
-										{addSelectedIngredient.unit === 'g' && <option value='kg'>kg</option>}
-										{addSelectedIngredient.unit === 'ml' && <option value='l'>l</option>}
-										{(addSelectedIngredient.conversions || []).map((c) => (
-											<option key={c.id} value={c.unitName}>
-												{c.unitName}
+									<select value={addUnit} onChange={(e) => handleAddUnitChange(e.target.value)}>
+										{getAvailableUnits(
+											addSelectedIngredient.unit,
+											addSelectedIngredient.conversions ?? []
+										).map((unit) => (
+											<option key={unit} value={unit}>
+												{unit}
 											</option>
 										))}
 									</select>

@@ -5,6 +5,12 @@ import { useTranslation } from 'react-i18next'
 
 import { DeleteIcon } from '@/components/shared/icons'
 import { ShoppingItem } from '@/services/shopping'
+import {
+	convertUnitQuantity,
+	formatUnitQuantity,
+	getAvailableUnits,
+	roundUnitQuantity,
+} from '@/utils/unitConversion'
 
 interface ShoppingItemRowProps {
 	item: ShoppingItem
@@ -33,86 +39,52 @@ export function ShoppingItemRow({
 	const [editQtyValue, setEditQtyValue] = useState('')
 	const [editUnitValue, setEditUnitValue] = useState('')
 	const qtyInputRef = useRef<HTMLInputElement>(null)
-	const unitInputRef = useRef<HTMLInputElement>(null)
-
-	const formatQuantity = (qty: number): string => {
-		if (Number.isInteger(qty)) return qty.toString()
-		return qty.toFixed(1)
-	}
 
 	const hasAtHome = item.quantityAtHome > 0
-	const needsToBuy = item.quantityToBuy > 0
 
-	// Unidades disponibles: base + conversiones del ingrediente (sin duplicar la unidad base)
 	const conversions = item.conversions ?? []
-	const conversionsWithoutBase = conversions.filter(
-		(c) => c.unitName.toLowerCase() !== item.unit.toLowerCase()
-	)
-	const allUnits: { unitName: string; gramsPerUnit: number | null }[] = [
-		{ unitName: item.unit, gramsPerUnit: null },
-		...conversionsWithoutBase,
-	]
-
-	// Para ingredientes cuya unidad base NO es g/ml (p.ej. "ud."),
-	// la conversión de la propia unidad base nos dice cuántos g/ml vale 1 ud.
-	// Así podemos convertir correctamente: 1 ud. * 100 ml/ud. / 400 ml/pack = 0.25 pack
-	const baseUnitConversion = conversions.find(
-		(c) => c.unitName.toLowerCase() === item.unit.toLowerCase()
-	)
-	const quantityInGrams =
-		baseUnitConversion && baseUnitConversion.gramsPerUnit > 0
-			? item.quantityToBuy * baseUnitConversion.gramsPerUnit
-			: item.quantityToBuy
-
+	const allUnits = getAvailableUnits(item.unit, conversions)
 	const activeUnit = unitOverride ?? item.preferredUnit ?? item.unit
-	const activeConversion = conversionsWithoutBase.find(
-		(c) => c.unitName.toLowerCase() === activeUnit.toLowerCase()
+	const convertedDefaultQty = convertUnitQuantity(
+		item.quantityToBuy,
+		item.unit,
+		activeUnit,
+		item.unit,
+		conversions
 	)
-	// Ceiling: si necesitas 10g y 1 pack = 250g, hay que comprar 1 pack (no 0 packs)
-	const computedQtyInActiveUnit =
-		activeConversion && activeConversion.gramsPerUnit > 0
-			? Math.ceil(quantityInGrams / activeConversion.gramsPerUnit)
-			: item.quantityToBuy
+	const computedQtyInActiveUnit = roundUnitQuantity(
+		item.preferredQuantity != null &&
+			item.preferredUnit != null &&
+			activeUnit.toLowerCase() === item.preferredUnit.toLowerCase()
+			? item.preferredQuantity
+			: (convertedDefaultQty ?? item.quantityToBuy)
+	)
 
-	// Cantidad efectiva en la unidad mostrada (respeta override del usuario)
 	const effectiveDisplayQty = quantityOverride ?? computedQtyInActiveUnit
-
-	// Total real a comprar en unidad base (p.ej. 1 block × 250g = 250g)
-	const purchaseTotal =
-		activeConversion && activeConversion.gramsPerUnit > 0
-			? effectiveDisplayQty * activeConversion.gramsPerUnit
-			: null
-	// Sobrante: lo que compras de más respecto a lo que realmente necesitabas
-	const surplus =
-		purchaseTotal != null ? Math.round((purchaseTotal - item.quantityToBuy) * 10) / 10 : null
-	// Conversión para la unidad activa: puede ser una conversión normal o la de la propia unidad base
-	const activeUnitConversion =
-		activeConversion ??
-		(activeUnit.toLowerCase() === item.unit.toLowerCase() ? (baseUnitConversion ?? null) : null)
-	// Cantidad efectiva en g/ml para poder hacer conversiones usando el override actual
-	const effectiveQtyInGrams =
-		activeUnitConversion && activeUnitConversion.gramsPerUnit > 0
-			? effectiveDisplayQty * activeUnitConversion.gramsPerUnit
-			: effectiveDisplayQty
-
-	const displayQuantity =
-		quantityOverride != null
-			? formatQuantity(quantityOverride)
-			: formatQuantity(computedQtyInActiveUnit)
+	const purchaseTotal = convertUnitQuantity(
+		effectiveDisplayQty,
+		activeUnit,
+		item.unit,
+		item.unit,
+		conversions
+	)
+	const difference =
+		purchaseTotal == null ? null : roundUnitQuantity(purchaseTotal - item.quantityToBuy)
+	const displayQuantity = formatUnitQuantity(effectiveDisplayQty)
 	const displayUnit = activeUnit
 
 	// --- Cantidad ---
 	const handleQtyEditStart = (e: React.MouseEvent) => {
 		e.stopPropagation()
 		if (!onQuantityOverride) return
-		setEditQtyValue(displayQuantity)
+		setEditQtyValue(String(roundUnitQuantity(effectiveDisplayQty)))
 		setEditingQty(true)
 		setTimeout(() => qtyInputRef.current?.select(), 0)
 	}
 
 	const handleQtyConfirm = () => {
 		const val = parseFloat(editQtyValue.replace(',', '.'))
-		if (!isNaN(val) && val > 0) onQuantityOverride?.(val)
+		if (!isNaN(val) && val >= 0) onQuantityOverride?.(roundUnitQuantity(val))
 		setEditingQty(false)
 	}
 
@@ -127,7 +99,6 @@ export function ShoppingItemRow({
 		if (!onUnitOverride) return
 		setEditUnitValue(displayUnit)
 		setEditingUnit(true)
-		setTimeout(() => unitInputRef.current?.select(), 0)
 	}
 
 	const applyUnitChange = (newUnit: string) => {
@@ -136,144 +107,126 @@ export function ShoppingItemRow({
 			setEditingUnit(false)
 			return
 		}
-		// Si vuelven a la unidad base
-		if (trimmed.toLowerCase() === item.unit.toLowerCase()) {
-			const baseQty =
-				baseUnitConversion && baseUnitConversion.gramsPerUnit > 0
-					? Math.round((effectiveQtyInGrams / baseUnitConversion.gramsPerUnit) * 10) / 10
-					: effectiveQtyInGrams
-			onUnitOverride?.(trimmed, baseQty)
-			setEditingUnit(false)
-			return
-		}
-		const conv = conversions.find((c) => c.unitName.toLowerCase() === trimmed.toLowerCase())
-		const newQty =
-			conv && conv.gramsPerUnit > 0
-				? Math.round((effectiveQtyInGrams / conv.gramsPerUnit) * 10) / 10
-				: effectiveDisplayQty
-		onUnitOverride?.(trimmed, newQty)
+		const converted = convertUnitQuantity(
+			effectiveDisplayQty,
+			activeUnit,
+			trimmed,
+			item.unit,
+			conversions
+		)
+		onUnitOverride?.(trimmed, roundUnitQuantity(converted ?? effectiveDisplayQty))
 		setEditingUnit(false)
-	}
-
-	const handleUnitKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.key === 'Enter') applyUnitChange(editUnitValue)
-		if (e.key === 'Escape') setEditingUnit(false)
 	}
 
 	return (
 		<li
-			className={`shopping-item ${checked ? 'shopping-item-checked' : ''} ${!needsToBuy ? 'shopping-item-covered' : ''}`}>
+			className={`shopping-item ${checked ? 'shopping-item-checked' : ''} ${effectiveDisplayQty <= 0 ? 'shopping-item-covered' : ''}`}>
 			<label className='shopping-item-label'>
 				<input
 					type='checkbox'
 					checked={checked}
 					onChange={onToggle}
+					disabled={effectiveDisplayQty <= 0}
 					className='shopping-item-checkbox'
 				/>
 				<div className='shopping-item-info'>
 					<span className='shopping-item-name'>{item.name}</span>
 					<div className='shopping-item-breakdown'>
-						<span className='shopping-item-total' title={t('shopping.totalNeeded')}>
-							{formatQuantity(item.totalQuantity)} {item.unit} {t('shopping.needed')}
-						</span>
+						{item.totalQuantity > 0 && (
+							<span className='shopping-item-total' title={t('shopping.totalNeeded')}>
+								{t('shopping.recipeNeeds')}: {formatUnitQuantity(item.totalQuantity)} {item.unit}
+							</span>
+						)}
 						{hasAtHome && (
 							<span className='shopping-item-athome' title={t('shopping.atHome')}>
-								-{formatQuantity(item.quantityAtHome)} {item.unit} {t('shopping.atHome')}
+								{t('shopping.atHome')}: {formatUnitQuantity(item.quantityAtHome)} {item.unit}
+							</span>
+						)}
+						{(item.manualQuantity ?? 0) > 0 && (
+							<span className='shopping-item-manual' title={t('shopping.manualRequest')}>
+								{t('shopping.manualRequest')}: {formatUnitQuantity(item.manualQuantity ?? 0)}{' '}
+								{item.unit}
 							</span>
 						)}
 					</div>
 				</div>
 			</label>
 			<span
-				className={`shopping-item-tobuy ${!needsToBuy ? 'shopping-item-tobuy-zero' : ''}`}
+				className={`shopping-item-tobuy ${effectiveDisplayQty <= 0 ? 'shopping-item-tobuy-zero' : ''}`}
 				onClick={(e) => e.stopPropagation()}>
-				{needsToBuy ? (
-					<>
-						<span className='shopping-item-qty-display'>
-							{/* Cantidad */}
-							{editingQty ? (
-								<input
-									ref={qtyInputRef}
-									type='number'
-									className='shopping-item-qty-input'
-									value={editQtyValue}
-									min={0.1}
-									step={0.5}
-									onChange={(e) => setEditQtyValue(e.target.value)}
-									onBlur={handleQtyConfirm}
-									onKeyDown={handleQtyKeyDown}
-									aria-label={t('shopping.editQuantity')}
-								/>
-							) : (
-								<span
-									className={`shopping-item-preferred ${onQuantityOverride ? 'shopping-item-qty-clickable' : ''} ${quantityOverride != null ? 'shopping-item-qty-overridden' : ''}`}
-									onClick={onQuantityOverride ? handleQtyEditStart : undefined}
-									title={onQuantityOverride ? t('shopping.editQuantity') : undefined}>
-									{displayQuantity}
-								</span>
-							)}
-
-							{/* Unidad — clickable solo si tiene conversiones */}
-							{editingUnit && conversionsWithoutBase.length > 0 ? (
-								<select
-									className='shopping-item-unit-select'
-									value={editUnitValue}
-									autoFocus
-									onChange={(e) => applyUnitChange(e.target.value)}
-									onBlur={() => setTimeout(() => setEditingUnit(false), 150)}
-									aria-label={t('shopping.changeUnit')}>
-									{allUnits.map((u) => (
-										<option key={u.unitName} value={u.unitName}>
-											{u.unitName}
-										</option>
-									))}
-								</select>
-							) : (
-								<span
-									className={`shopping-item-unit-label ${conversionsWithoutBase.length > 0 && onUnitOverride ? 'shopping-item-unit-clickable' : ''} ${unitOverride != null ? 'shopping-item-unit-overridden' : ''}`}
-									onClick={
-										conversionsWithoutBase.length > 0 && onUnitOverride
-											? handleUnitEditStart
-											: undefined
-									}
-									title={
-										conversionsWithoutBase.length > 0 && onUnitOverride
-											? t('shopping.changeUnit')
-											: undefined
-									}>
-									{displayUnit}
-								</span>
-							)}
+				<span className='shopping-item-qty-display'>
+					{/* Cantidad */}
+					{editingQty ? (
+						<input
+							ref={qtyInputRef}
+							type='number'
+							className='shopping-item-qty-input'
+							value={editQtyValue}
+							min={0}
+							step='any'
+							onChange={(e) => setEditQtyValue(e.target.value)}
+							onBlur={handleQtyConfirm}
+							onKeyDown={handleQtyKeyDown}
+							aria-label={t('shopping.editQuantity')}
+						/>
+					) : (
+						<span
+							className={`shopping-item-preferred ${onQuantityOverride ? 'shopping-item-qty-clickable' : ''} ${quantityOverride != null ? 'shopping-item-qty-overridden' : ''}`}
+							onClick={onQuantityOverride ? handleQtyEditStart : undefined}
+							title={onQuantityOverride ? t('shopping.editQuantity') : undefined}>
+							{displayQuantity}
 						</span>
+					)}
 
-						{activeUnit !== item.unit && (
-							<span className='shopping-item-base-qty' title={t('shopping.inGrams')}>
-								{purchaseTotal != null && Math.abs(purchaseTotal - item.quantityToBuy) > 0.1 ? (
+					{/* Unidad — clickable solo si tiene conversiones */}
+					{editingUnit && allUnits.length > 1 ? (
+						<select
+							className='shopping-item-unit-select'
+							value={editUnitValue}
+							autoFocus
+							onChange={(e) => applyUnitChange(e.target.value)}
+							onBlur={() => setTimeout(() => setEditingUnit(false), 150)}
+							aria-label={t('shopping.changeUnit')}>
+							{allUnits.map((unit) => (
+								<option key={unit} value={unit}>
+									{unit}
+								</option>
+							))}
+						</select>
+					) : (
+						<span
+							className={`shopping-item-unit-label ${allUnits.length > 1 && onUnitOverride ? 'shopping-item-unit-clickable' : ''} ${unitOverride != null ? 'shopping-item-unit-overridden' : ''}`}
+							onClick={allUnits.length > 1 && onUnitOverride ? handleUnitEditStart : undefined}
+							title={allUnits.length > 1 && onUnitOverride ? t('shopping.changeUnit') : undefined}>
+							{displayUnit}
+						</span>
+					)}
+				</span>
+
+				{activeUnit.toLowerCase() !== item.unit.toLowerCase() && purchaseTotal != null && (
+					<span className='shopping-item-base-qty' title={t('shopping.inGrams')}>
+						{difference != null && Math.abs(difference) > 0.001 ? (
+							<>
+								({t('shopping.neededQty')} {formatUnitQuantity(item.quantityToBuy)} {item.unit}
+								{' · '}
+								{t('shopping.buyingQty')} {formatUnitQuantity(purchaseTotal)} {item.unit}
+								{difference > 0.001 && (
 									<>
-										({t('shopping.neededQty')} {formatQuantity(item.quantityToBuy)} {item.unit}
-										{' · '}
-										{t('shopping.buyingQty')} {formatQuantity(purchaseTotal)} {item.unit}
-										{surplus != null && surplus > 0.1 && (
-											<>
-												{' '}
-												· {t('shopping.surplus')} {formatQuantity(surplus)} {item.unit}
-											</>
-										)}
-										)
-									</>
-								) : (
-									<>
-										({formatQuantity(item.quantityToBuy)} {item.unit})
+										{' '}
+										· {t('shopping.surplus')} {formatUnitQuantity(difference)} {item.unit}
 									</>
 								)}
-							</span>
+								)
+							</>
+						) : (
+							<>
+								({formatUnitQuantity(item.quantityToBuy)} {item.unit})
+							</>
 						)}
-					</>
-				) : (
-					<span className='shopping-item-covered-text'>{t('shopping.covered')}</span>
+					</span>
 				)}
 			</span>
-			{onExclude && !checked && needsToBuy && (
+			{onExclude && !checked && (
 				<button
 					className='shopping-item-exclude'
 					onClick={onExclude}
