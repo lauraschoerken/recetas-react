@@ -672,12 +672,46 @@
 			-webkit-overflow-scrolling: touch;
 			flex-wrap: nowrap;
 			padding-bottom: 0;
+			scrollbar-width: none;
+
+			&::-webkit-scrollbar {
+				display: none;
+			}
 		}
 
 		&__tab {
 			white-space: nowrap;
+			flex: 0 0 auto;
 			padding: 0.5rem 0.875rem;
 			font-size: 0.85rem;
+		}
+
+		&__table,
+		&__result-table {
+			display: block;
+			width: 100%;
+			max-width: 100%;
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+			overscroll-behavior-inline: contain;
+
+			th,
+			td {
+				white-space: nowrap;
+			}
+		}
+
+		&__search-form,
+		&__card {
+			flex-wrap: wrap;
+		}
+
+		&__card-actions {
+			width: 100%;
+
+			.admin-container__note-input {
+				width: 100%;
+			}
 		}
 	}
 }

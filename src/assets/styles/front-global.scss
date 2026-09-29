@@ -167,6 +167,31 @@ body {
 	background-color: var(--background-color);
 	color: var(--text-primary);
 	line-height: 1.6;
+	min-width: 0;
+}
+
+img,
+svg,
+video,
+canvas {
+	max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+	font: inherit;
+	min-width: 0;
+}
+
+fieldset {
+	min-width: 0;
+}
+
+html:has(.modal-overlay, .confirm-dialog-overlay, .cook-modal-overlay),
+body:has(.modal-overlay, .confirm-dialog-overlay, .cook-modal-overlay) {
+	overflow: hidden;
 }
 
 .loading {
@@ -179,9 +204,11 @@ body {
 }
 
 .container {
-	max-width: 1400px;
+	max-width: 87.5rem;
 	margin: 0 auto;
-	padding: 0 0.75rem;
+	padding-inline: clamp(0.5rem, 2vw, 1.5rem);
+	width: 100%;
+	min-width: 0;
 }
 
 .page-header {
@@ -189,11 +216,14 @@ body {
 	justify-content: space-between;
 	align-items: center;
 	margin-bottom: 2rem;
+	gap: 1rem;
+	min-width: 0;
 }
 
 .page-title {
 	font-size: 1.75rem;
 	font-weight: 600;
+	overflow-wrap: anywhere;
 }
 
 .btn {
@@ -209,6 +239,8 @@ body {
 	transition: all 0.2s ease;
 	text-decoration: none;
 	gap: 0.5rem;
+	min-height: 2.625rem;
+	max-width: 100%;
 }
 
 .btn:disabled {
@@ -276,7 +308,7 @@ body {
 	background-color: var(--card-background);
 	border-radius: calc(var(--radius) - 4px);
 	box-shadow: var(--shadow-lg);
-	padding: 1rem;
+	padding: clamp(0.875rem, 2vw, 1.25rem);
 	border: 1px solid var(--border-color);
 }
 
@@ -326,6 +358,7 @@ body {
 	color: var(--danger-color);
 	font-size: 0.875rem;
 	margin-top: 0.5rem;
+	overflow-wrap: anywhere;
 }
 
 .empty-state {
@@ -340,15 +373,15 @@ body {
 }
 
 .grid-2 {
-	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 17.5rem), 1fr));
 }
 
 .grid-3 {
-	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
 }
 
 .grid-4 {
-	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 16.25rem), 1fr));
 	margin-bottom: 2rem;
 }
 
@@ -356,16 +389,8 @@ body {
 	.grid-2,
 	.grid-3,
 	.grid-4 {
-		grid-template-columns: repeat(2, 1fr);
-		gap: 0.625rem;
-	}
-}
-
-@media (max-width: 28rem) {
-	.grid-2,
-	.grid-3,
-	.grid-4 {
 		grid-template-columns: 1fr;
+		gap: 0.625rem;
 	}
 }
 
@@ -459,6 +484,11 @@ body {
 	.form-input {
 		flex: 1;
 	}
+
+	input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+	select {
+		min-height: 2.75rem;
+	}
 }
 
 .recipe-filter-toggle {
@@ -496,9 +526,23 @@ body {
 }
 
 // ── Responsive global ────────────────────────────────────
+@media (max-width: 48rem) {
+	.page-header {
+		flex-direction: column;
+		align-items: stretch;
+		margin-bottom: 1rem;
+	}
+
+	.page-header-actions {
+		width: 100%;
+		flex-wrap: wrap;
+	}
+}
+
 @media (max-width: 40rem) {
 	.page-header {
-		flex-wrap: wrap;
+		align-items: stretch;
+		flex-direction: column;
 		gap: 0.5rem;
 		margin-bottom: 0.75rem;
 	}
@@ -515,6 +559,7 @@ body {
 	.btn {
 		padding: 0.6rem 1rem;
 		font-size: 0.85rem;
+		min-height: 2.75rem;
 	}
 
 	.form-input {
@@ -525,6 +570,46 @@ body {
 	.empty-state {
 		padding: 2rem 1rem;
 		font-size: 0.9rem;
+	}
+
+	.page-header-actions {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		width: 100%;
+
+		.btn,
+		> button,
+		> a {
+			width: 100%;
+		}
+	}
+
+	.page-header > .page-header-actions {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.5rem;
+	}
+
+	.page-header > .page-header-actions > .week-plan-export,
+	.page-header > .page-header-actions > .export-dropdown {
+		width: 100%;
+
+		.btn {
+			width: 100%;
+		}
+	}
+
+	.page-header > .page-header-actions > :last-child:nth-child(odd) {
+		grid-column: 1 / -1;
+	}
+
+	.modal-card .export-modal-actions {
+		align-items: stretch;
+
+		.btn,
+		button {
+			width: 100%;
+		}
 	}
 }
 /* Recipe selection bar */
@@ -643,6 +728,7 @@ body {
 		border-radius: var(--radius-sm);
 		box-shadow: var(--shadow-lg);
 		min-width: 12rem;
+		max-width: calc(100vw - 1rem);
 		padding: 0.25rem 0;
 	}
 
@@ -660,5 +746,32 @@ body {
 		&:hover {
 			background: var(--surface-1);
 		}
+	}
+}
+
+@media (max-width: 22rem) {
+	.page-header-actions {
+		grid-template-columns: 1fr;
+	}
+
+	.header__inner > .nav__actions .cselect--big {
+		.cselect__value {
+			display: none;
+		}
+
+		.cselect__button {
+			padding-inline: 0.5rem;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
 	}
 }

@@ -87,6 +87,20 @@
 	}
 }
 
+@media (max-width: 40rem) {
+	.tag-ms__input {
+		min-height: 2.75rem;
+	}
+
+	.tag-ms__pills {
+		max-height: 6rem;
+	}
+
+	.tag-ms__pill {
+		min-height: 2.25rem;
+	}
+}
+
 .tag-ms__sep {
 	width: 100%;
 	height: 1px;

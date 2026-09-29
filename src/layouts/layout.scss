@@ -22,12 +22,13 @@
 	justify-content: space-between;
 	gap: 1rem;
 	padding-block: 0.75rem;
+	min-height: 3.75rem;
 }
 
 .container {
-	max-width: 1400px;
+	max-width: 87.5rem;
 	margin-inline: auto;
-	padding-inline: 0.75rem;
+	padding-inline: clamp(0.5rem, 2vw, 1.5rem);
 	width: 100%;
 }
 
@@ -38,8 +39,8 @@
 	justify-content: center;
 	align-items: center;
 	gap: 5px;
-	width: 36px;
-	height: 36px;
+	width: 44px;
+	height: 44px;
 	background: none;
 	border: none;
 	cursor: pointer;
@@ -156,7 +157,7 @@
 
 .main {
 	flex: 1;
-	padding: 1.5rem 0.75rem;
+	padding-block: clamp(0.75rem, 2.5vw, 2rem);
 	background: var(--bg);
 	color: var(--fg);
 }
@@ -179,8 +180,8 @@
 	}
 }
 
-// ── Mobile (≤ 640px) ─────────────────────────────────────
-@media (max-width: 40rem) {
+// ── Navegación compacta (≤ 900px) ────────────────────────
+@media (max-width: 56.25rem) {
 	.header__inner {
 		padding-block: 0.6rem;
 		flex-wrap: nowrap;
@@ -194,7 +195,8 @@
 		display: none;
 		position: fixed;
 		inset: 0;
-		top: 53px;
+		top: 3.75rem;
+		height: calc(100dvh - 3.75rem);
 		background: var(--bg);
 		flex-direction: column;
 		align-items: flex-start;
@@ -203,6 +205,7 @@
 		z-index: 150;
 		border-top: 1px solid var(--border);
 		overflow-y: auto;
+		overscroll-behavior: contain;
 	}
 
 	.nav--open {
@@ -220,13 +223,14 @@
 		button {
 			display: block;
 			width: 100%;
-			padding: 0.875rem 1rem;
+			padding: 0.875rem clamp(1rem, 4vw, 2rem);
+			min-height: 3rem;
 			font-size: 1rem;
 			border-bottom: 1px solid var(--border);
 		}
 	}
 
-	.nav__actions {
+	.nav .nav__actions {
 		padding-left: 0;
 		padding-top: 0.75rem;
 		padding-bottom: 0.75rem;
@@ -235,13 +239,12 @@
 		flex-wrap: wrap;
 		border-top: 1px solid var(--border);
 		width: 100%;
+		padding-inline: clamp(1rem, 4vw, 2rem);
 	}
+}
 
+@media (max-width: 40rem) {
 	.main {
-		padding: 0.75rem 0.5rem;
-	}
-
-	.container {
-		padding-inline: 0.5rem;
+		padding-block: 0.75rem;
 	}
 }

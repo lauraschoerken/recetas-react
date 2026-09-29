@@ -6,7 +6,10 @@
 	display: flex;
 	flex-direction: column;
 	gap: 0.5rem;
-	max-width: 400px;
+	width: min(25rem, calc(100vw - 2rem));
+	max-height: calc(100dvh - 2rem);
+	overflow-y: auto;
+	pointer-events: none;
 }
 
 .toast {
@@ -18,6 +21,7 @@
 	box-shadow: var(--shadow-lg);
 	animation: slideInRight 0.3s ease-out;
 	background: var(--card-background);
+	pointer-events: auto;
 }
 
 @keyframes slideInRight {
@@ -67,6 +71,7 @@
 	flex: 1;
 	font-size: 0.9rem;
 	color: var(--text-primary);
+	overflow-wrap: anywhere;
 }
 
 .toast-close {
@@ -78,6 +83,8 @@
 	padding: 0;
 	line-height: 1;
 	transition: color 0.2s;
+	min-width: 2.5rem;
+	min-height: 2.5rem;
 }
 
 .toast-close:hover {
@@ -102,8 +109,10 @@
 
 @media (max-width: 30rem) {
 	.toast-container {
-		left: 1rem;
-		right: 1rem;
+		left: 0.5rem;
+		right: 0.5rem;
+		top: 0.5rem;
+		width: auto;
 		max-width: none;
 	}
 }

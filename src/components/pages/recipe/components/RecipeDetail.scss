@@ -110,6 +110,7 @@
 		color: var(--text-primary) !important;
 		font-family: inherit !important;
 		font-size: 1rem !important;
+		overflow-x: auto;
 	}
 
 	// Headings
@@ -456,6 +457,13 @@
 	.recipe-detail-actions {
 		justify-content: flex-start;
 		flex-wrap: wrap;
+		width: 100%;
+
+		.btn,
+		button,
+		a {
+			flex: 1 1 8rem;
+		}
 	}
 
 	.recipe-detail-section {
@@ -465,7 +473,19 @@
 	}
 
 	.ingredient-quantity {
-		min-width: 5rem;
+		min-width: 0;
+		flex: 0 0 4.5rem;
+	}
+
+	.recipe-ingredient-item,
+	.component-option {
+		align-items: flex-start;
+		gap: 0.625rem;
+		flex-wrap: wrap;
+	}
+
+	.nutrition-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	.recipe-threshold-section .threshold-form {

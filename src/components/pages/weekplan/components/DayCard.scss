@@ -224,6 +224,8 @@
 	align-items: center;
 	justify-content: center;
 	z-index: 1000;
+	padding: 1rem;
+	overflow-y: auto;
 }
 
 /* Share toggle row */
@@ -381,6 +383,8 @@
 	width: 100%;
 	max-width: 400px;
 	box-shadow: var(--shadow-xl);
+	max-height: calc(100dvh - 2rem);
+	overflow-y: auto;
 }
 
 .cook-modal h3 {
@@ -567,4 +571,31 @@
 .day-card-consume:hover {
 	background: var(--success-color);
 	color: var(--text-inverse);
+}
+
+@media (max-width: 40rem) {
+	.cook-modal-overlay {
+		align-items: flex-end;
+		padding: 0;
+	}
+
+	.cook-modal {
+		max-width: 100%;
+		max-height: calc(100dvh - 0.5rem);
+		padding: 1rem;
+		border-radius: var(--radius) var(--radius) 0 0;
+	}
+
+	.cook-modal-actions {
+		flex-direction: column-reverse;
+
+		button {
+			width: 100%;
+			min-height: 2.75rem;
+		}
+	}
+
+	.cook-modal-location-options {
+		flex-wrap: wrap;
+	}
 }

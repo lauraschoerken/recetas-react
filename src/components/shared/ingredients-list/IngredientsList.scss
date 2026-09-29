@@ -397,7 +397,8 @@ input.has-error.form-input {
 	top: 100%;
 	left: 0;
 	right: 0;
-	min-width: 280px;
+	min-width: min(280px, calc(100vw - 2rem));
+	max-width: calc(100vw - 1rem);
 	background: var(--surface-0);
 	border: 1px solid var(--border-color);
 	border-radius: 10px;
@@ -822,5 +823,12 @@ input.has-error.form-input {
 		padding: 0.75rem;
 		background: var(--surface-1);
 		border-radius: var(--radius-sm);
+	}
+
+	.ingredient-suggestions,
+	.ingredient-dropdown {
+		min-width: 0;
+		width: min(20rem, calc(100vw - 2rem));
+		max-width: calc(100vw - 1rem);
 	}
 }

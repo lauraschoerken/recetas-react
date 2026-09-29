@@ -1,9 +1,6 @@
 .confirm-dialog-overlay {
 	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+	inset: 0;
 	background-color: var(--overlay-bg);
 	display: flex;
 	align-items: center;
@@ -12,6 +9,7 @@
 	padding: 1rem;
 	animation: fadeIn 0.15s ease-out;
 	backdrop-filter: blur(4px);
+	overflow-y: auto;
 }
 
 @keyframes fadeIn {
@@ -33,6 +31,8 @@
 	padding: 1.25rem 1.5rem;
 	text-align: center;
 	animation: slideUp 0.18s ease-out;
+	max-height: calc(100dvh - 2rem);
+	overflow-y: auto;
 }
 
 @keyframes slideUp {
@@ -85,6 +85,20 @@
 
 .confirm-dialog-actions .btn {
 	min-width: 100px;
+}
+
+@media (max-width: 24rem) {
+	.confirm-dialog {
+		padding: 1rem;
+	}
+
+	.confirm-dialog-actions {
+		flex-direction: column-reverse;
+	}
+
+	.confirm-dialog-actions .btn {
+		width: 100%;
+	}
 }
 
 .btn {

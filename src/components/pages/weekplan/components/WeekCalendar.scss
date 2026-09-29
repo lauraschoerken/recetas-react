@@ -58,7 +58,14 @@
 .week-calendar-scroll-wrapper {
 	overflow-x: auto;
 	-webkit-overflow-scrolling: touch;
-	padding-bottom: 0.5rem;
+	padding-bottom: 0.25rem;
+	overscroll-behavior-inline: contain;
+	scroll-snap-type: x proximity;
+	scrollbar-width: none;
+
+	&::-webkit-scrollbar {
+		display: none;
+	}
 }
 
 @media (max-width: 56.25rem) {
@@ -77,7 +84,15 @@
 
 @media (max-width: 40rem) {
 	.week-calendar-header {
-		grid-template-columns: 60px repeat(7, minmax(70px, 1fr));
-		min-width: 540px;
+		grid-template-columns: repeat(7, minmax(5.25rem, 1fr));
+		min-width: 36.75rem;
+	}
+
+	.week-calendar-label {
+		display: none;
+	}
+
+	.week-calendar-day-header {
+		scroll-snap-align: start;
 	}
 }

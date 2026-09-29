@@ -366,7 +366,8 @@
 	top: 100%;
 	left: 0;
 	right: auto;
-	min-width: 300px;
+	min-width: min(300px, calc(100vw - 2rem));
+	max-width: calc(100vw - 1rem);
 	background: var(--surface-0);
 	border: 1px solid t.$color-slate-200;
 	border-radius: 10px;
@@ -836,5 +837,12 @@
 
 	.name-input {
 		width: 100%;
+	}
+
+	.ingredient-suggestions,
+	.option-dropdown {
+		min-width: 0;
+		width: min(20rem, calc(100vw - 2rem));
+		max-width: calc(100vw - 1rem);
 	}
 }

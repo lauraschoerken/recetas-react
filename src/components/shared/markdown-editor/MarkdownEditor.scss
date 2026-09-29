@@ -17,11 +17,21 @@
 		border-bottom: 1px solid var(--border-color);
 		border-radius: 6px 6px 0 0;
 		padding: 0.25rem 0.5rem;
+		overflow-x: auto;
+		overflow-y: hidden;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: thin;
 
 		// Botones de la barra de herramientas
 		li > button {
 			border-radius: 4px;
 		}
+	}
+
+	.w-md-editor-content,
+	.w-md-editor-input,
+	.w-md-editor-preview {
+		min-width: 0;
 	}
 
 	// En modo oscuro el editor ya tiene estilos propios de @uiw via data-color-mode

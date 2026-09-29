@@ -107,6 +107,7 @@
 	list-style: none;
 	margin: 0;
 	width: max-content;
+	max-width: calc(100vw - 1rem);
 }
 
 .cselect__option {
@@ -115,6 +116,7 @@
 	border-radius: var(--radius-sm);
 	cursor: pointer;
 	transition: background 0.15s ease;
+	min-height: 2.75rem;
 
 	& + .cselect__option {
 		margin-top: 4px;

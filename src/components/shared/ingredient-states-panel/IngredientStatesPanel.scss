@@ -236,3 +236,28 @@
 .btn-outline:hover {
 	background: var(--surface-1);
 }
+
+@media (max-width: 40rem) {
+	.ingredient-states-panel {
+		padding: 0.75rem;
+	}
+
+	.states-panel-header,
+	.state-row {
+		align-items: flex-start;
+		flex-wrap: wrap;
+	}
+
+	.add-state-btn,
+	.state-action-btn {
+		min-height: 2.5rem;
+	}
+
+	.state-action-btn {
+		width: 2.5rem;
+	}
+
+	.pending-macros-row {
+		flex-wrap: wrap;
+	}
+}
