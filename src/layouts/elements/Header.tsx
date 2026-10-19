@@ -60,6 +60,9 @@ export const Header = () => {
 							className={({ isActive }) => (isActive ? activeClass : 'link')}>
 							{t('nav.shopping')}
 						</NavLink>
+						<NavLink to='/workouts' className={({ isActive }) => (isActive ? activeClass : 'link')}>
+							{t('nav.workouts')}
+						</NavLink>
 						{isAdmin && (
 							<NavLink to='/admin' className={({ isActive }) => (isActive ? activeClass : 'link')}>
 								{t('nav.admin')}

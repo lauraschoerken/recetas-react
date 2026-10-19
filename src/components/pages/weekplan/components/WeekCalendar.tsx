@@ -62,6 +62,16 @@ export function WeekCalendar({
 
 	return (
 		<div className='week-calendar-split'>
+			<div className='week-calendar-mobile'>
+				{days.map((day) => {
+					const isToday = new Date().toDateString() === day.date.toDateString()
+					return <button key={day.dateStr} className={`mobile-day-card ${isToday ? 'is-today' : ''}`} onClick={() => onDayClick?.(day.dateStr)}>
+						<div className='mobile-day-heading'><span><strong>{day.dayName}</strong><small>{day.date.toLocaleDateString('es-ES',{day:'numeric',month:'short'})}</small></span><b>＋</b></div>
+						<div className='mobile-day-section'><span>{t('weekPlan.meals')}</span><strong>{day.meals.length}</strong>{day.meals.length > 0 && <small>{day.meals.slice(0,2).map((plan) => plan.manualTitle || plan.ingredient?.name || plan.recipe?.title).join(' · ')}</small>}</div>
+						<div className='mobile-day-section prep'><span>{t('weekPlan.toPrep')}</span><strong>{day.preps.length}</strong>{day.preps.length > 0 && <small>{day.preps.slice(0,2).map((plan) => plan.manualTitle || plan.ingredient?.name || plan.recipe?.title).join(' · ')}</small>}</div>
+					</button>
+				})}
+			</div>
 			<div className='week-calendar-scroll-wrapper'>
 				<div className='week-calendar-track'>
 					<div className='week-calendar-header'>

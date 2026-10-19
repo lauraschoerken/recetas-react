@@ -1,0 +1,14 @@
+.workout-form-modal { max-width: 43rem; }
+.workout-form-heading { display:flex; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+.workout-form-heading h2 { margin:.15rem 0 0; }
+.workout-kicker { color:var(--primary-color); font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+.workout-close { border:0; background:transparent; color:var(--text-secondary); font-size:1.8rem; cursor:pointer; }
+.workout-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; }
+.workout-field-wide { grid-column:1/-1; }
+.workout-form-modal input,.workout-form-modal textarea { width:100%; }
+.workout-calorie-toggle { display:flex; gap:.75rem; align-items:flex-start; margin-top:1rem; padding:1rem; border:1px solid var(--border-color); border-radius:var(--radius-sm); background:var(--surface-1); cursor:pointer; }
+.workout-calorie-toggle input { width:1.1rem; height:1.1rem; accent-color:var(--primary-color); }
+.workout-calorie-toggle span { display:flex; flex-direction:column; gap:.2rem; }
+.workout-calorie-toggle small { color:var(--text-secondary); line-height:1.35; }
+.workout-file-button { display:inline-flex; margin-bottom:.75rem; cursor:pointer; }.workout-file-button input{display:none}.workout-json-input{width:100%;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+@media(max-width:36rem){.workout-form-grid{grid-template-columns:1fr}.workout-field-wide{grid-column:auto}.workout-form-modal{border-radius:var(--radius) var(--radius) 0 0;max-height:95dvh}.workout-modal-overlay{align-items:flex-end;padding:0}}

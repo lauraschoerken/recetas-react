@@ -25,6 +25,8 @@ import {
 import { ManualMealModal } from '../components/ManualMealModal'
 import { WeekCalendar } from '../components/WeekCalendar'
 import { WeekPlanImportModal } from '../components/WeekPlanImportModal'
+import { WorkoutFormModal } from '@/components/pages/workout/components/WorkoutFormModal'
+import { WorkoutInput, workoutService } from '@/services/workout'
 
 function getWeekStart(date: Date): Date {
 	const d = new Date(date)
@@ -98,6 +100,8 @@ export function WeekPlanContainer() {
 	const [importingPlan, setImportingPlan] = useState(false)
 	const [showExportMenu, setShowExportMenu] = useState(false)
 	const [exportingPeriod, setExportingPeriod] = useState<WeekPlanExportPeriod | null>(null)
+	const [showWorkout, setShowWorkout] = useState(false)
+	const [savingWorkout, setSavingWorkout] = useState(false)
 
 	useEffect(() => {
 		loadWeekPlan()
@@ -459,6 +463,20 @@ export function WeekPlanContainer() {
 		}
 	}
 
+	const handleAddWorkout = async (data: WorkoutInput) => {
+		setSavingWorkout(true)
+		try {
+			await workoutService.create(data)
+			setShowWorkout(false)
+			await loadWeeklyNutrition()
+			toast.success(t('workouts.saved'))
+		} catch {
+			toast.error(t('workouts.saveError'))
+		} finally {
+			setSavingWorkout(false)
+		}
+	}
+
 	const canGoToPreviousDay = !!dayModalDate && dayModalDate > formatDateStr(currentWeekStart)
 	const canGoToNextDay =
 		!!dayModalDate && dayModalDate < formatDateStr(getWeekEnd(currentWeekStart))
@@ -546,6 +564,10 @@ export function WeekPlanContainer() {
 			)
 		: { protein: 0, carbs: 0, fat: 0, total: 0 }
 
+	const selectedDayCalorieTarget = recommendedMacros
+		? recommendedMacros.calories + (selectedDayNutrition?.calorieTargetAdjustment || 0)
+		: 0
+
 	return (
 		<>
 			<div className='page-header'>
@@ -574,6 +596,12 @@ export function WeekPlanContainer() {
 					<button className='btn btn-primary' onClick={() => openManualMeal()}>
 						{t('weekPlan.addManualMeal')}
 					</button>
+					<button className='btn btn-outline workout-action' onClick={() => setShowWorkout(true)}>
+						{t('workouts.addCustom')}
+					</button>
+					<Link to='/workouts' className='btn btn-outline'>
+						{t('workouts.savedWorkouts')}
+					</Link>
 					<button className='btn btn-outline' onClick={handleOpenAddIngredient}>
 						{t('weekPlan.addIngredient')}
 					</button>
@@ -613,18 +641,19 @@ export function WeekPlanContainer() {
 											<span className='macro-progress-label'>{t('weekPlan.calories')}</span>
 											<span className='macro-progress-values'>
 												<strong>{selectedDayNutrition.calories}</strong> /{' '}
-												{recommendedMacros.calories} kcal
+												{selectedDayCalorieTarget} kcal
 											</span>
 										</div>
 										<div className='progress-bar'>
 											<div
-												className={`progress-fill ${getProgressColor(getProgressPercent(selectedDayNutrition.calories, recommendedMacros.calories))}`}
+												className={`progress-fill ${getProgressColor(getProgressPercent(selectedDayNutrition.calories, selectedDayCalorieTarget))}`}
 												style={{
-													width: `${getProgressPercent(selectedDayNutrition.calories, recommendedMacros.calories)}%`,
+													width: `${getProgressPercent(selectedDayNutrition.calories, selectedDayCalorieTarget)}%`,
 												}}
 											/>
 										</div>
 									</div>
+									{(selectedDayNutrition.exerciseCalories || 0) > 0 && <div className='workout-day-summary'><span>{t('workouts.burnedToday', { calories: selectedDayNutrition.exerciseCalories })}</span>{(selectedDayNutrition.calorieTargetAdjustment || 0) > 0 && <strong>{t('workouts.dayAdjustment', { calories: selectedDayNutrition.calorieTargetAdjustment })}</strong>}<Link to='/workouts'>{t('workouts.title')} →</Link></div>}
 
 									<div className='macro-progress-item'>
 										<div className='macro-progress-header'>
@@ -797,7 +826,7 @@ export function WeekPlanContainer() {
 												</span>
 												<span className='stat-label'>{t('weekPlan.kcal')}</span>
 												{recommendedMacros && (
-													<span className='stat-target'>/ {recommendedMacros.calories}</span>
+											<span className='stat-target'>/ {selectedDayCalorieTarget}</span>
 												)}
 											</div>
 											<div className='weekly-stat'>
@@ -1031,6 +1060,8 @@ export function WeekPlanContainer() {
 					</div>
 				</div>
 			)}
+
+			<WorkoutFormModal open={showWorkout} initialDate={selectedDay} saving={savingWorkout} onClose={() => setShowWorkout(false)} onSave={handleAddWorkout} />
 
 			{dayModalDate && !selectedRecipeForWeek && (
 				<div className='modal-overlay' onClick={() => setDayModalDate(null)}>

@@ -49,4 +49,6 @@ export interface DailyNutrition {
 	carbs: number
 	fat: number
 	fiber: number
+	exerciseCalories?: number
+	calorieTargetAdjustment?: number
 }

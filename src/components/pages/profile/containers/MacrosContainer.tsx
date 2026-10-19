@@ -18,6 +18,16 @@ type ProfileSection = 'macros' | 'account'
 const ACTIVITY_LEVELS: ActivityLevel[] = ['sedentary', 'light', 'moderate', 'active', 'very_active']
 const GOALS: Goal[] = ['maintain', 'lose', 'gain']
 
+function calculateAge(birthDate?: string) {
+	if (!birthDate) return undefined
+	const birth = new Date(`${birthDate}T00:00:00`)
+	const today = new Date()
+	let age = today.getFullYear() - birth.getFullYear()
+	const month = today.getMonth() - birth.getMonth()
+	if (month < 0 || (month === 0 && today.getDate() < birth.getDate())) age--
+	return age
+}
+
 export function MacrosContainer() {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
@@ -147,11 +157,12 @@ export function MacrosContainer() {
 	const hasRequiredData = Boolean(
 		profile.weight &&
 			profile.height &&
-			profile.age &&
+			profile.birthDate &&
 			profile.gender &&
 			profile.activityLevel &&
 			profile.goal
 	)
+	const calculatedAge = calculateAge(profile.birthDate)
 
 	return (
 		<div className='macros-container'>
@@ -215,18 +226,15 @@ export function MacrosContainer() {
 
 										<div className='form-row'>
 											<div className='form-group'>
-												<label className='form-label'>{t('profile.age')}</label>
+												<label className='form-label'>{t('profile.birthDate')}</label>
 												<input
-													type='number'
+													type='date'
 													className='form-input'
-													value={profile.age || ''}
-													onChange={(e) =>
-														handleChange('age', parseInt(e.target.value) || undefined)
-													}
-													placeholder='30'
-													min='18'
-													max='120'
+													value={profile.birthDate || ''}
+													onChange={(e) => handleChange('birthDate', e.target.value || undefined)}
+													max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().slice(0, 10)}
 												/>
+												{calculatedAge && <small className='form-hint'>{t('profile.calculatedAge', { age: calculatedAge })}</small>}
 											</div>
 											<div className='form-group'>
 												<label className='form-label'>{t('profile.gender')}</label>

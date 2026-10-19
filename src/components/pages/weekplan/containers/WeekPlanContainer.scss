@@ -726,6 +726,21 @@
 	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+.workout-day-summary {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.45rem 0.75rem;
+	padding: 0.55rem 0.7rem;
+	border-radius: var(--radius-sm);
+	background: var(--success-bg);
+	font-size: 0.78rem;
+	color: var(--text-secondary);
+}
+
+.workout-day-summary strong { color: var(--success-color); }
+.workout-day-summary a { margin-left: auto; color: var(--primary-color); font-weight: 600; }
+
 @media (max-width: 48rem) {
 	.nutrition-panel-header {
 		flex-direction: column;

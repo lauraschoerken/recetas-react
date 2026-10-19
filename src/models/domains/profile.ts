@@ -9,6 +9,7 @@ export interface UserProfile {
 	weight?: number
 	height?: number
 	age?: number
+	birthDate?: string
 	gender?: Gender
 	activityLevel?: ActivityLevel
 	goal?: Goal

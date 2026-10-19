@@ -629,6 +629,44 @@ export function SettingsContainer() {
 		2
 	)
 
+	const aiWorkoutTemplate = JSON.stringify(
+		{
+			"templates": [
+				{
+					"title": "Pierna y carrera corta",
+					"durationMinutes": 55,
+					"caloriesBurned": 430,
+					"averageHeartRate": 142,
+					"exercises": "Sentadillas: 3 series de 10\nZancadas: 3 series de 10 por pierna\nAbdominales: 3 series de 15\nCorrer 2 km",
+					"notes": "Descanso de 60-90 segundos entre series",
+					"defaultAddCaloriesToGoal": false
+				}
+			],
+			"entries": [
+				{
+					"kind": "template",
+					"date": "2026-10-19",
+					"templateTitle": "Pierna y carrera corta",
+					"addCaloriesToGoal": true,
+					"notes": "Hoy subí el peso en sentadillas"
+				},
+				{
+					"kind": "custom",
+					"date": "2026-10-20",
+					"title": "Paseo largo",
+					"durationMinutes": 70,
+					"caloriesBurned": 280,
+					"averageHeartRate": 105,
+					"exercises": "Caminar 6 km",
+					"notes": "Sesión puntual; no se guarda como plantilla",
+					"addCaloriesToGoal": false
+				}
+			]
+		},
+		null,
+		2
+	)
+
 	useEffect(() => {
 		loadAll()
 	}, [])
@@ -1260,6 +1298,15 @@ export function SettingsContainer() {
 		}
 	}
 
+	const copyAiWorkoutTemplate = async () => {
+		try {
+			await navigator.clipboard.writeText(aiWorkoutTemplate)
+			toast.success(t('settings.templateCopied'))
+		} catch {
+			toast.error(t('settings.templateCopyError'))
+		}
+	}
+
 	if (loading) {
 		return <div className='loading'>{t('loading')}</div>
 	}
@@ -1712,6 +1759,24 @@ export function SettingsContainer() {
 									lineHeight: 1.5,
 									resize: 'vertical',
 								}}
+							/>
+
+							<h3 className='settings-subsection-title' style={{ marginTop: '2rem' }}>
+								{t('settings.workoutJsonTemplate')}
+							</h3>
+							<p className='settings-card-description'>{t('settings.workoutJsonTemplateDesc')}</p>
+							<p className='settings-card-description' style={{ marginTop: '-0.25rem' }}>
+								{t('settings.workoutJsonTemplateHint')}
+							</p>
+							<div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+								<button className='btn btn-outline btn-sm' onClick={copyAiWorkoutTemplate}>
+									{t('settings.copyTemplate')}
+								</button>
+							</div>
+							<textarea
+								readOnly
+								value={aiWorkoutTemplate}
+								style={{ width: '100%', height: '520px', padding: '1rem', borderRadius: '14px', border: '1px solid var(--border-color)', background: 'var(--surface-1)', color: 'var(--text-primary)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '0.81rem', lineHeight: 1.5, resize: 'vertical' }}
 							/>
 						</div>
 					)}

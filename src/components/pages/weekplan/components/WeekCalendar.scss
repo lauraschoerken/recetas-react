@@ -16,6 +16,8 @@
 	min-width: 0;
 }
 
+.week-calendar-mobile { display: none; }
+
 .week-calendar-track {
 	display: flex;
 	flex-direction: column;
@@ -89,6 +91,14 @@
 }
 
 @media (max-width: 40rem) {
+	.week-calendar-scroll-wrapper { display: none; }
+	.week-calendar-mobile { display: grid; gap: .65rem; }
+	.mobile-day-card { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: .55rem; width: 100%; padding: .75rem; text-align: left; color: var(--text-primary); background: var(--surface-0); border: 1px solid var(--border-color); border-radius: var(--radius); box-shadow: var(--shadow); cursor: pointer; }
+	.mobile-day-card.is-today { border-color: var(--primary-color); box-shadow: 0 0 0 1px var(--primary-color); }
+	.mobile-day-heading { grid-column: 1/-1; display:flex; align-items:center; justify-content:space-between; padding-bottom:.45rem; border-bottom:1px solid var(--border-color); }
+	.mobile-day-heading span { display:flex; align-items:baseline; gap:.45rem; }.mobile-day-heading small{color:var(--text-secondary)}.mobile-day-heading b{color:var(--primary-color);font-size:1.2rem}
+	.mobile-day-section { display:grid; grid-template-columns:1fr auto; gap:.2rem .4rem; padding:.55rem; border-radius:var(--radius-sm); background:var(--info-bg); font-size:.78rem; }
+	.mobile-day-section.prep { background:var(--warning-light); }.mobile-day-section small{grid-column:1/-1;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mobile-day-section strong{font-size:.9rem}
 	.week-calendar-header {
 		grid-template-columns: repeat(7, minmax(5.25rem, 1fr));
 		min-width: 36.75rem;
