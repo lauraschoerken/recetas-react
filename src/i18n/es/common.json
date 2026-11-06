@@ -818,11 +818,23 @@
 		"distance": "Distancia",
 		"totalTime": "Tiempo total",
 		"movingTime": "En movimiento",
+		"averagePace": "Ritmo medio",
 		"steps": "Pasos",
 		"averageSpeed": "Velocidad media",
 		"maxSpeed": "Velocidad máxima",
 		"ascent": "Ascenso",
 		"descent": "Descenso",
+		"powerAndStrength": "Potencia, fuerza y efecto de entrenamiento",
+		"averagePower": "Potencia media",
+		"maxPower": "Potencia máxima",
+		"normalizedPower": "Potencia normalizada",
+		"totalSets": "Series totales",
+		"totalReps": "Repeticiones totales",
+		"setsShort": "series",
+		"repsShort": "reps",
+		"aerobicEffect": "Efecto aeróbico",
+		"anaerobicEffect": "Efecto anaeróbico",
+		"activityFamilies": { "running": "Carrera", "walking": "Caminar", "cycling": "Ciclismo", "strength": "Fuerza", "hiit": "HIIT", "swimming": "Natación", "hiking": "Senderismo", "mindBody": "Movilidad", "cardio": "Cardio", "other": "Actividad" },
 		"importTitle": "Importar entrenamientos",
 		"importHint": "El JSON puede crear entrenamientos guardados y registrar sesiones guardadas o personalizadas.",
 		"chooseJson": "Seleccionar archivo JSON",
@@ -968,9 +980,6 @@
 		"pinch": "pizca",
 		"slice": "rebanada",
 		"piece": "trozo"
-	},
-	"footer": {
-		"rights": "Todos los derechos reservados"
 	},
 	"settings": {
 		"title": "Configuración",

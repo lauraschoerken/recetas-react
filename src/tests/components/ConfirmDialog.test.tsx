@@ -37,9 +37,9 @@ describe('ConfirmDialog', () => {
 		const user = userEvent.setup()
 		const onConfirm = vi.fn()
 
-		render(<ConfirmDialog {...defaultProps} onConfirm={onConfirm} />)
+		render(<ConfirmDialog {...defaultProps} confirmText='Confirm' onConfirm={onConfirm} />)
 
-		await user.click(screen.getByText('Confirmar'))
+		await user.click(screen.getByRole('button', { name: 'Confirm' }))
 
 		expect(onConfirm).toHaveBeenCalledTimes(1)
 	})
@@ -48,9 +48,9 @@ describe('ConfirmDialog', () => {
 		const user = userEvent.setup()
 		const onCancel = vi.fn()
 
-		render(<ConfirmDialog {...defaultProps} onCancel={onCancel} />)
+		render(<ConfirmDialog {...defaultProps} cancelText='Cancel' onCancel={onCancel} />)
 
-		await user.click(screen.getByText('Cancelar'))
+		await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
 		expect(onCancel).toHaveBeenCalledTimes(1)
 	})

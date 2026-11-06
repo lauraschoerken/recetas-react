@@ -200,7 +200,7 @@ La gestión de estado es **local en cada Container** usando `useState` + `useEff
 ## Dark/Light Mode
 
 - Sistema de CSS variables definidas en `src/assets/styles/front-global.scss`
-- Se activa añadiendo el atributo `data-theme="dark"` al elemento `<html>`
+- Se activa añadiendo la clase `theme-dark` o `theme-light` al elemento `<html>`
 - `ThemeProvider` gestiona el toggle y persiste en localStorage
 - Nunca usar colores hex directamente en componentes — usar variables CSS
 
@@ -224,7 +224,7 @@ Configuradas en `enviroments/` (nota: directorio con typo intencional heredado):
 ```bash
 # Instalar dependencias
 cd recetas-react
-npm install
+npm ci
 
 # Desarrollo (usa enviroments/dev/.env.dev)
 npm run dev

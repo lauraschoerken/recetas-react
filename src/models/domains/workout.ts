@@ -41,6 +41,13 @@ export interface Workout {
 	intensityMinutes: number | null
 	maxVerticalSpeedMps: number | null
 	lapCount: number | null
+	averagePowerWatts: number | null
+	maxPowerWatts: number | null
+	normalizedPowerWatts: number | null
+	totalReps: number | null
+	totalSets: number | null
+	aerobicTrainingEffect: number | null
+	anaerobicTrainingEffect: number | null
 }
 
 export type GarminWorkoutPreview = Omit<Workout, 'id' | 'createdAt' | 'updatedAt'>
@@ -82,6 +89,13 @@ export interface WorkoutInput {
 	intensityMinutes?: number | null
 	maxVerticalSpeedMps?: number | null
 	lapCount?: number | null
+	averagePowerWatts?: number | null
+	maxPowerWatts?: number | null
+	normalizedPowerWatts?: number | null
+	totalReps?: number | null
+	totalSets?: number | null
+	aerobicTrainingEffect?: number | null
+	anaerobicTrainingEffect?: number | null
 }
 
 export interface WorkoutTemplate {

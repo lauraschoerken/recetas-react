@@ -814,11 +814,23 @@
 		"distance": "Distance",
 		"totalTime": "Total time",
 		"movingTime": "Moving time",
+		"averagePace": "Average pace",
 		"steps": "Steps",
 		"averageSpeed": "Average speed",
 		"maxSpeed": "Maximum speed",
 		"ascent": "Ascent",
 		"descent": "Descent",
+		"powerAndStrength": "Power, strength and training effect",
+		"averagePower": "Average power",
+		"maxPower": "Maximum power",
+		"normalizedPower": "Normalized power",
+		"totalSets": "Total sets",
+		"totalReps": "Total repetitions",
+		"setsShort": "sets",
+		"repsShort": "reps",
+		"aerobicEffect": "Aerobic effect",
+		"anaerobicEffect": "Anaerobic effect",
+		"activityFamilies": { "running": "Running", "walking": "Walking", "cycling": "Cycling", "strength": "Strength", "hiit": "HIIT", "swimming": "Swimming", "hiking": "Hiking", "mindBody": "Mobility", "cardio": "Cardio", "other": "Activity" },
 		"importTitle": "Import workouts",
 		"importHint": "The JSON can create saved workouts and log saved or custom sessions.",
 		"chooseJson": "Choose JSON file",
@@ -1027,9 +1039,6 @@
 		"pinch": "pinch",
 		"slice": "slice",
 		"piece": "piece"
-	},
-	"footer": {
-		"rights": "All rights reserved"
 	},
 	"products": {
 		"title": "Products",

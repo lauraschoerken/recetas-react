@@ -710,6 +710,13 @@ export function SettingsContainer() {
 					"intensityMinutes": 35,
 					"maxVerticalSpeedMps": 0.35,
 					"lapCount": 1,
+					"averagePowerWatts": 185,
+					"maxPowerWatts": 420,
+					"normalizedPowerWatts": 205,
+					"totalReps": 45,
+					"totalSets": 6,
+					"aerobicTrainingEffect": 3.1,
+					"anaerobicTrainingEffect": 1.4,
 					"exercises": "Caminar 6 km",
 					"notes": "Sesión puntual; no se guarda como plantilla",
 					"addCaloriesToGoal": false

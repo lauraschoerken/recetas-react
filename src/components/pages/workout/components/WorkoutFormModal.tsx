@@ -24,6 +24,7 @@ export function WorkoutFormModal({ open, initialDate, workout, initialValues, sa
 		activityType: '', locationName: '', distanceKm: '', movingMinutes: '', elapsedMinutes: '', averageSpeedKmh: '', averageMovingSpeedKmh: '', maxSpeedKmh: '',
 		elevationGain: '', elevationLoss: '', minElevation: '', averageElevation: '', maxElevation: '', minHeartRate: '', maxHeartRate: '', averageCadence: '', maxCadence: '',
 		steps: '', restingCalories: '', activeCalories: '', sweatLoss: '', moderateMinutes: '', vigorousMinutes: '', intensityMinutes: '', maxVerticalSpeedKmh: '', lapCount: '',
+		averagePower: '', maxPower: '', normalizedPower: '', totalReps: '', totalSets: '', aerobicEffect: '', anaerobicEffect: '',
 	})
 
 	useEffect(() => {
@@ -52,6 +53,8 @@ export function WorkoutFormModal({ open, initialDate, workout, initialValues, sa
 			restingCalories: (workout?.restingCalories ?? initialValues?.restingCalories)?.toString() || '', activeCalories: (workout?.activeCalories ?? initialValues?.activeCalories)?.toString() || '', sweatLoss: (workout?.estimatedSweatLossMl ?? initialValues?.estimatedSweatLossMl)?.toString() || '',
 			moderateMinutes: (workout?.moderateIntensityMinutes ?? initialValues?.moderateIntensityMinutes)?.toString() || '', vigorousMinutes: (workout?.vigorousIntensityMinutes ?? initialValues?.vigorousIntensityMinutes)?.toString() || '', intensityMinutes: (workout?.intensityMinutes ?? initialValues?.intensityMinutes)?.toString() || '',
 			maxVerticalSpeedKmh: ((workout?.maxVerticalSpeedMps ?? initialValues?.maxVerticalSpeedMps) != null ? (workout?.maxVerticalSpeedMps ?? initialValues?.maxVerticalSpeedMps)! * 3.6 : '').toString(), lapCount: (workout?.lapCount ?? initialValues?.lapCount)?.toString() || '',
+			averagePower: (workout?.averagePowerWatts ?? initialValues?.averagePowerWatts)?.toString() || '', maxPower: (workout?.maxPowerWatts ?? initialValues?.maxPowerWatts)?.toString() || '', normalizedPower: (workout?.normalizedPowerWatts ?? initialValues?.normalizedPowerWatts)?.toString() || '',
+			totalReps: (workout?.totalReps ?? initialValues?.totalReps)?.toString() || '', totalSets: (workout?.totalSets ?? initialValues?.totalSets)?.toString() || '', aerobicEffect: (workout?.aerobicTrainingEffect ?? initialValues?.aerobicTrainingEffect)?.toString() || '', anaerobicEffect: (workout?.anaerobicTrainingEffect ?? initialValues?.anaerobicTrainingEffect)?.toString() || '',
 		})
 	}, [open, workout, initialValues, initialDate])
 
@@ -83,6 +86,8 @@ export function WorkoutFormModal({ open, initialDate, workout, initialValues, sa
 			minHeartRate: number(form.minHeartRate), maxHeartRate: number(form.maxHeartRate), averageCadence: number(form.averageCadence), maxCadence: number(form.maxCadence), steps: number(form.steps),
 			restingCalories: number(form.restingCalories), activeCalories: number(form.activeCalories), estimatedSweatLossMl: number(form.sweatLoss), moderateIntensityMinutes: number(form.moderateMinutes), vigorousIntensityMinutes: number(form.vigorousMinutes), intensityMinutes: number(form.intensityMinutes),
 			maxVerticalSpeedMps: form.maxVerticalSpeedKmh === '' ? null : Number(form.maxVerticalSpeedKmh) / 3.6, lapCount: number(form.lapCount),
+			averagePowerWatts: number(form.averagePower), maxPowerWatts: number(form.maxPower), normalizedPowerWatts: number(form.normalizedPower), totalReps: number(form.totalReps), totalSets: number(form.totalSets),
+			aerobicTrainingEffect: number(form.aerobicEffect), anaerobicTrainingEffect: number(form.anaerobicEffect),
 		})
 	}
 
@@ -106,7 +111,7 @@ export function WorkoutFormModal({ open, initialDate, workout, initialValues, sa
 					<summary>{t('workouts.optionalDetails')}</summary>
 					<p>{t('workouts.optionalDetailsHint')}</p>
 					<h3>{t('workouts.activityAndDistance')}</h3><div className='workout-form-grid'>
-						<label className='form-group'><span>{t('workouts.activityType')}</span><input value={form.activityType} onChange={(e) => setForm({...form,activityType:e.target.value})} /></label>
+						<label className='form-group'><span>{t('workouts.activityType')}</span><input list='activity-type-options' value={form.activityType} onChange={(e) => setForm({...form,activityType:e.target.value})} /><datalist id='activity-type-options'><option value='running' /><option value='trail_running' /><option value='walking' /><option value='hiking' /><option value='cycling' /><option value='indoor_cycling' /><option value='strength_training' /><option value='hiit' /><option value='cardio' /><option value='swimming' /><option value='yoga' /><option value='pilates' /></datalist></label>
 						<label className='form-group'><span>{t('workouts.location')}</span><input value={form.locationName} onChange={(e) => setForm({...form,locationName:e.target.value})} /></label>
 						<label className='form-group'><span>{t('workouts.distanceKm')}</span><input type='number' min='0' step='0.001' value={form.distanceKm} onChange={(e) => setForm({...form,distanceKm:e.target.value})} /></label>
 						<label className='form-group'><span>{t('workouts.steps')}</span><input type='number' min='0' value={form.steps} onChange={(e) => setForm({...form,steps:e.target.value})} /></label>
@@ -125,6 +130,15 @@ export function WorkoutFormModal({ open, initialDate, workout, initialValues, sa
 						<label className='form-group'><span>{t('workouts.maxHeartRate')}</span><input type='number' min='20' max='250' value={form.maxHeartRate} onChange={(e) => setForm({...form,maxHeartRate:e.target.value})} /></label>
 						<label className='form-group'><span>{t('workouts.averageCadence')}</span><input type='number' min='0' step='0.01' value={form.averageCadence} onChange={(e) => setForm({...form,averageCadence:e.target.value})} /></label>
 						<label className='form-group'><span>{t('workouts.maxCadence')}</span><input type='number' min='0' step='0.01' value={form.maxCadence} onChange={(e) => setForm({...form,maxCadence:e.target.value})} /></label>
+					</div>
+					<h3>{t('workouts.powerAndStrength')}</h3><div className='workout-form-grid'>
+						<label className='form-group'><span>{t('workouts.averagePower')}</span><input type='number' min='0' value={form.averagePower} onChange={(e) => setForm({...form,averagePower:e.target.value})} /></label>
+						<label className='form-group'><span>{t('workouts.maxPower')}</span><input type='number' min='0' value={form.maxPower} onChange={(e) => setForm({...form,maxPower:e.target.value})} /></label>
+						<label className='form-group'><span>{t('workouts.normalizedPower')}</span><input type='number' min='0' value={form.normalizedPower} onChange={(e) => setForm({...form,normalizedPower:e.target.value})} /></label>
+						<label className='form-group'><span>{t('workouts.totalSets')}</span><input type='number' min='0' value={form.totalSets} onChange={(e) => setForm({...form,totalSets:e.target.value})} /></label>
+						<label className='form-group'><span>{t('workouts.totalReps')}</span><input type='number' min='0' value={form.totalReps} onChange={(e) => setForm({...form,totalReps:e.target.value})} /></label>
+						<label className='form-group'><span>{t('workouts.aerobicEffect')}</span><input type='number' min='0' max='5' step='0.1' value={form.aerobicEffect} onChange={(e) => setForm({...form,aerobicEffect:e.target.value})} /></label>
+						<label className='form-group'><span>{t('workouts.anaerobicEffect')}</span><input type='number' min='0' max='5' step='0.1' value={form.anaerobicEffect} onChange={(e) => setForm({...form,anaerobicEffect:e.target.value})} /></label>
 					</div>
 					<h3>{t('workouts.elevation')}</h3><div className='workout-form-grid'>
 						{([['elevationGain','ascent'],['elevationLoss','descent'],['minElevation','minElevation'],['averageElevation','averageElevation'],['maxElevation','maxElevation']] as const).map(([field,label]) => <label className='form-group' key={field}><span>{t(`workouts.${label}`)} (m)</span><input type='number' step='0.01' value={form[field]} onChange={(e) => setForm({...form,[field]:e.target.value})} /></label>)}
