@@ -9,6 +9,7 @@ import {
 	PdfVariantsModalQuestion,
 } from '@/components/shared/pdf-variants-modal/PdfVariantsModal'
 import { RecipeExportModal } from '@/components/shared/recipe-export-modal/RecipeExportModal'
+import { authService } from '@/services/auth'
 import { pdfService } from '@/services/pdf'
 import { Recipe, recipeService } from '@/services/recipe'
 import { useDialog } from '@/utils/dialog/DialogContext'
@@ -21,6 +22,7 @@ interface RecipeCardProps {
 	onAddToWeek: (recipe: Recipe) => void
 	isSelected?: boolean
 	onSelect?: (id: number) => void
+	onHide?: (recipe: Recipe) => void
 }
 
 export function RecipeCard({
@@ -30,6 +32,7 @@ export function RecipeCard({
 	onAddToWeek,
 	isSelected,
 	onSelect,
+	onHide,
 }: RecipeCardProps) {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
@@ -270,7 +273,9 @@ export function RecipeCard({
 				editPath={`/recipes/${recipe.id}/edit`}
 				detailPath={`/recipes/${recipe.id}`}
 				isSelected={isSelected}
+				canEdit={authService.isAdmin()}
 				onSelect={onSelect ? () => onSelect(recipe.id) : undefined}
+				onHide={onHide ? () => onHide(recipe) : undefined}
 			/>
 
 			<RecipeExportModal

@@ -61,6 +61,7 @@ export function RecipeDetailContainer() {
 
 	if (loading) return <div className='loading'>{t('recipes.loading')}</div>
 	if (error || !recipe) return <div className='error-message'>{error || t('error')}</div>
+	const isOwner = recipe.userId === authService.getUser()?.id
 
 	return (
 		<>
@@ -68,7 +69,8 @@ export function RecipeDetailContainer() {
 				recipe={recipe}
 				onDelete={handleDelete}
 				onAddToWeek={handleAddToWeek}
-				isOwner={recipe.userId === authService.getUser()?.id}
+				isOwner={isOwner}
+				canEdit={isOwner || authService.isAdmin()}
 			/>
 
 			<AddToWeekModal recipe={recipe} isOpen={modalOpen} onClose={() => setModalOpen(false)} />

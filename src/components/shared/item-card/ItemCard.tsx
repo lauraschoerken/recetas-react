@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { HiOutlineArrowDownTray, HiOutlineLockClosed } from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
 
-import { CalendarAddIcon, DeleteIcon, EditIcon } from '@/components/shared/icons'
+import { CalendarAddIcon, DeleteIcon, EditIcon, HideIcon } from '@/components/shared/icons'
 
 export interface ItemCardData {
 	id: number
@@ -31,6 +31,8 @@ interface ItemCardProps {
 	detailPath?: string
 	isSelected?: boolean
 	onSelect?: () => void
+	onHide?: () => void
+	canEdit?: boolean
 }
 
 export function ItemCard({
@@ -43,6 +45,8 @@ export function ItemCard({
 	detailPath,
 	isSelected,
 	onSelect,
+	onHide,
+	canEdit,
 }: ItemCardProps) {
 	const { t } = useTranslation()
 	const isOwner = item.userId === currentUserId
@@ -114,11 +118,13 @@ export function ItemCard({
 							<HiOutlineArrowDownTray size={14} aria-hidden='true' />
 						</button>
 					)}
+					{(isOwner || canEdit) && (
+						<Link to={editPath} className='item-card-action-btn' title={t('edit')}>
+							<EditIcon size={14} aria-hidden='true' />
+						</Link>
+					)}
 					{isOwner && (
 						<>
-							<Link to={editPath} className='item-card-action-btn' title={t('edit')}>
-								<EditIcon size={14} aria-hidden='true' />
-							</Link>
 							<button
 								className='item-card-action-btn item-card-action-btn--danger'
 								onClick={() => onDelete(item.id)}
@@ -126,6 +132,14 @@ export function ItemCard({
 								<DeleteIcon size={14} aria-hidden='true' />
 							</button>
 						</>
+					)}
+					{!isOwner && item.isPublic && onHide && (
+						<button
+							className='item-card-action-btn'
+							onClick={onHide}
+							title={t('recipes.hide')}>
+							<HideIcon size={14} aria-hidden='true' />
+						</button>
 					)}
 				</div>
 			</div>

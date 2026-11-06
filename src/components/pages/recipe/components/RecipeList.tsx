@@ -11,6 +11,7 @@ interface RecipeListProps {
 	onAddToWeek: (recipe: Recipe) => void
 	selectedIds?: Set<number>
 	onToggleSelect?: (id: number) => void
+	onHide?: (recipe: Recipe) => void
 }
 
 export function RecipeList({
@@ -20,6 +21,7 @@ export function RecipeList({
 	onAddToWeek,
 	selectedIds,
 	onToggleSelect,
+	onHide,
 }: RecipeListProps) {
 	const { t } = useTranslation()
 
@@ -43,6 +45,7 @@ export function RecipeList({
 					onAddToWeek={onAddToWeek}
 					isSelected={selectedIds?.has(recipe.id)}
 					onSelect={onToggleSelect}
+					onHide={onHide}
 				/>
 			))}
 		</div>

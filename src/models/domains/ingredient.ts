@@ -23,6 +23,10 @@ export interface Ingredient {
 	id: number
 	name: string
 	unit: string
+	createdAt?: string
+	updatedAt?: string
+	createdByUserId?: number | null
+	createdBy?: { id: number; name: string } | null
 	status?: string // 'GLOBAL' | 'PENDING' | 'PRIVATE' | 'REJECTED'
 	ingredientBaseUnit?: string
 	quantity?: number

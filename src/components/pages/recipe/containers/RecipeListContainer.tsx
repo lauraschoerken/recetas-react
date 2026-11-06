@@ -11,6 +11,7 @@ import {
 import { RecipeImportSourceModal } from '@/components/shared/recipe-import-modal/RecipeImportSourceModal'
 import { RecipeJsonTextModal } from '@/components/shared/recipe-import-modal/RecipeJsonTextModal'
 import { authService } from '@/services/auth'
+import { ingredientService } from '@/services/ingredient'
 import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras'
 import { pdfService } from '@/services/pdf'
 import { Recipe, recipeService } from '@/services/recipe'
@@ -124,6 +125,11 @@ export function RecipeListContainer() {
 		>
 	} | null>(null)
 	const [importSearchByConflict, setImportSearchByConflict] = useState<Record<string, string>>({})
+	const [importSearchResults, setImportSearchResults] = useState<
+		Record<string, Array<{ id: number; name: string }>>
+	>({})
+	const importSearchTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
+	const importSearchRequests = useRef<Record<string, number>>({})
 	const currentUser = authService.getUser()
 
 	// Selección múltiple
@@ -248,6 +254,28 @@ export function RecipeListContainer() {
 			toast.success(t('recipes.deleted'))
 		} catch {
 			toast.error(t('recipes.deleteError'))
+		}
+	}
+
+	const handleHide = async (recipe: Recipe) => {
+		const confirmed = await confirm({
+			title: t('recipes.hideTitle'),
+			message: t('recipes.hideConfirm', { title: recipe.title }),
+			confirmText: t('recipes.hide'),
+		})
+		if (!confirmed) return
+
+		try {
+			await recipeService.hide(recipe.id)
+			setSelectedIds((prev) => {
+				const next = new Set(prev)
+				next.delete(recipe.id)
+				return next
+			})
+			await loadRecipes()
+			toast.success(t('recipes.hidden'))
+		} catch {
+			toast.error(t('recipes.hideError'))
 		}
 	}
 
@@ -653,7 +681,43 @@ export function RecipeListContainer() {
 	}) => {
 		const query = (importSearchByConflict[conflict.key] ?? '').trim().toLowerCase()
 		if (!query) return conflict.candidates
-		return conflict.candidates.filter((candidate) => candidate.name.toLowerCase().includes(query))
+		return (
+			importSearchResults[conflict.key] ??
+			conflict.candidates.filter((candidate) => normalizeText(candidate.name).includes(normalizeText(query)))
+		)
+	}
+
+	const handleImportIngredientSearch = (conflictKey: string, value: string) => {
+		setImportSearchByConflict((prev) => ({ ...prev, [conflictKey]: value }))
+		const requestId = (importSearchRequests.current[conflictKey] ?? 0) + 1
+		importSearchRequests.current[conflictKey] = requestId
+		if (importSearchTimers.current[conflictKey]) {
+			clearTimeout(importSearchTimers.current[conflictKey])
+		}
+
+		const query = value.trim()
+		if (!query) {
+			setImportSearchResults((prev) => {
+				const next = { ...prev }
+				delete next[conflictKey]
+				return next
+			})
+			return
+		}
+
+		importSearchTimers.current[conflictKey] = setTimeout(async () => {
+			try {
+				const results = await ingredientService.search(query)
+				if (importSearchRequests.current[conflictKey] !== requestId) return
+				setImportSearchResults((prev) => ({
+					...prev,
+					[conflictKey]: results.map(({ id, name }) => ({ id, name })),
+				}))
+			} catch {
+				if (importSearchRequests.current[conflictKey] !== requestId) return
+				setImportSearchResults((prev) => ({ ...prev, [conflictKey]: [] }))
+			}
+		}, 250)
 	}
 
 	const handleImportPdf = async (file: File, inputEl: HTMLInputElement) => {
@@ -835,6 +899,7 @@ export function RecipeListContainer() {
 				onAddToWeek={handleAddToWeek}
 				selectedIds={selectedIds}
 				onToggleSelect={handleToggleSelect}
+				onHide={handleHide}
 			/>
 
 			{showExportModal && (
@@ -999,10 +1064,7 @@ export function RecipeListContainer() {
 												value={importSearchByConflict[conflict.key] ?? ''}
 												placeholder={t('recipes.importReviewSearchPlaceholder')}
 												onChange={(e) =>
-													setImportSearchByConflict((prev) => ({
-														...prev,
-														[conflict.key]: e.target.value,
-													}))
+													handleImportIngredientSearch(conflict.key, e.target.value)
 												}
 												style={{
 													width: '100%',

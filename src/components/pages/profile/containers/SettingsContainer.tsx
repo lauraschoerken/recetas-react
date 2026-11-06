@@ -19,6 +19,7 @@ import { authService } from '@/services/auth'
 import { backupService } from '@/services/backup'
 import { Household, householdService } from '@/services/household'
 import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras'
+import { Recipe, recipeService } from '@/services/recipe'
 import { storeService, UserStore } from '@/services/store'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import {
@@ -40,6 +41,7 @@ type SettingsSection =
 	| 'display'
 	| 'stores'
 	| 'tags'
+	| 'hiddenRecipes'
 
 export function SettingsContainer() {
 	const { t } = useTranslation()
@@ -53,6 +55,7 @@ export function SettingsContainer() {
 		{ id: 'thresholds', label: t('settings.thresholdsSection'), icon: '📦' },
 		{ id: 'stores', label: t('settings.storesSection'), icon: '🛒' },
 		{ id: 'tags', label: t('settings.tagsSection'), icon: '🏷️' },
+		{ id: 'hiddenRecipes', label: t('settings.hiddenRecipesSection'), icon: '🙈' },
 		{ id: 'pdf', label: t('settings.pdfSettings'), icon: '📄' },
 		{ id: 'backup', label: t('settings.importExport'), icon: '💾' },
 		{ id: 'additional', label: t('settings.additionalSection'), icon: '🤖' },
@@ -151,6 +154,8 @@ export function SettingsContainer() {
 	const [pdfShowVisibility, setPdfShowVisibility] = useState(
 		() => localStorage.getItem('pdfShowVisibility') === 'true'
 	)
+	const [hiddenRecipes, setHiddenRecipes] = useState<Recipe[]>([])
+	const [hiddenRecipesLoading, setHiddenRecipesLoading] = useState(false)
 
 	const aiRecipeTemplate = JSON.stringify(
 		{
@@ -681,7 +686,31 @@ export function SettingsContainer() {
 		if (activeSection === 'tags') {
 			loadTags()
 		}
+		if (activeSection === 'hiddenRecipes') {
+			loadHiddenRecipes()
+		}
 	}, [activeSection])
+
+	const loadHiddenRecipes = async () => {
+		setHiddenRecipesLoading(true)
+		try {
+			setHiddenRecipes(await recipeService.getHidden())
+		} catch {
+			toast.error(t('settings.hiddenRecipesLoadError'))
+		} finally {
+			setHiddenRecipesLoading(false)
+		}
+	}
+
+	const handleUnhideRecipe = async (recipe: Recipe) => {
+		try {
+			await recipeService.unhide(recipe.id)
+			setHiddenRecipes((prev) => prev.filter((item) => item.id !== recipe.id))
+			toast.success(t('settings.recipeUnhidden'))
+		} catch {
+			toast.error(t('settings.recipeUnhideError'))
+		}
+	}
 
 	useEffect(() => {
 		const isOpen = !!unshareModal || !!mergeModal
@@ -2455,6 +2484,46 @@ export function SettingsContainer() {
 									))}
 								</div>
 							</div>
+						</div>
+					)}
+
+					{activeSection === 'hiddenRecipes' && (
+						<div className='settings-card'>
+							<h2 className='settings-card-title'>{t('settings.hiddenRecipesSection')}</h2>
+							<p className='settings-card-description'>{t('settings.hiddenRecipesDesc')}</p>
+
+							{hiddenRecipesLoading ? (
+								<p className='settings-card-description'>{t('settings.loading')}</p>
+							) : hiddenRecipes.length === 0 ? (
+								<p className='settings-empty-message'>{t('settings.hiddenRecipesEmpty')}</p>
+							) : (
+								<div className='hidden-recipes-list'>
+									{hiddenRecipes.map((recipe) => (
+										<div key={recipe.id} className='hidden-recipe-row'>
+											<div className='hidden-recipe-info'>
+												{recipe.imageUrl && (
+													<img src={recipe.imageUrl} alt='' className='hidden-recipe-image' />
+												)}
+												<div>
+													<strong>{recipe.title}</strong>
+													{recipe.authorName && (
+														<span className='hidden-recipe-author'>
+															{t('settings.hiddenRecipeAuthor', { name: recipe.authorName })}
+														</span>
+													)}
+												</div>
+											</div>
+											<button
+												type='button'
+												className='btn btn-outline btn-sm'
+												onClick={() => handleUnhideRecipe(recipe)}>
+												<HiOutlineEye />
+												{t('settings.unhideRecipe')}
+											</button>
+										</div>
+									))}
+								</div>
+							)}
 						</div>
 					)}
 				</div>

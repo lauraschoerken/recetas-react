@@ -46,6 +46,12 @@ export interface CreateConversionData {
 }
 
 class IngredientService {
+	async search(query: string): Promise<Ingredient[]> {
+		const q = query.trim()
+		if (!q) return []
+		return api.get<Ingredient[]>(`/ingredients/search?q=${encodeURIComponent(q)}`)
+	}
+
 	async getAll(): Promise<Ingredient[]> {
 		const result = await api.get<{ data: Ingredient[]; total: number }>('/ingredients')
 		return result.data
@@ -57,6 +63,7 @@ class IngredientService {
 		search?: string
 		sortBy?: string
 		sortOrder?: 'asc' | 'desc'
+		authorId?: number | null
 		location?: string
 		statusFilter?: string
 		hasNutrition?: boolean
@@ -74,6 +81,7 @@ class IngredientService {
 		if (params.search) q.set('search', params.search)
 		if (params.sortBy) q.set('sortBy', params.sortBy)
 		if (params.sortOrder) q.set('sortOrder', params.sortOrder)
+		if (params.authorId != null) q.set('author', String(params.authorId))
 		if (params.location) q.set('location', params.location)
 		if (params.statusFilter) q.set('statusFilter', params.statusFilter)
 		if (params.hasNutrition) q.set('hasNutrition', 'true')
@@ -87,6 +95,10 @@ class IngredientService {
 		if (params.maxFat != null) q.set('maxFat', String(params.maxFat))
 		if (params.tagIds && params.tagIds.length > 0) q.set('tags', params.tagIds.join(','))
 		return api.get<{ data: Ingredient[]; total: number }>(`/ingredients?${q}`)
+	}
+
+	async getAuthors(): Promise<{ id: number; name: string }[]> {
+		return api.get<{ id: number; name: string }[]>('/ingredients/authors')
 	}
 
 	async getById(id: number): Promise<Ingredient> {

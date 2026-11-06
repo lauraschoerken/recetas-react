@@ -8,6 +8,7 @@ import { Pagination } from '@/components/shared/pagination/Pagination'
 import { ShoppingCartIcon } from '@/components/shared/icons'
 import { TagMultiSelect } from '@/components/shared/tag-multi-select/TagMultiSelect'
 import { alertService, IngredientThreshold } from '@/services/alert'
+import { authService } from '@/services/auth'
 import { Ingredient, ingredientService, UpdateIngredientData } from '@/services/ingredient'
 import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras'
 import { shoppingService } from '@/services/shopping'
@@ -20,12 +21,23 @@ import { IngredientCard } from '../components/IngredientCard'
 import { IngredientFormModal } from './IngredientFormModal'
 
 // Opciones de ordenación disponibles
-const SORT_OPTIONS = ['name', 'calories', 'protein', 'carbs', 'fat', 'fiber'] as const
+const SORT_OPTIONS = [
+	'name',
+	'createdAt',
+	'updatedAt',
+	'calories',
+	'protein',
+	'carbs',
+	'fat',
+	'fiber',
+] as const
 type SortField = (typeof SORT_OPTIONS)[number]
 
 export function IngredientListContainer() {
 	const { t } = useTranslation()
 	const { confirm, toast } = useDialog()
+	const currentUser = authService.getUser()
+	const isAdmin = authService.isAdmin()
 	const [ingredients, setIngredients] = useState<Ingredient[]>([])
 	const [allThresholds, setAllThresholds] = useState<IngredientThreshold[]>([])
 	const [loading, setLoading] = useState(true)
@@ -35,6 +47,7 @@ export function IngredientListContainer() {
 	const [stores, setStores] = useState<UserStore[]>([])
 	const [filtersOpen, setFiltersOpen] = useState(false)
 	const [availableTags, setAvailableTags] = useState<IngredientTag[]>([])
+	const [authors, setAuthors] = useState<{ id: number; name: string }[]>([])
 	const [tagMap, setTagMap] = useState<
 		Record<string, { id: number; name: string; color?: string | null }[]>
 	>({})
@@ -63,6 +76,7 @@ export function IngredientListContainer() {
 	const sortOrder = (searchParams.get('sortOrder') || 'asc') as 'asc' | 'desc'
 	const filterLocation = searchParams.get('loc') || ''
 	const filterStatus = searchParams.get('status') || ''
+	const filterAuthorId = searchParams.get('author') ? Number(searchParams.get('author')) : null
 	const filterHasNutrition = searchParams.get('hasNutr') === 'true'
 	const filterMinCal = searchParams.get('minCal') ? Number(searchParams.get('minCal')) : undefined
 	const filterMaxCal = searchParams.get('maxCal') ? Number(searchParams.get('maxCal')) : undefined
@@ -107,6 +121,7 @@ export function IngredientListContainer() {
 	const activeFilterCount = [
 		filterLocation,
 		filterStatus,
+		filterAuthorId != null,
 		filterHasNutrition,
 		filterMinCal != null,
 		filterMaxCal != null,
@@ -146,6 +161,14 @@ export function IngredientListContainer() {
 		}
 	}, [])
 
+	const loadAuthors = useCallback(async () => {
+		try {
+			setAuthors(await ingredientService.getAuthors())
+		} catch (error) {
+			console.error('Error loading ingredient authors:', error)
+		}
+	}, [])
+
 	const loadIngredients = useCallback(async () => {
 		setLoading(true)
 		try {
@@ -155,6 +178,7 @@ export function IngredientListContainer() {
 				search: normalizeText(search),
 				sortBy,
 				sortOrder,
+				authorId: filterAuthorId,
 				location: filterLocation || undefined,
 				statusFilter: filterStatus || undefined,
 				hasNutrition: filterHasNutrition || undefined,
@@ -192,6 +216,7 @@ export function IngredientListContainer() {
 		sortOrder,
 		filterLocation,
 		filterStatus,
+		filterAuthorId,
 		filterHasNutrition,
 		filterMinCal,
 		filterMaxCal,
@@ -220,6 +245,10 @@ export function IngredientListContainer() {
 	useEffect(() => {
 		loadTags()
 	}, [loadTags])
+
+	useEffect(() => {
+		loadAuthors()
+	}, [loadAuthors])
 
 	// Sincronizar localSearch con URL
 	useEffect(() => {
@@ -317,6 +346,7 @@ export function IngredientListContainer() {
 				;[
 					'loc',
 					'status',
+					'author',
 					'hasNutr',
 					'minCal',
 					'maxCal',
@@ -623,6 +653,24 @@ export function IngredientListContainer() {
 							</select>
 						</div>
 
+						{/* Usuario creador */}
+						{authors.length > 0 && (
+							<div className='filter-group'>
+								<label className='filter-label'>{t('ingredients.filterAuthor')}</label>
+								<select
+									className='form-input'
+									value={filterAuthorId ?? ''}
+									onChange={(e) => updateParam('author', e.target.value || null)}>
+									<option value=''>{t('ingredients.authorAll')}</option>
+									{authors.map((author) => (
+										<option key={author.id} value={author.id}>
+											{author.name}
+										</option>
+									))}
+								</select>
+							</div>
+						)}
+
 						{/* Tiene macros */}
 						<div className='filter-group filter-group--check'>
 							<label className='filter-check-label'>
@@ -872,7 +920,13 @@ export function IngredientListContainer() {
 										return aOrd - bOrd
 									})}
 								onUpdate={handleUpdate}
-								onDelete={handleDelete}
+								onDelete={
+									isAdmin ||
+									(ingredient.status !== 'GLOBAL' &&
+										ingredient.createdByUserId === currentUser?.id)
+										? handleDelete
+										: undefined
+								}
 								onEdit={setEditingIngredient}
 								onConversionChange={loadIngredients}
 								onThresholdChange={loadThresholds}

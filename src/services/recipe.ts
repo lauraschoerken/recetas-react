@@ -85,6 +85,18 @@ export const recipeService = {
 		return api.delete(`/recipes/${id}`)
 	},
 
+	async hide(id: number): Promise<void> {
+		return api.post(`/recipes/${id}/hide`, {})
+	},
+
+	async unhide(id: number): Promise<void> {
+		return api.delete(`/recipes/${id}/hide`)
+	},
+
+	async getHidden(): Promise<Recipe[]> {
+		return api.get<Recipe[]>('/recipes/hidden')
+	},
+
 	async exportCsv(ids: number[]): Promise<void> {
 		const token = localStorage.getItem('token')
 		const response = await fetch(`${RECIPE_API_URL}/recipes/export/csv?ids=${ids.join(',')}`, {

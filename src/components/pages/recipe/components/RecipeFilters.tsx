@@ -26,7 +26,7 @@ export interface RecipeFilterValues {
 	tagIds: number[]
 	excludeTagIds: number[]
 	// Ordenación
-	sortBy: 'createdAt' | 'title' | 'cookTimeMinutes' | 'difficulty'
+	sortBy: 'createdAt' | 'updatedAt' | 'title' | 'cookTimeMinutes' | 'difficulty'
 	sortOrder: 'asc' | 'desc'
 	// Autor
 	authorId: number | null
@@ -174,6 +174,7 @@ export function RecipeFilters({
 							updateImmediate({ sortBy: e.target.value as RecipeFilterValues['sortBy'] })
 						}>
 						<option value='createdAt'>{t('recipes.sortCreatedAt')}</option>
+						<option value='updatedAt'>{t('recipes.sortUpdatedAt')}</option>
 						<option value='title'>{t('recipes.sortTitle')}</option>
 						<option value='cookTimeMinutes'>{t('recipes.sortCookTime')}</option>
 						<option value='difficulty'>{t('recipes.sortDifficulty')}</option>
@@ -448,7 +449,7 @@ export function RecipeFilters({
 			)}
 
 			{/* ── Autor ── */}
-			{authors.length > 0 && filters.visibility === 'public' && (
+			{authors.length > 0 && (
 				<div className='recipe-filters__group'>
 					<label className='recipe-filters__label'>{t('recipes.filterAuthor')}</label>
 					<select

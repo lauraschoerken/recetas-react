@@ -44,7 +44,7 @@ export function RecipeFormContainer() {
 		try {
 			const data = await recipeService.getById(parseInt(id!))
 			const currentUser = authService.getUser()
-			if (currentUser && data.userId !== currentUser.id) {
+			if (currentUser && data.userId !== currentUser.id && !authService.isAdmin()) {
 				navigate(`/recipes/${id}`, { replace: true })
 				return
 			}

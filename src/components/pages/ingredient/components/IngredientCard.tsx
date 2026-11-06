@@ -14,7 +14,7 @@ interface IngredientCardProps {
 	stores?: UserStore[]
 	tags?: { id: number; name: string; color?: string | null }[]
 	onUpdate: (id: number, data: { preferredUnit?: string | null }) => void
-	onDelete: (id: number) => void
+	onDelete?: (id: number) => void
 	onEdit?: (ingredient: Ingredient) => void
 	onConversionChange?: () => void
 	onThresholdChange?: () => void
@@ -211,15 +211,17 @@ export function IngredientCard({
 					title={t('edit')}>
 					<EditIcon size={13} aria-hidden='true' />
 				</button>
-				<button
-					className='card-action-btn card-action-btn--danger'
-					onClick={(e) => {
-						e.stopPropagation()
-						onDelete(ingredient.id)
-					}}
-					title={t('delete')}>
-					<DeleteIcon size={13} aria-hidden='true' />
-				</button>
+				{onDelete && (
+					<button
+						className='card-action-btn card-action-btn--danger'
+						onClick={(e) => {
+							e.stopPropagation()
+							onDelete(ingredient.id)
+						}}
+						title={t('delete')}>
+						<DeleteIcon size={13} aria-hidden='true' />
+					</button>
+				)}
 			</div>
 
 			{/* Tags del ingrediente (igual que en recetas) */}

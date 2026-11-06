@@ -24,6 +24,7 @@ interface RecipeDetailProps {
 	onDelete: () => void
 	onAddToWeek: () => void
 	isOwner?: boolean
+	canEdit?: boolean
 }
 
 export function RecipeDetail({
@@ -31,6 +32,7 @@ export function RecipeDetail({
 	onDelete,
 	onAddToWeek,
 	isOwner = false,
+	canEdit = false,
 }: RecipeDetailProps) {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
@@ -359,11 +361,13 @@ export function RecipeDetail({
 					<button className='btn btn-outline' onClick={() => setShowExportFormatModal(true)}>
 						{t('recipes.exportPdfSelected')}
 					</button>
+					{canEdit && (
+						<Link to={`/recipes/${recipe.id}/edit`} className='btn btn-outline'>
+							{t('edit')}
+						</Link>
+					)}
 					{isOwner && (
 						<>
-							<Link to={`/recipes/${recipe.id}/edit`} className='btn btn-outline'>
-								{t('edit')}
-							</Link>
 							<button className='btn btn-danger' onClick={onDelete}>
 								{t('delete')}
 							</button>
