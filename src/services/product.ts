@@ -25,6 +25,17 @@ class ProductService {
 		return api.post<Product>('/products/', data)
 	}
 
+	async importJsonText(text: string): Promise<{ importedCount: number; skipped: string[] }> {
+		const payload = JSON.parse(text)
+		return api.post<{ importedCount: number; skipped: string[] }>('/products/import/json', {
+			payload,
+		})
+	}
+
+	async importJsonFile(file: File): Promise<{ importedCount: number; skipped: string[] }> {
+		return this.importJsonText(await file.text())
+	}
+
 	async update(id: number, data: { name?: string; imageUrl?: string }): Promise<Product> {
 		return api.put<Product>(`/products/${id}`, data)
 	}

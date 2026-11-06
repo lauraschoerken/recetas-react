@@ -1,9 +1,11 @@
 import './ProductListContainer.scss'
 
-import { useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Product, ProductOverride, productService } from '@/services/product'
+import { RecipeImportSourceModal } from '@/components/shared/recipe-import-modal/RecipeImportSourceModal'
+import { RecipeJsonTextModal } from '@/components/shared/recipe-import-modal/RecipeJsonTextModal'
 import { authService } from '@/services/auth'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import { normalizeText } from '@/utils/normalize'
@@ -18,6 +20,11 @@ export function ProductListContainer() {
 	const [products, setProducts] = useState<Product[]>([])
 	const [loading, setLoading] = useState(true)
 	const [search, setSearch] = useState('')
+	const [showImportSource, setShowImportSource] = useState(false)
+	const [showImportText, setShowImportText] = useState(false)
+	const [importText, setImportText] = useState('')
+	const [importError, setImportError] = useState('')
+	const importFileRef = useRef<HTMLInputElement>(null)
 
 	const isAdmin = authService.isAdmin()
 
@@ -82,6 +89,41 @@ export function ProductListContainer() {
 			setHiddenProducts(data)
 		} catch {
 			console.error('Error loading hidden products')
+		}
+	}
+
+	const finishProductImport = async (result: { importedCount: number; skipped: string[] }) => {
+		toast.success(t('products.importedJson', { count: result.importedCount }))
+		if (result.skipped.length > 0) {
+			toast.info(t('products.importSkipped', { names: result.skipped.join(', ') }))
+		}
+		await loadProducts()
+	}
+
+	const handleProductImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0]
+		if (!file) return
+		try {
+			await finishProductImport(await productService.importJsonFile(file))
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : t('products.importError'))
+		} finally {
+			event.target.value = ''
+		}
+	}
+
+	const handleProductImportText = async () => {
+		if (!importText.trim()) {
+			setImportError(t('products.importEmpty'))
+			return
+		}
+		try {
+			await finishProductImport(await productService.importJsonText(importText))
+			setShowImportText(false)
+			setImportText('')
+			setImportError('')
+		} catch (error) {
+			setImportError(error instanceof Error ? error.message : t('products.importError'))
 		}
 	}
 
@@ -328,10 +370,47 @@ export function ProductListContainer() {
 		<div className='product-list-container'>
 			<div className='page-header'>
 				<h1 className='page-title'>{t('products.title')}</h1>
-				<button className='btn btn-primary' onClick={openCreate}>
-					{t('products.add')}
-				</button>
+				<div className='page-header-actions'>
+					<button className='btn btn-outline' onClick={() => setShowImportSource(true)}>
+						{t('products.importJson')}
+					</button>
+					<button className='btn btn-primary' onClick={openCreate}>
+						{t('products.add')}
+					</button>
+				</div>
 			</div>
+
+			<RecipeImportSourceModal
+				isOpen={showImportSource}
+				onClose={() => setShowImportSource(false)}
+				onImportFromFile={() => importFileRef.current?.click()}
+				onImportFromText={() => setShowImportText(true)}
+				title={t('products.importSourceTitle')}
+			/>
+			<RecipeJsonTextModal
+				isOpen={showImportText}
+				value={importText}
+				error={importError}
+				onChange={(value) => {
+					setImportText(value)
+					setImportError('')
+				}}
+				onClose={() => {
+					setShowImportText(false)
+					setImportError('')
+				}}
+				onSubmit={handleProductImportText}
+				title={t('products.importTextTitle')}
+				placeholder={t('products.importTextPlaceholder')}
+				actionLabel={t('products.importAction')}
+			/>
+			<input
+				ref={importFileRef}
+				type='file'
+				accept='.json,application/json'
+				onChange={handleProductImportFile}
+				style={{ display: 'none' }}
+			/>
 
 			<input
 				type='text'

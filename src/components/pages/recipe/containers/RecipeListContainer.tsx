@@ -1,3 +1,5 @@
+import './RecipeListContainer.scss'
+
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -582,7 +584,12 @@ export function RecipeListContainer() {
 				toast.info(t('recipes.importedNone'))
 			}
 		} catch (err: unknown) {
-			toast.error(err instanceof Error ? err.message : t('recipes.importJsonError'))
+			const message = err instanceof Error ? err.message : ''
+			toast.error(
+				/prisma\.recipeIngredient\.create|Unique constraint failed/i.test(message)
+					? t('recipes.importDuplicateIngredientError')
+					: message || t('recipes.importJsonError')
+			)
 		} finally {
 			loadRecipes()
 			inputEl.value = ''
@@ -632,7 +639,12 @@ export function RecipeListContainer() {
 				toast.info(t('recipes.importedNone'))
 			}
 		} catch (err: unknown) {
-			toast.error(err instanceof Error ? err.message : t('recipes.importJsonError'))
+			const message = err instanceof Error ? err.message : ''
+			toast.error(
+				/prisma\.recipeIngredient\.create|Unique constraint failed/i.test(message)
+					? t('recipes.importDuplicateIngredientError')
+					: message || t('recipes.importJsonError')
+			)
 		} finally {
 			loadRecipes()
 			setShowImportSourceModal(false)
@@ -669,7 +681,12 @@ export function RecipeListContainer() {
 			setImportReview(null)
 			setImportSearchByConflict({})
 		} catch (err: unknown) {
-			toast.error(err instanceof Error ? err.message : t('recipes.importJsonError'))
+			const message = err instanceof Error ? err.message : ''
+			toast.error(
+				/prisma\.recipeIngredient\.create|Unique constraint failed/i.test(message)
+					? t('recipes.importDuplicateIngredientError')
+					: message || t('recipes.importJsonError')
+			)
 		} finally {
 			loadRecipes()
 		}
@@ -683,7 +700,9 @@ export function RecipeListContainer() {
 		if (!query) return conflict.candidates
 		return (
 			importSearchResults[conflict.key] ??
-			conflict.candidates.filter((candidate) => normalizeText(candidate.name).includes(normalizeText(query)))
+			conflict.candidates.filter((candidate) =>
+				normalizeText(candidate.name).includes(normalizeText(query))
+			)
 		)
 	}
 
@@ -940,89 +959,37 @@ export function RecipeListContainer() {
 			)}
 
 			{importReview && (
-				<div className='modal-overlay' onClick={() => setImportReview(null)}>
+				<div className='modal-overlay import-review-overlay' onClick={() => setImportReview(null)}>
 					<div
-						className='modal-card'
-						onClick={(e) => e.stopPropagation()}
-						style={{
-							maxWidth: 880,
-							width: 'min(880px, calc(100vw - 2rem))',
-							background: 'var(--card-background)',
-							border: '1px solid var(--border-color)',
-							boxShadow: 'var(--shadow-xl)',
-						}}>
-						<div style={{ padding: '1.25rem 1.5rem 0.5rem' }}>
-							<div
-								style={{
-									display: 'flex',
-									alignItems: 'center',
-									justifyContent: 'space-between',
-									gap: 16,
-								}}>
-								<div>
-									<div
-										style={{
-											display: 'inline-flex',
-											alignItems: 'center',
-											padding: '0.35rem 0.7rem',
-											borderRadius: 999,
-											background: 'var(--primary-light)',
-											color: 'var(--primary-color)',
-											fontSize: 12,
-											fontWeight: 700,
-											letterSpacing: 0.4,
-										}}>
-										IMPORT REVIEW
-									</div>
-									<h3 style={{ margin: '0.75rem 0 0.35rem', fontSize: '1.5rem' }}>
-										{t('recipes.importReviewTitle')}
-									</h3>
-								</div>
-								<button className='btn btn-secondary btn-sm' onClick={() => setImportReview(null)}>
-									{t('cancel')}
-								</button>
+						className='import-review-modal'
+						role='dialog'
+						aria-modal='true'
+						aria-labelledby='import-review-title'
+						onClick={(e) => e.stopPropagation()}>
+						<header className='import-review-header'>
+							<div>
+								<h3 id='import-review-title'>{t('recipes.importReviewTitle')}</h3>
+								<p>{t('recipes.importReviewDescription')}</p>
 							</div>
-							<p style={{ margin: '0.5rem 0 0', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-								{t('recipes.importReviewDescription')}
-							</p>
-						</div>
+							<button
+								type='button'
+								className='import-review-close'
+								onClick={() => setImportReview(null)}
+								aria-label={t('cancel')}>
+								×
+							</button>
+						</header>
 
-						<div
-							style={{
-								padding: '0.5rem 1.5rem 1.5rem',
-								display: 'grid',
-								gap: 14,
-								maxHeight: 480,
-								overflowY: 'auto',
-							}}>
+						<div className='import-review-list'>
 							{importReview.conflicts.map((conflict) => {
 								const candidates = getConflictCandidates(conflict)
 								const chosen = importReview.resolutions[conflict.key]
 								return (
-									<div
-										key={conflict.key}
-										style={{
-											border: '1px solid var(--border-color)',
-											borderRadius: 18,
-											padding: 16,
-											background:
-												'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00))',
-											boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
-										}}>
-										<div
-											style={{
-												display: 'flex',
-												justifyContent: 'space-between',
-												gap: 12,
-												alignItems: 'center',
-												flexWrap: 'wrap',
-											}}>
-											<div>
-												<div style={{ fontSize: 20, fontWeight: 700 }}>
-													{conflict.ingredientName}
-												</div>
-											</div>
+									<article key={conflict.key} className='import-review-item'>
+										<div className='import-review-item-heading'>
+											<h4>{conflict.ingredientName}</h4>
 											<button
+												type='button'
 												className={`btn ${chosen?.createNew ? 'btn-primary' : 'btn-outline'} btn-sm`}
 												onClick={() => {
 													setImportReview((prev) => {
@@ -1040,16 +1007,8 @@ export function RecipeListContainer() {
 											</button>
 										</div>
 
-										<div style={{ marginTop: 12, display: 'grid', gap: 10 }}>
-											<div
-												style={{
-													fontSize: 12,
-													color: 'var(--text-secondary)',
-													display: 'flex',
-													justifyContent: 'space-between',
-													gap: 8,
-													flexWrap: 'wrap',
-												}}>
+										<div className='import-review-search'>
+											<div className='import-review-meta'>
 												<span>
 													{t('recipes.importReviewImported')}: {conflict.importedName}
 												</span>
@@ -1063,37 +1022,20 @@ export function RecipeListContainer() {
 												type='text'
 												value={importSearchByConflict[conflict.key] ?? ''}
 												placeholder={t('recipes.importReviewSearchPlaceholder')}
-												onChange={(e) =>
-													handleImportIngredientSearch(conflict.key, e.target.value)
-												}
-												style={{
-													width: '100%',
-													padding: '0.7rem 0.85rem',
-													borderRadius: 12,
-													border: '1px solid var(--border-color)',
-													background: 'var(--surface-1)',
-													color: 'var(--text-primary)',
-												}}
+												onChange={(e) => handleImportIngredientSearch(conflict.key, e.target.value)}
 											/>
 										</div>
 
-										<div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+										<div className='import-review-candidates'>
 											{candidates.length === 0 ? (
-												<div
-													style={{
-														width: '100%',
-														padding: '0.8rem 0.9rem',
-														borderRadius: 12,
-														background: 'var(--surface-1)',
-														color: 'var(--text-secondary)',
-														border: '1px dashed var(--border-color)',
-													}}>
+												<div className='import-review-empty'>
 													{t('recipes.importReviewNoMatches')}
 												</div>
 											) : (
 												candidates.map((candidate) => (
 													<button
 														key={candidate.id}
+														type='button'
 														className={`btn ${chosen?.ingredientId === candidate.id ? 'btn-primary' : 'btn-outline'} btn-sm`}
 														onClick={() => {
 															setImportReview((prev) => {
@@ -1110,33 +1052,20 @@ export function RecipeListContainer() {
 																}
 															})
 														}}
-														title={candidate.name}
-														style={{
-															maxWidth: '100%',
-															justifyContent: 'flex-start',
-															whiteSpace: 'nowrap',
-															overflow: 'hidden',
-															textOverflow: 'ellipsis',
-														}}>
+														title={candidate.name}>
 														{candidate.name}
 													</button>
 												))
 											)}
 										</div>
-									</div>
+									</article>
 								)
 							})}
 						</div>
 
-						<div
-							className='export-modal-actions'
-							style={{
-								padding: '0 1.5rem 1.5rem',
-								display: 'flex',
-								justifyContent: 'flex-end',
-								gap: 10,
-							}}>
+						<footer className='import-review-footer'>
 							<button
+								type='button'
 								className='btn btn-primary'
 								disabled={importReview.conflicts.some(
 									(conflict) => !importReview.resolutions[conflict.key]
@@ -1144,7 +1073,7 @@ export function RecipeListContainer() {
 								onClick={() => void handleImportReviewConfirm()}>
 								{t('recipes.importReviewConfirm')}
 							</button>
-						</div>
+						</footer>
 					</div>
 				</div>
 			)}

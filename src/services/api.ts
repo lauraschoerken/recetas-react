@@ -44,7 +44,7 @@ class ApiClient {
 				throw new Error(errorData.error || errorData.message || 'No autorizado')
 			}
 			const error = await response.json().catch(() => ({ error: 'Error de conexión' }))
-			throw new Error(error.error || 'Error en la petición')
+			throw new Error(error.error || error.message || 'Error en la petición')
 		}
 
 		if (response.status === 204) {

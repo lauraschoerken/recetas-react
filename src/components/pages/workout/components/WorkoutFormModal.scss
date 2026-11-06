@@ -1,4 +1,4 @@
-.workout-form-modal { max-width: 43rem; }
+.workout-form-modal { max-width: 43rem; max-height:90dvh; overflow-y:auto; }
 .workout-form-heading { display:flex; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
 .workout-form-heading h2 { margin:.15rem 0 0; }
 .workout-kicker { color:var(--primary-color); font-size:.72rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
@@ -10,5 +10,12 @@
 .workout-calorie-toggle input { width:1.1rem; height:1.1rem; accent-color:var(--primary-color); }
 .workout-calorie-toggle span { display:flex; flex-direction:column; gap:.2rem; }
 .workout-calorie-toggle small { color:var(--text-secondary); line-height:1.35; }
+.workout-extra-details { margin-top:1rem; border:1px solid var(--border-color); border-radius:var(--radius-sm); background:var(--surface-1); }
+.workout-extra-details summary { padding:1rem; cursor:pointer; color:var(--primary-color); font-weight:700; }
+.workout-extra-details[open] summary { border-bottom:1px solid var(--border-color); }
+.workout-extra-details > p { margin:1rem 1rem 0; color:var(--text-secondary); font-size:.84rem; }
+.workout-extra-details h3 { margin:1.1rem 1rem .65rem; font-size:.86rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em; }
+.workout-extra-details .workout-form-grid { padding:0 1rem 1rem; }
 .workout-file-button { display:inline-flex; margin-bottom:.75rem; cursor:pointer; }.workout-file-button input{display:none}.workout-json-input{width:100%;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 @media(max-width:36rem){.workout-form-grid{grid-template-columns:1fr}.workout-field-wide{grid-column:auto}.workout-form-modal{border-radius:var(--radius) var(--radius) 0 0;max-height:95dvh}.workout-modal-overlay{align-items:flex-end;padding:0}}
+.garmin-import-modal{max-width:50rem}.garmin-url-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.65rem;margin:1rem 0}.garmin-url-row input{min-width:0}.garmin-error{margin:.5rem 0}.garmin-preview-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:1rem 0;border-top:1px solid var(--border-color)}.garmin-preview-heading div{display:flex;flex-direction:column;gap:.25rem}.garmin-preview-heading small,.garmin-preview-heading span{color:var(--text-secondary)}.garmin-preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));gap:.55rem}.garmin-preview-grid div{display:flex;flex-direction:column;gap:.2rem;padding:.75rem;border-radius:var(--radius-sm);background:var(--surface-1)}.garmin-preview-grid span{color:var(--text-secondary);font-size:.75rem}.garmin-preview-grid strong{font-size:.95rem}@media(max-width:36rem){.garmin-url-row{grid-template-columns:1fr}.garmin-preview-heading{flex-direction:column}}

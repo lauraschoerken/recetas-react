@@ -1,7 +1,7 @@
-import type { Workout, WorkoutInput, WorkoutTemplate, WorkoutTemplateInput } from '@/models'
+import type { GarminWorkoutPreview, Workout, WorkoutInput, WorkoutTemplate, WorkoutTemplateInput } from '@/models'
 import { api } from '@/services/api'
 
-export type { Workout, WorkoutInput, WorkoutTemplate, WorkoutTemplateInput } from '@/models'
+export type { GarminWorkoutPreview, Workout, WorkoutInput, WorkoutTemplate, WorkoutTemplateInput } from '@/models'
 
 export const workoutService = {
 	list(startDate?: string, endDate?: string): Promise<Workout[]> {
@@ -22,6 +22,12 @@ export const workoutService = {
 	importJson(payload: unknown): Promise<{ templatesImported: number; importedCount: number; entries: Workout[] }> {
 		const parsed = typeof payload === 'string' ? JSON.parse(payload) : payload
 		return api.post('/workouts/import', parsed)
+	},
+	previewGarmin(url: string): Promise<GarminWorkoutPreview> {
+		return api.post('/workouts/garmin/preview', { url })
+	},
+	importGarmin(url: string, addCaloriesToGoal: boolean): Promise<Workout> {
+		return api.post('/workouts/garmin/import', { url, addCaloriesToGoal })
 	},
 	listTemplates(): Promise<WorkoutTemplate[]> {
 		return api.get('/workout-templates')

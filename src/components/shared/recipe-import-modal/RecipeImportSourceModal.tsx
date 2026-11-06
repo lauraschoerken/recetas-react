@@ -5,6 +5,9 @@ interface RecipeImportSourceModalProps {
 	onClose: () => void
 	onImportFromFile: () => void
 	onImportFromText: () => void
+	title?: string
+	fileLabel?: string
+	textLabel?: string
 }
 
 export function RecipeImportSourceModal({
@@ -12,6 +15,9 @@ export function RecipeImportSourceModal({
 	onClose,
 	onImportFromFile,
 	onImportFromText,
+	title,
+	fileLabel,
+	textLabel,
 }: RecipeImportSourceModalProps) {
 	const { t } = useTranslation()
 
@@ -20,7 +26,7 @@ export function RecipeImportSourceModal({
 	return (
 		<div className='modal-overlay' onClick={onClose}>
 			<div className='modal-card' onClick={(e) => e.stopPropagation()}>
-				<h3>{t('recipes.importSourceTitle')}</h3>
+				<h3>{title ?? t('recipes.importSourceTitle')}</h3>
 				<div
 					className='export-modal-actions'
 					style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -31,7 +37,7 @@ export function RecipeImportSourceModal({
 							onClose()
 							onImportFromFile()
 						}}>
-						{t('recipes.importFromFile')}
+						{fileLabel ?? t('recipes.importFromFile')}
 					</button>
 					<button
 						type='button'
@@ -40,7 +46,7 @@ export function RecipeImportSourceModal({
 							onClose()
 							onImportFromText()
 						}}>
-						{t('recipes.importFromText')}
+						{textLabel ?? t('recipes.importFromText')}
 					</button>
 				</div>
 			</div>

@@ -11,7 +11,39 @@ export interface Workout {
 	templateId?: number | null
 	createdAt: string
 	updatedAt: string
+	source: string | null
+	externalId: string | null
+	sourceUrl: string | null
+	activityType: string | null
+	locationName: string | null
+	distanceMeters: number | null
+	durationSeconds: number | null
+	movingDurationSeconds: number | null
+	elapsedDurationSeconds: number | null
+	averageSpeedMps: number | null
+	averageMovingSpeedMps: number | null
+	maxSpeedMps: number | null
+	elevationGainMeters: number | null
+	elevationLossMeters: number | null
+	minElevationMeters: number | null
+	maxElevationMeters: number | null
+	averageElevationMeters: number | null
+	maxHeartRate: number | null
+	minHeartRate: number | null
+	averageCadence: number | null
+	maxCadence: number | null
+	steps: number | null
+	restingCalories: number | null
+	activeCalories: number | null
+	estimatedSweatLossMl: number | null
+	moderateIntensityMinutes: number | null
+	vigorousIntensityMinutes: number | null
+	intensityMinutes: number | null
+	maxVerticalSpeedMps: number | null
+	lapCount: number | null
 }
+
+export type GarminWorkoutPreview = Omit<Workout, 'id' | 'createdAt' | 'updatedAt'>
 
 export interface WorkoutInput {
 	title: string
@@ -23,6 +55,33 @@ export interface WorkoutInput {
 	notes?: string | null
 	addCaloriesToGoal?: boolean
 	templateId?: number | null
+	activityType?: string | null
+	locationName?: string | null
+	distanceMeters?: number | null
+	durationSeconds?: number | null
+	movingDurationSeconds?: number | null
+	elapsedDurationSeconds?: number | null
+	averageSpeedMps?: number | null
+	averageMovingSpeedMps?: number | null
+	maxSpeedMps?: number | null
+	elevationGainMeters?: number | null
+	elevationLossMeters?: number | null
+	minElevationMeters?: number | null
+	maxElevationMeters?: number | null
+	averageElevationMeters?: number | null
+	maxHeartRate?: number | null
+	minHeartRate?: number | null
+	averageCadence?: number | null
+	maxCadence?: number | null
+	steps?: number | null
+	restingCalories?: number | null
+	activeCalories?: number | null
+	estimatedSweatLossMl?: number | null
+	moderateIntensityMinutes?: number | null
+	vigorousIntensityMinutes?: number | null
+	intensityMinutes?: number | null
+	maxVerticalSpeedMps?: number | null
+	lapCount?: number | null
 }
 
 export interface WorkoutTemplate {

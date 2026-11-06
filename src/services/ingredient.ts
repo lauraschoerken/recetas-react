@@ -113,6 +113,37 @@ class IngredientService {
 		return api.post<Ingredient[]>('/ingredients/bulk', { ingredients })
 	}
 
+	async reviewImportJsonText(text: string): Promise<{
+		needsReview: boolean
+		conflicts: Array<{
+			key: string
+			importedName: string
+			color?: string
+			candidates: Array<{ id: number; name: string; color?: string | null }>
+		}>
+	}> {
+		const payload = JSON.parse(text)
+		return api.post('/ingredients/import/json/review', { payload })
+	}
+
+	async importJsonText(
+		text: string,
+		tagResolutions: Record<
+			string,
+			{ tagId?: number; name?: string; color?: string; createNew?: boolean }
+		> = {}
+	): Promise<{ importedCount: number; skipped: string[] }> {
+		const payload = JSON.parse(text)
+		return api.post<{ importedCount: number; skipped: string[] }>('/ingredients/import/json', {
+			payload,
+			tagResolutions,
+		})
+	}
+
+	async importJsonFile(file: File): Promise<{ importedCount: number; skipped: string[] }> {
+		return this.importJsonText(await file.text())
+	}
+
 	async update(id: number, data: UpdateIngredientData): Promise<Ingredient> {
 		return api.put<Ingredient>(`/ingredients/${id}`, data)
 	}

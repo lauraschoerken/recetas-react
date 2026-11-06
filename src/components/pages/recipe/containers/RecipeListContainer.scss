@@ -1,0 +1,243 @@
+.import-review-overlay {
+	padding: 1rem;
+}
+
+.import-review-modal {
+	display: flex;
+	flex-direction: column;
+	width: min(55rem, calc(100vw - 2rem));
+	max-height: calc(100dvh - 2rem);
+	overflow: hidden;
+	background: var(--card-background);
+	color: var(--text-primary);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-xl);
+}
+
+.import-review-header {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 1.25rem 1.5rem 1rem;
+	border-bottom: 1px solid var(--border-color);
+
+	h3 {
+		margin: 0;
+		font-size: 1.35rem;
+		line-height: 1.25;
+	}
+
+	p {
+		max-width: 45rem;
+		margin: 0.4rem 0 0;
+		color: var(--text-secondary);
+		font-size: 0.9rem;
+		line-height: 1.45;
+	}
+}
+
+.import-review-close {
+	display: grid;
+	flex: 0 0 2.75rem;
+	width: 2.75rem;
+	height: 2.75rem;
+	padding: 0;
+	place-items: center;
+	background: transparent;
+	color: var(--text-secondary);
+	border: 0;
+	border-radius: 50%;
+	font-size: 1.75rem;
+	line-height: 1;
+	cursor: pointer;
+
+	&:hover {
+		background: var(--surface-1);
+		color: var(--text-primary);
+	}
+}
+
+.import-review-list {
+	display: grid;
+	flex: 1 1 auto;
+	gap: 0.75rem;
+	min-height: 0;
+	padding: 1rem 1.5rem;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.import-review-item {
+	padding: 1rem;
+	background: var(--surface-1);
+	border: 1px solid var(--border-color);
+	border-radius: 0.875rem;
+}
+
+.import-review-item-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem;
+
+	h4 {
+		min-width: 0;
+		margin: 0;
+		font-size: 1.05rem;
+		line-height: 1.3;
+		overflow-wrap: anywhere;
+	}
+}
+
+.import-review-search {
+	display: grid;
+	gap: 0.6rem;
+	margin-top: 0.75rem;
+
+	input {
+		width: 100%;
+		min-height: 2.75rem;
+		padding: 0.7rem 0.85rem;
+		background: var(--card-background);
+		color: var(--text-primary);
+		border: 1px solid var(--border-color);
+		border-radius: 0.625rem;
+		font-size: 1rem;
+	}
+}
+
+.import-review-meta {
+	display: flex;
+	justify-content: space-between;
+	gap: 0.5rem;
+	color: var(--text-secondary);
+	font-size: 0.75rem;
+	line-height: 1.35;
+}
+
+.import-review-candidates {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 0.75rem;
+
+	.btn {
+		max-width: 100%;
+		justify-content: flex-start;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+.import-review-empty {
+	width: 100%;
+	padding: 0.75rem 0.85rem;
+	background: var(--card-background);
+	color: var(--text-secondary);
+	border: 1px dashed var(--border-color);
+	border-radius: 0.625rem;
+	font-size: 0.875rem;
+	line-height: 1.4;
+}
+
+.import-review-footer {
+	display: flex;
+	flex: 0 0 auto;
+	justify-content: flex-end;
+	padding: 0.875rem 1.5rem;
+	background: var(--card-background);
+	border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 40rem) {
+	.import-review-overlay {
+		align-items: flex-end;
+		padding: max(0.5rem, env(safe-area-inset-top)) 0 0;
+	}
+
+	.import-review-modal {
+		width: 100%;
+		max-height: calc(100dvh - max(0.5rem, env(safe-area-inset-top)));
+		border-right: 0;
+		border-bottom: 0;
+		border-left: 0;
+		border-radius: 1rem 1rem 0 0;
+	}
+
+	.import-review-header {
+		gap: 0.5rem;
+		padding: 1rem 1rem 0.8rem;
+
+		h3 {
+			font-size: 1.1rem;
+		}
+
+		p {
+			margin-top: 0.3rem;
+			font-size: 0.8rem;
+			line-height: 1.35;
+		}
+	}
+
+	.import-review-close {
+		flex-basis: 2.5rem;
+		width: 2.5rem;
+		height: 2.5rem;
+	}
+
+	.import-review-list {
+		gap: 0.625rem;
+		padding: 0.75rem;
+	}
+
+	.import-review-item {
+		padding: 0.75rem;
+		border-radius: 0.75rem;
+	}
+
+	.import-review-item-heading {
+		align-items: stretch;
+		flex-direction: column;
+		gap: 0.5rem;
+
+		h4 {
+			font-size: 1rem;
+		}
+
+		.btn {
+			width: 100%;
+		}
+	}
+
+	.import-review-meta {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+
+	.import-review-candidates {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+
+		.btn,
+		.import-review-empty {
+			width: 100%;
+		}
+
+		.import-review-empty {
+			grid-column: 1 / -1;
+		}
+	}
+
+	.import-review-footer {
+		padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+
+		.btn {
+			width: 100%;
+		}
+	}
+}

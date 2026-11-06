@@ -169,7 +169,8 @@ export function SettingsContainer() {
 			servings: 2,
 			isPublic: false,
 			defaultLocation: null,
-			imageUrl: 'https://example.com/direct-image-of-finished-recipe.jpg',
+			imageUrl:
+				'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Espaguetis_carbonara.jpg/500px-Espaguetis_carbonara.jpg',
 			tags: ['pasta', 'pollo', 'alta en proteína', 'comida'],
 			customCalories: null,
 			customProtein: null,
@@ -181,7 +182,8 @@ export function SettingsContainer() {
 					name: 'Pasta seca',
 					description:
 						'Ingrediente genérico cuando la receta no exige una marca o formato concreto. Los valores nutricionales deben representar razonablemente el producto utilizado. Si se usan varias marcas como referencia, indicar en esta descripción que los macros son una media. Para ingredientes cuya unidad base sea g, los macros se expresan por 100 g. Esta receta pesa la pasta en seco, por lo que la variante seleccionada es Seca.',
-					imageUrl: 'https://example.com/direct-image-pasta.jpg',
+					imageUrl:
+						'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/White%2C_Brown%2C_Red_%26_Wild_rice.jpg/500px-White%2C_Brown%2C_Red_%26_Wild_rice.jpg',
 					quantity: 200,
 					unit: 'g',
 					ingredientBaseUnit: 'g',
@@ -211,7 +213,8 @@ export function SettingsContainer() {
 					name: 'Arroz',
 					description:
 						'Ejemplo de ingrediente donde sí puede ser útil conservar variantes crudo/cocido. Los macros de cada variante deben corresponder al estado indicado. El weightFactor representa el cambio aproximado de peso respecto al estado base; por ejemplo, 100 g de arroz seco pueden convertirse aproximadamente en 230 g cocidos.',
-					imageUrl: 'https://example.com/direct-image-rice.jpg',
+					imageUrl:
+						'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Basmati_Rice_Kolkata_2011-02-11_1054.JPG/500px-Basmati_Rice_Kolkata_2011-02-11_1054.JPG',
 					quantity: 200,
 					unit: 'g',
 					ingredientBaseUnit: 'g',
@@ -254,7 +257,8 @@ export function SettingsContainer() {
 					name: 'Huevo',
 					description:
 						'Ejemplo de ingrediente cuya unidad base natural es una unidad y no gramos. Cuando ingredientBaseUnit es ud, los macros representan una unidad, no 100 g. Si el tamaño importa, especificarlo en el nombre o descripción, por ejemplo Huevo tamaño M.',
-					imageUrl: 'https://example.com/direct-image-egg.jpg',
+					imageUrl:
+						'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Huevo_frito.jpg/500px-Huevo_frito.jpg',
 					quantity: 2,
 					unit: 'ud',
 					ingredientBaseUnit: 'ud',
@@ -284,7 +288,8 @@ export function SettingsContainer() {
 					name: 'Pechuga de pollo',
 					description:
 						'Utilizar un ingrediente existente cuando ya esté correctamente definido. Si la receta pesa el pollo antes de cocinarlo, seleccionar la variante Cruda aunque después se cocine. No es necesario establecer cookedVariantName solo porque el ingrediente vaya a cocinarse; usarlo únicamente si la aplicación necesita convertir entre el peso indicado y otro estado.',
-					imageUrl: 'https://example.com/direct-image-chicken-breast.jpg',
+					imageUrl:
+						'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Chickens_in_market.jpg/500px-Chickens_in_market.jpg',
 					quantity: 300,
 					unit: 'g',
 					ingredientBaseUnit: 'g',
@@ -327,7 +332,8 @@ export function SettingsContainer() {
 					name: 'Aceite de oliva virgen extra',
 					description:
 						'Si una misma grasa se utiliza en varios pasos, introducir la cantidad TOTAL realmente consumida como un único ingrediente y explicar el reparto en las instrucciones o descripción. Ejemplo: 5 g para el pollo y 20 g para la salsa = 25 g totales.',
-					imageUrl: 'https://example.com/direct-image-evoo.jpg',
+					imageUrl:
+						'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Sunflower_oil_and_sunflower.jpg/500px-Sunflower_oil_and_sunflower.jpg',
 					quantity: 25,
 					unit: 'g',
 					ingredientBaseUnit: 'g',
@@ -360,7 +366,8 @@ export function SettingsContainer() {
 					name: 'Ajo',
 					description:
 						'Cuando existe una conversión natural y fácil de entender, preferir una unidad humana en la receta. Ejemplo: 1 diente en lugar de 5 g. Los macros siguen definidos respecto a la unidad base g.',
-					imageUrl: 'https://example.com/direct-image-garlic.jpg',
+					imageUrl:
+						'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Garlic.jpg/500px-Garlic.jpg',
 					quantity: 1,
 					unit: 'diente',
 					ingredientBaseUnit: 'g',
@@ -393,7 +400,8 @@ export function SettingsContainer() {
 					name: 'Sal fina',
 					description:
 						'Para ingredientes sin aporte energético, mantener los macros explícitamente en 0 en lugar de null cuando se conozca que realmente son cero. Si una cantidad es puramente al gusto y no es relevante nutricionalmente, puede mencionarse únicamente en las instrucciones.',
-					imageUrl: 'https://example.com/direct-image-salt.jpg',
+					imageUrl:
+						'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Salt_shaker_on_white_background.jpg/500px-Salt_shaker_on_white_background.jpg',
 					quantity: 3,
 					unit: 'g',
 					ingredientBaseUnit: 'g',
@@ -426,7 +434,8 @@ export function SettingsContainer() {
 					name: 'Producto de marca concreto',
 					description:
 						'Cuando la receta dependa de un producto concreto, conservar la marca en el nombre y utilizar los valores de su etiqueta oficial en vez de una media genérica. Ejemplo: Tomates secos en aceite Carrefour. Si la etiqueta nutricional corresponde al producto tal como se vende, llamar a la variante Como se vende. No llamar Escurrido a una variante salvo disponer de valores nutricionales específicos del producto escurrido.',
-					imageUrl: 'https://example.com/direct-image-branded-product.jpg',
+					imageUrl:
+						'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Lata_de_at%C3%BAn-Albo.jpg/500px-Lata_de_at%C3%BAn-Albo.jpg',
 					quantity: 30,
 					unit: 'g',
 					ingredientBaseUnit: 'g',
@@ -464,6 +473,8 @@ export function SettingsContainer() {
 							name: 'Salsa de tomate',
 							isDefault: true,
 							ingredientName: 'Tomate triturado',
+							imageUrl:
+								'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Bright_red_tomato_and_cross_section02.jpg/500px-Bright_red_tomato_and_cross_section02.jpg',
 							quantity: 150,
 							unit: 'g',
 							variantName: 'Como se vende',
@@ -472,6 +483,8 @@ export function SettingsContainer() {
 							name: 'Salsa de nata',
 							isDefault: false,
 							ingredientName: 'Nata para cocinar',
+							imageUrl:
+								'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/01_Mmm..._Apple_Crisp_with_Whipped_Cream.jpg/500px-01_Mmm..._Apple_Crisp_with_Whipped_Cream.jpg',
 							quantity: 100,
 							unit: 'ml',
 							variantName: 'Como se vende',
@@ -488,6 +501,8 @@ export function SettingsContainer() {
 							name: 'Pechuga de pollo',
 							isDefault: true,
 							ingredientName: 'Pechuga de pollo',
+							imageUrl:
+								'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Chickens_in_market.jpg/500px-Chickens_in_market.jpg',
 							quantity: 200,
 							unit: 'g',
 							variantName: 'Cruda',
@@ -496,6 +511,8 @@ export function SettingsContainer() {
 							name: 'Tofu',
 							isDefault: false,
 							ingredientName: 'Tofu',
+							imageUrl:
+								'https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Japanese_SilkyTofu_%28Kinugoshi_Tofu%29.JPG/500px-Japanese_SilkyTofu_%28Kinugoshi_Tofu%29.JPG',
 							quantity: 200,
 							unit: 'g',
 							variantName: 'Como se vende',
@@ -512,6 +529,8 @@ export function SettingsContainer() {
 							name: 'Grana Padano',
 							isDefault: true,
 							ingredientName: 'Grana Padano',
+							imageUrl:
+								'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Parmigiano_Reggiano_mezzano.jpg/500px-Parmigiano_Reggiano_mezzano.jpg',
 							quantity: 15,
 							unit: 'g',
 							variantName: 'Como se vende',
@@ -546,7 +565,8 @@ export function SettingsContainer() {
 								servings: 2,
 								isPublic: false,
 								defaultLocation: null,
-								imageUrl: 'https://example.com/direct-image-homemade-sauce.jpg',
+								imageUrl:
+									'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Lao_soup.jpg/500px-Lao_soup.jpg',
 								tags: ['salsa'],
 								customCalories: null,
 								customProtein: null,
@@ -557,7 +577,8 @@ export function SettingsContainer() {
 									{
 										name: 'Cebolla',
 										description: 'Cebolla fresca. Se pesa antes de cocinar.',
-										imageUrl: 'https://example.com/direct-image-onion.jpg',
+										imageUrl:
+											'https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Two_colors_of_onions.jpg/500px-Two_colors_of_onions.jpg',
 										quantity: 100,
 										unit: 'g',
 										ingredientBaseUnit: 'g',
@@ -662,11 +683,95 @@ export function SettingsContainer() {
 					"durationMinutes": 70,
 					"caloriesBurned": 280,
 					"averageHeartRate": 105,
+					"activityType": "walking",
+					"locationName": "Parque del barrio",
+					"distanceMeters": 6000,
+					"durationSeconds": 4200,
+					"movingDurationSeconds": 3900,
+					"elapsedDurationSeconds": 4200,
+					"averageSpeedMps": 1.43,
+					"averageMovingSpeedMps": 1.54,
+					"maxSpeedMps": 1.8,
+					"elevationGainMeters": 85,
+					"elevationLossMeters": 82,
+					"minElevationMeters": 610,
+					"averageElevationMeters": 642,
+					"maxElevationMeters": 681,
+					"minHeartRate": 76,
+					"maxHeartRate": 128,
+					"steps": 7800,
+					"averageCadence": 112,
+					"maxCadence": 126,
+					"activeCalories": 230,
+					"restingCalories": 50,
+					"estimatedSweatLossMl": 450,
+					"moderateIntensityMinutes": 35,
+					"vigorousIntensityMinutes": 0,
+					"intensityMinutes": 35,
+					"maxVerticalSpeedMps": 0.35,
+					"lapCount": 1,
 					"exercises": "Caminar 6 km",
 					"notes": "Sesión puntual; no se guarda como plantilla",
 					"addCaloriesToGoal": false
 				}
 			]
+		},
+		null,
+		2
+	)
+
+	const aiIngredientTemplate = JSON.stringify(
+		{
+			name: 'Yogur griego',
+			unit: 'g',
+			imageUrl:
+				'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Turkish_strained_yogurt.jpg/500px-Turkish_strained_yogurt.jpg',
+			defaultLocation: 'nevera',
+			preferredUnit: 'g',
+			minimumAlert: {
+				minQuantity: 500,
+				unit: 'g',
+			},
+			variants: [
+				{
+					name: 'Como se vende',
+					isDefault: true,
+					weightFactor: 1,
+					calories: 97,
+					protein: 9,
+					carbs: 3.9,
+					fat: 5,
+					fiber: 0,
+				},
+			],
+			conversions: [
+				{ unitName: 'kg', gramsPerUnit: 1000 },
+				{ unitName: 'cucharada', gramsPerUnit: 15 },
+			],
+			storeOrderIndifferent: false,
+			stores: [
+				{
+					name: 'Nombre exacto de una tienda ya configurada',
+					sortOrder: 1,
+					purchaseUrl: 'https://www.ejemplo.com/producto',
+					preferredUnit: 'g',
+				},
+			],
+			tags: [
+				{ name: 'Lácteos', color: '#38bdf8' },
+				{ name: 'Alto en proteína', color: '#22c55e' },
+			],
+			proposeToAdmin: false,
+		},
+		null,
+		2
+	)
+
+	const aiProductTemplate = JSON.stringify(
+		{
+			name: 'Papel de cocina',
+			imageUrl:
+				'https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=1200&q=80',
 		},
 		null,
 		2
@@ -1336,6 +1441,24 @@ export function SettingsContainer() {
 		}
 	}
 
+	const copyAiIngredientTemplate = async () => {
+		try {
+			await navigator.clipboard.writeText(aiIngredientTemplate)
+			toast.success(t('settings.templateCopied'))
+		} catch {
+			toast.error(t('settings.templateCopyError'))
+		}
+	}
+
+	const copyAiProductTemplate = async () => {
+		try {
+			await navigator.clipboard.writeText(aiProductTemplate)
+			toast.success(t('settings.templateCopied'))
+		} catch {
+			toast.error(t('settings.templateCopyError'))
+		}
+	}
+
 	if (loading) {
 		return <div className='loading'>{t('loading')}</div>
 	}
@@ -1806,6 +1929,39 @@ export function SettingsContainer() {
 								readOnly
 								value={aiWorkoutTemplate}
 								style={{ width: '100%', height: '520px', padding: '1rem', borderRadius: '14px', border: '1px solid var(--border-color)', background: 'var(--surface-1)', color: 'var(--text-primary)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '0.81rem', lineHeight: 1.5, resize: 'vertical' }}
+							/>
+
+							<h3 className='settings-subsection-title' style={{ marginTop: '2rem' }}>
+								{t('settings.ingredientJsonTemplate')}
+							</h3>
+							<p className='settings-card-description'>{t('settings.ingredientJsonTemplateDesc')}</p>
+							<p className='settings-card-description' style={{ marginTop: '-0.25rem' }}>
+								{t('settings.ingredientJsonTemplateHint')}
+							</p>
+							<div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+								<button className='btn btn-outline btn-sm' onClick={copyAiIngredientTemplate}>
+									{t('settings.copyTemplate')}
+								</button>
+							</div>
+							<textarea
+								readOnly
+								value={aiIngredientTemplate}
+								style={{ width: '100%', height: '420px', padding: '1rem', borderRadius: '14px', border: '1px solid var(--border-color)', background: 'var(--surface-1)', color: 'var(--text-primary)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '0.81rem', lineHeight: 1.5, resize: 'vertical' }}
+							/>
+
+							<h3 className='settings-subsection-title' style={{ marginTop: '2rem' }}>
+								{t('settings.productJsonTemplate')}
+							</h3>
+							<p className='settings-card-description'>{t('settings.productJsonTemplateDesc')}</p>
+							<div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+								<button className='btn btn-outline btn-sm' onClick={copyAiProductTemplate}>
+									{t('settings.copyTemplate')}
+								</button>
+							</div>
+							<textarea
+								readOnly
+								value={aiProductTemplate}
+								style={{ width: '100%', height: '220px', padding: '1rem', borderRadius: '14px', border: '1px solid var(--border-color)', background: 'var(--surface-1)', color: 'var(--text-primary)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '0.81rem', lineHeight: 1.5, resize: 'vertical' }}
 							/>
 						</div>
 					)}

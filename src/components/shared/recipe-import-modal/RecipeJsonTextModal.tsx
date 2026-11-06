@@ -7,6 +7,9 @@ interface RecipeJsonTextModalProps {
 	onChange: (value: string) => void
 	onClose: () => void
 	onSubmit: () => void
+	title?: string
+	placeholder?: string
+	actionLabel?: string
 }
 
 export function RecipeJsonTextModal({
@@ -16,6 +19,9 @@ export function RecipeJsonTextModal({
 	onChange,
 	onClose,
 	onSubmit,
+	title,
+	placeholder,
+	actionLabel,
 }: RecipeJsonTextModalProps) {
 	const { t } = useTranslation()
 
@@ -24,13 +30,13 @@ export function RecipeJsonTextModal({
 	return (
 		<div className='modal-overlay' onClick={onClose}>
 			<div className='modal-card' onClick={(e) => e.stopPropagation()}>
-				<h3>{t('recipes.importJsonTextTitle')}</h3>
+				<h3>{title ?? t('recipes.importJsonTextTitle')}</h3>
 				<textarea
 					id='recipe-json-paste-box'
 					className='form-input'
 					value={value}
 					onChange={(e) => onChange(e.target.value)}
-					placeholder={t('recipes.importJsonTextPlaceholder')}
+					placeholder={placeholder ?? t('recipes.importJsonTextPlaceholder')}
 					rows={18}
 					style={{ width: '100%', minHeight: '260px', resize: 'vertical' }}
 				/>
@@ -44,7 +50,7 @@ export function RecipeJsonTextModal({
 						marginTop: '1rem',
 					}}>
 					<button type='button' className='btn btn-primary' onClick={onSubmit}>
-						{t('recipes.importJsonTextAction')}
+						{actionLabel ?? t('recipes.importJsonTextAction')}
 					</button>
 					<button type='button' className='btn btn-outline' onClick={onClose}>
 						{t('cancel')}

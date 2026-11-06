@@ -6,6 +6,8 @@ import { useSearchParams } from 'react-router-dom'
 
 import { Pagination } from '@/components/shared/pagination/Pagination'
 import { ShoppingCartIcon } from '@/components/shared/icons'
+import { RecipeImportSourceModal } from '@/components/shared/recipe-import-modal/RecipeImportSourceModal'
+import { RecipeJsonTextModal } from '@/components/shared/recipe-import-modal/RecipeJsonTextModal'
 import { TagMultiSelect } from '@/components/shared/tag-multi-select/TagMultiSelect'
 import { alertService, IngredientThreshold } from '@/services/alert'
 import { authService } from '@/services/auth'
@@ -55,6 +57,26 @@ export function IngredientListContainer() {
 	// Modales
 	const [showCreateModal, setShowCreateModal] = useState(false)
 	const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null)
+	const [showImportSource, setShowImportSource] = useState(false)
+	const [showImportText, setShowImportText] = useState(false)
+	const [importText, setImportText] = useState('')
+	const [importError, setImportError] = useState('')
+	const importFileRef = useRef<HTMLInputElement>(null)
+	const [pendingIngredientJson, setPendingIngredientJson] = useState('')
+	const [tagReview, setTagReview] = useState<{
+		conflicts: Array<{
+			key: string
+			importedName: string
+			color?: string
+			candidates: Array<{ id: number; name: string; color?: string | null }>
+		}>
+		resolutions: Record<
+			string,
+			{ tagId?: number; name?: string; color?: string; createNew?: boolean }
+		>
+	} | null>(null)
+	const [reviewTags, setReviewTags] = useState<IngredientTag[]>([])
+	const [tagSearches, setTagSearches] = useState<Record<string, string>>({})
 
 	// Plan semanal
 	const [weekPlanIngredient, setWeekPlanIngredient] = useState<Ingredient | null>(null)
@@ -540,6 +562,75 @@ export function IngredientListContainer() {
 		await loadStores()
 	}
 
+	const finishIngredientImport = async (result: { importedCount: number; skipped: string[] }) => {
+		toast.success(t('ingredients.importedJson', { count: result.importedCount }))
+		if (result.skipped.length > 0) {
+			toast.info(t('ingredients.importSkipped', { names: result.skipped.join(', ') }))
+		}
+		await loadIngredients()
+	}
+
+	const beginIngredientImport = async (text: string) => {
+		const review = await ingredientService.reviewImportJsonText(text)
+		if (review.needsReview && review.conflicts.length > 0) {
+			setPendingIngredientJson(text)
+			setTagReview({ conflicts: review.conflicts, resolutions: {} })
+			setReviewTags(await ingredientTagService.getAll())
+			return false
+		}
+		await finishIngredientImport(await ingredientService.importJsonText(text))
+		return true
+	}
+
+	const handleIngredientImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0]
+		if (!file) return
+		try {
+			await beginIngredientImport(await file.text())
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : t('ingredients.importError'))
+		} finally {
+			event.target.value = ''
+		}
+	}
+
+	const handleIngredientImportText = async () => {
+		if (!importText.trim()) {
+			setImportError(t('ingredients.importEmpty'))
+			return
+		}
+		try {
+			const completed = await beginIngredientImport(importText)
+			if (completed) {
+				setShowImportText(false)
+				setImportText('')
+				setImportError('')
+			}
+		} catch (error) {
+			setImportError(error instanceof Error ? error.message : t('ingredients.importError'))
+		}
+	}
+
+	const confirmTagReview = async () => {
+		if (!tagReview) return
+		if (tagReview.conflicts.some((conflict) => !tagReview.resolutions[conflict.key])) {
+			toast.error(t('ingredients.tagReviewResolveAll'))
+			return
+		}
+		try {
+			await finishIngredientImport(
+				await ingredientService.importJsonText(pendingIngredientJson, tagReview.resolutions)
+			)
+			setTagReview(null)
+			setPendingIngredientJson('')
+			setTagSearches({})
+			setShowImportText(false)
+			setImportText('')
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : t('ingredients.importError'))
+		}
+	}
+
 	// Iconos de flecha según orden
 	const sortArrow = sortOrder === 'asc' ? '↑' : '↓'
 
@@ -548,6 +639,9 @@ export function IngredientListContainer() {
 			<div className='page-header'>
 				<h1 className='page-title'>{t('ingredients.title')}</h1>
 				<div className='page-header-actions'>
+					<button className='btn btn-outline' onClick={() => setShowImportSource(true)}>
+						{t('ingredients.importJson')}
+					</button>
 					<button
 						className={`btn${shoppingMode ? ' btn-primary' : ' btn-outline'} shopping-mode-toggle`}
 						onClick={handleToggleShoppingMode}>
@@ -559,6 +653,130 @@ export function IngredientListContainer() {
 					</button>
 				</div>
 			</div>
+
+			<RecipeImportSourceModal
+				isOpen={showImportSource}
+				onClose={() => setShowImportSource(false)}
+				onImportFromFile={() => importFileRef.current?.click()}
+				onImportFromText={() => setShowImportText(true)}
+				title={t('ingredients.importSourceTitle')}
+			/>
+			<RecipeJsonTextModal
+				isOpen={showImportText}
+				value={importText}
+				error={importError}
+				onChange={(value) => {
+					setImportText(value)
+					setImportError('')
+				}}
+				onClose={() => {
+					setShowImportText(false)
+					setImportError('')
+				}}
+				onSubmit={handleIngredientImportText}
+				title={t('ingredients.importTextTitle')}
+				placeholder={t('ingredients.importTextPlaceholder')}
+				actionLabel={t('ingredients.importAction')}
+			/>
+			<input
+				ref={importFileRef}
+				type='file'
+				accept='.json,application/json'
+				onChange={handleIngredientImportFile}
+				style={{ display: 'none' }}
+			/>
+
+			{tagReview && (
+				<div className='modal-overlay' onClick={() => setTagReview(null)}>
+					<div className='modal-card' onClick={(event) => event.stopPropagation()}>
+						<h3>{t('ingredients.tagReviewTitle')}</h3>
+						<p className='text-muted'>{t('ingredients.tagReviewDescription')}</p>
+						{tagReview.conflicts.map((conflict) => {
+							const search = tagSearches[conflict.key] ?? ''
+							const normalizedSearch = normalizeText(search)
+							const options = (normalizedSearch
+								? reviewTags.filter((tag) => normalizeText(tag.name).includes(normalizedSearch))
+								: conflict.candidates
+							).slice(0, 10)
+							const selected = tagReview.resolutions[conflict.key]
+							return (
+								<div key={conflict.key} className='form-group' style={{ marginTop: '1rem' }}>
+									<label className='form-label'>
+										{t('ingredients.tagReviewImported')}: <strong>{conflict.importedName}</strong>
+									</label>
+									<input
+										className='form-input'
+										value={search}
+										onChange={(event) =>
+											setTagSearches((previous) => ({
+												...previous,
+												[conflict.key]: event.target.value,
+											}))
+										}
+										placeholder={t('ingredients.tagReviewSearch')}
+									/>
+									<div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+										{options.map((tag) => (
+											<button
+												key={tag.id}
+												type='button'
+												className={`btn btn-sm ${selected?.tagId === tag.id ? 'btn-primary' : 'btn-outline'}`}
+												onClick={() =>
+													setTagReview((previous) =>
+														previous
+															? {
+																...previous,
+																resolutions: {
+																	...previous.resolutions,
+																	[conflict.key]: { tagId: tag.id },
+																},
+															  }
+															: previous
+													)
+												}>
+												{tag.name}
+											</button>
+										))}
+										<button
+											type='button'
+											className={`btn btn-sm ${selected?.createNew ? 'btn-primary' : 'btn-outline'}`}
+											onClick={() => {
+												const name = search.trim() || conflict.importedName
+												setTagReview((previous) =>
+													previous
+														? {
+															...previous,
+															resolutions: {
+																...previous.resolutions,
+																[conflict.key]: {
+																	createNew: true,
+																	name,
+																	color: conflict.color,
+																},
+															},
+														  }
+														: previous
+												)
+											}}>
+											{t('ingredients.tagReviewCreate', {
+												name: search.trim() || conflict.importedName,
+											})}
+										</button>
+									</div>
+								</div>
+							)
+						})}
+						<div className='modal-actions'>
+							<button className='btn btn-outline' onClick={() => setTagReview(null)}>
+								{t('cancel')}
+							</button>
+							<button className='btn btn-primary' onClick={confirmTagReview}>
+								{t('ingredients.tagReviewConfirm')}
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 
 			{/* Modal creacion */}
 			<IngredientFormModal
