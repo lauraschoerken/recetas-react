@@ -17,10 +17,31 @@ import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras
 import { ingredientProposalService, ProposalType } from '@/services/ingredientProposal'
 import { storeService, UserStore } from '@/services/store'
 import { useDialog } from '@/utils/dialog/DialogContext'
+import { normalizeText } from '@/utils/normalize'
 
 import { IngredientTagsPanel } from '../components/IngredientTagsPanel'
 
 const BASE_UNITS: ('g' | 'ml')[] = ['g', 'ml']
+
+const tagNameDistance = (left: string, right: string) => {
+	const a = normalizeText(left)
+	const b = normalizeText(right)
+	const row = Array.from({ length: a.length + 1 }, (_, index) => index)
+	for (let j = 1; j <= b.length; j += 1) {
+		let previous = row[0]
+		row[0] = j
+		for (let i = 1; i <= a.length; i += 1) {
+			const saved = row[i]
+			row[i] = Math.min(
+				row[i] + 1,
+				row[i - 1] + 1,
+				previous + (a[i - 1] === b[j - 1] ? 0 : 1)
+			)
+			previous = saved
+		}
+	}
+	return row[a.length]
+}
 
 interface ConversionDraft {
 	unitName: string
@@ -556,6 +577,13 @@ export function IngredientFormModal({
 	const handleCreateTagInline = async () => {
 		const name = newTagInput.trim()
 		if (!name) return
+		const exact = allTags.find((tag) => normalizeText(tag.name) === normalizeText(name))
+		if (exact) {
+			setNewTagIds((prev) => (prev.includes(exact.id) ? prev : [...prev, exact.id]))
+			setNewTagInput('')
+			setCreatingNewTag(false)
+			return
+		}
 		try {
 			const created = await ingredientTagService.create({ name })
 			setAllTags((prev) => [...prev, created])
@@ -566,6 +594,19 @@ export function IngredientFormModal({
 			// silencioso
 		}
 	}
+
+	const tagSuggestions = newTagInput.trim()
+		? allTags
+				.map((tag) => ({ tag, distance: tagNameDistance(newTagInput, tag.name) }))
+				.filter(
+					({ tag, distance }) =>
+						distance <= Math.max(3, Math.floor(newTagInput.trim().length / 2)) ||
+						normalizeText(tag.name).includes(normalizeText(newTagInput))
+				)
+				.sort((a, b) => a.distance - b.distance || a.tag.name.localeCompare(b.tag.name))
+				.slice(0, 6)
+				.map(({ tag }) => tag)
+		: []
 
 	// --- Accion: crear uno ---
 	const handleCreate = async (e: React.FormEvent) => {
@@ -1772,7 +1813,8 @@ export function IngredientFormModal({
 										)}
 									</div>
 									{creatingNewTag ? (
-										<div className='ing-tags-panel__create'>
+										<div>
+											<div className='ing-tags-panel__create'>
 											<input
 												type='text'
 												value={newTagInput}
@@ -1786,7 +1828,7 @@ export function IngredientFormModal({
 												type='button'
 												className='ing-tags-panel__btn-create'
 												onClick={handleCreateTagInline}>
-												{t('save')}
+												{t('tags.createNew')}
 											</button>
 											<button
 												type='button'
@@ -1794,6 +1836,27 @@ export function IngredientFormModal({
 												onClick={() => setCreatingNewTag(false)}>
 												{t('cancel')}
 											</button>
+											</div>
+											{tagSuggestions.length > 0 && (
+												<div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.5rem' }}>
+													<span className='ing-tags-panel__empty'>{t('tags.similar')}</span>
+													{tagSuggestions.map((tag) => (
+														<button
+															key={tag.id}
+															type='button'
+															className='ing-tags-panel__chip'
+															onClick={() => {
+																setNewTagIds((prev) =>
+																	prev.includes(tag.id) ? prev : [...prev, tag.id]
+																)
+																setNewTagInput('')
+																setCreatingNewTag(false)
+															}}>
+															{tag.name}
+														</button>
+													))}
+												</div>
+											)}
 										</div>
 									) : (
 										<button
