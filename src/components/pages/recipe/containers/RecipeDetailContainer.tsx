@@ -59,6 +59,24 @@ export function RecipeDetailContainer() {
 		setModalOpen(true)
 	}
 
+	const handleHide = async () => {
+		if (!recipe) return
+		const confirmed = await confirm({
+			title: t('recipes.hideTitle'),
+			message: t('recipes.hideConfirm', { title: recipe.title }),
+			confirmText: t('recipes.hide'),
+		})
+		if (!confirmed) return
+
+		try {
+			await recipeService.hide(recipe.id)
+			toast.success(t('recipes.hidden'))
+			navigate('/recipes')
+		} catch {
+			toast.error(t('recipes.hideError'))
+		}
+	}
+
 	if (loading) return <div className='loading'>{t('recipes.loading')}</div>
 	if (error || !recipe) return <div className='error-message'>{error || t('error')}</div>
 	const isOwner = recipe.userId === authService.getUser()?.id
@@ -69,6 +87,7 @@ export function RecipeDetailContainer() {
 				recipe={recipe}
 				onDelete={handleDelete}
 				onAddToWeek={handleAddToWeek}
+				onHide={!isOwner && recipe.isPublic ? handleHide : undefined}
 				isOwner={isOwner}
 				canEdit={isOwner || authService.isAdmin()}
 			/>

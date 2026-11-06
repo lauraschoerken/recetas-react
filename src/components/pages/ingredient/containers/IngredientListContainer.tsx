@@ -49,7 +49,6 @@ export function IngredientListContainer() {
 	const [stores, setStores] = useState<UserStore[]>([])
 	const [filtersOpen, setFiltersOpen] = useState(false)
 	const [availableTags, setAvailableTags] = useState<IngredientTag[]>([])
-	const [authors, setAuthors] = useState<{ id: number; name: string }[]>([])
 	const [tagMap, setTagMap] = useState<
 		Record<string, { id: number; name: string; color?: string | null }[]>
 	>({})
@@ -183,14 +182,6 @@ export function IngredientListContainer() {
 		}
 	}, [])
 
-	const loadAuthors = useCallback(async () => {
-		try {
-			setAuthors(await ingredientService.getAuthors())
-		} catch (error) {
-			console.error('Error loading ingredient authors:', error)
-		}
-	}, [])
-
 	const loadIngredients = useCallback(async () => {
 		setLoading(true)
 		try {
@@ -268,10 +259,6 @@ export function IngredientListContainer() {
 		loadTags()
 	}, [loadTags])
 
-	useEffect(() => {
-		loadAuthors()
-	}, [loadAuthors])
-
 	// Sincronizar localSearch con URL
 	useEffect(() => {
 		setLocalSearch(search)
@@ -304,6 +291,22 @@ export function IngredientListContainer() {
 		)
 	}
 
+	// Las URLs antiguas podían apuntar al autor de otro usuario. El filtro actual
+	// solo admite el conjunto completo o los ingredientes propios.
+	useEffect(() => {
+		if (filterAuthorId != null && filterAuthorId !== currentUser?.id) {
+			setSearchParams(
+				(prev) => {
+					const p = new URLSearchParams(prev)
+					p.delete('author')
+					p.set('page', '1')
+					return p
+				},
+				{ replace: true }
+			)
+		}
+	}, [filterAuthorId, currentUser?.id, setSearchParams])
+
 	const handleSearchChange = (value: string) => {
 		setLocalSearch(value)
 		if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
@@ -316,9 +319,11 @@ export function IngredientListContainer() {
 		setSearchParams(
 			(prev) => {
 				const p = new URLSearchParams(prev)
-				if (p.get('sortBy') === field) {
+				const currentSortBy = (p.get('sortBy') || 'name') as SortField
+				const currentSortOrder = (p.get('sortOrder') || 'asc') as 'asc' | 'desc'
+				if (currentSortBy === field) {
 					// Invertir orden si se pulsa el mismo campo
-					p.set('sortOrder', p.get('sortOrder') === 'asc' ? 'desc' : 'asc')
+					p.set('sortOrder', currentSortOrder === 'asc' ? 'desc' : 'asc')
 				} else {
 					p.set('sortBy', field)
 					p.set('sortOrder', field === 'name' ? 'asc' : 'desc')
@@ -328,10 +333,6 @@ export function IngredientListContainer() {
 			},
 			{ replace: true }
 		)
-	}
-
-	const handleSortOrderToggle = () => {
-		updateParam('sortOrder', sortOrder === 'asc' ? 'desc' : 'asc')
 	}
 
 	// Debounce para campos numéricos: actualiza URL solo después de 600ms sin escribir
@@ -820,14 +821,6 @@ export function IngredientListContainer() {
 							{sortBy === field && <span className='sort-arrow'>{sortArrow}</span>}
 						</button>
 					))}
-					{sortBy !== 'name' && sortBy === sortBy && (
-						<button
-							className='sort-pill sort-pill--order'
-							onClick={handleSortOrderToggle}
-							title={t('ingredients.sortOrderToggle')}>
-							{sortArrow}
-						</button>
-					)}
 				</div>
 
 				{/* Botón de filtros avanzados */}
@@ -871,8 +864,8 @@ export function IngredientListContainer() {
 							</select>
 						</div>
 
-						{/* Usuario creador */}
-						{authors.length > 0 && (
+						{/* Alcance por usuario: todos los visibles o solo los creados por mí */}
+						{currentUser && (
 							<div className='filter-group'>
 								<label className='filter-label'>{t('ingredients.filterAuthor')}</label>
 								<select
@@ -880,11 +873,7 @@ export function IngredientListContainer() {
 									value={filterAuthorId ?? ''}
 									onChange={(e) => updateParam('author', e.target.value || null)}>
 									<option value=''>{t('ingredients.authorAll')}</option>
-									{authors.map((author) => (
-										<option key={author.id} value={author.id}>
-											{author.name}
-										</option>
-									))}
+									<option value={currentUser.id}>{t('ingredients.authorMine')}</option>
 								</select>
 							</div>
 						)}

@@ -4,7 +4,7 @@ import '@uiw/react-markdown-preview/markdown.css'
 import MDPreview from '@uiw/react-markdown-preview'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { HiOutlineLockClosed } from 'react-icons/hi2'
+import { HiOutlineEyeSlash, HiOutlineLockClosed } from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
 
 import {
@@ -23,6 +23,7 @@ interface RecipeDetailProps {
 	recipe: Recipe
 	onDelete: () => void
 	onAddToWeek: () => void
+	onHide?: () => void
 	isOwner?: boolean
 	canEdit?: boolean
 }
@@ -31,6 +32,7 @@ export function RecipeDetail({
 	recipe,
 	onDelete,
 	onAddToWeek,
+	onHide,
 	isOwner = false,
 	canEdit = false,
 }: RecipeDetailProps) {
@@ -372,6 +374,12 @@ export function RecipeDetail({
 								{t('delete')}
 							</button>
 						</>
+					)}
+					{!isOwner && recipe.isPublic && onHide && (
+						<button className='btn btn-outline' onClick={onHide}>
+							<HiOutlineEyeSlash aria-hidden='true' />
+							{t('recipes.hide')}
+						</button>
 					)}
 				</div>
 			</div>
