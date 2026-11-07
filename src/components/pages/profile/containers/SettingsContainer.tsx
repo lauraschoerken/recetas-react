@@ -22,6 +22,7 @@ import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras
 import { Recipe, recipeService } from '@/services/recipe'
 import { storeService, UserStore } from '@/services/store'
 import { useDialog } from '@/utils/dialog/DialogContext'
+import { copyTextToClipboard } from '@/utils/clipboard'
 import {
 	getStoredPageSize,
 	getStoredSnoozeDuration,
@@ -1423,7 +1424,7 @@ export function SettingsContainer() {
 
 	const copyAiTemplate = async () => {
 		try {
-			await navigator.clipboard.writeText(aiRecipeTemplate)
+			await copyTextToClipboard(aiRecipeTemplate)
 			toast.success(t('settings.templateCopied'))
 		} catch {
 			toast.error(t('settings.templateCopyError'))
@@ -1432,7 +1433,7 @@ export function SettingsContainer() {
 
 	const copyAiWeekPlanTemplate = async () => {
 		try {
-			await navigator.clipboard.writeText(aiWeekPlanTemplate)
+			await copyTextToClipboard(aiWeekPlanTemplate)
 			toast.success(t('settings.templateCopied'))
 		} catch {
 			toast.error(t('settings.templateCopyError'))
@@ -1441,7 +1442,7 @@ export function SettingsContainer() {
 
 	const copyAiWorkoutTemplate = async () => {
 		try {
-			await navigator.clipboard.writeText(aiWorkoutTemplate)
+			await copyTextToClipboard(aiWorkoutTemplate)
 			toast.success(t('settings.templateCopied'))
 		} catch {
 			toast.error(t('settings.templateCopyError'))
@@ -1450,7 +1451,7 @@ export function SettingsContainer() {
 
 	const copyAiIngredientTemplate = async () => {
 		try {
-			await navigator.clipboard.writeText(aiIngredientTemplate)
+			await copyTextToClipboard(aiIngredientTemplate)
 			toast.success(t('settings.templateCopied'))
 		} catch {
 			toast.error(t('settings.templateCopyError'))
@@ -1459,7 +1460,7 @@ export function SettingsContainer() {
 
 	const copyAiProductTemplate = async () => {
 		try {
-			await navigator.clipboard.writeText(aiProductTemplate)
+			await copyTextToClipboard(aiProductTemplate)
 			toast.success(t('settings.templateCopied'))
 		} catch {
 			toast.error(t('settings.templateCopyError'))
