@@ -248,6 +248,11 @@ body:has(.modal-overlay, .confirm-dialog-overlay, .cook-modal-overlay) {
 	cursor: not-allowed;
 }
 
+.btn:focus-visible {
+	outline: 3px solid color-mix(in srgb, var(--primary-color) 55%, white);
+	outline-offset: 2px;
+}
+
 .btn-primary {
 	background-color: var(--primary-color);
 	color: var(--text-inverse);
@@ -540,6 +545,18 @@ body:has(.modal-overlay, .confirm-dialog-overlay, .cook-modal-overlay) {
 }
 
 @media (max-width: 40rem) {
+	.search-bar-container {
+		flex-wrap: wrap;
+
+		.form-input {
+			flex: 1 0 100%;
+		}
+
+		.btn {
+			flex: 1 1 auto;
+		}
+	}
+
 	.page-header {
 		align-items: stretch;
 		flex-direction: column;

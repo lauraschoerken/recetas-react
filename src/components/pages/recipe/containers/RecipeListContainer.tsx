@@ -103,12 +103,13 @@ export function RecipeListContainer() {
 	const { confirm, toast } = useDialog()
 	const [recipes, setRecipes] = useState<Recipe[]>([])
 	const [total, setTotal] = useState(0)
+	const [hiddenTotal, setHiddenTotal] = useState(0)
 	const [loading, setLoading] = useState(true)
 	const [initialLoad, setInitialLoad] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 	const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
 	const [modalOpen, setModalOpen] = useState(false)
-	const [pageSize] = useState(getStoredPageSize)
+	const [pageSize] = useState(() => getStoredPageSize('recipes'))
 	const [availableTags, setAvailableTags] = useState<IngredientTag[]>([])
 	const [authors, setAuthors] = useState<{ id: number; name: string }[]>([])
 	const [importReview, setImportReview] = useState<{
@@ -144,6 +145,7 @@ export function RecipeListContainer() {
 
 	// Leer filtros desde URL
 	const [filters, setFilters] = useState<RecipeFilterValues>({
+		hidden: searchParams.get('hidden') === 'only' ? 'only' : 'exclude',
 		visibility: (searchParams.get('visibility') as RecipeFilterValues['visibility']) || 'all',
 		minCalories: searchParams.get('minCal') || '',
 		maxCalories: searchParams.get('maxCal') || '',
@@ -177,6 +179,7 @@ export function RecipeListContainer() {
 	})
 
 	const activeFilterCount = [
+		filters.hidden === 'only',
 		filters.visibility !== 'all',
 		filters.minCalories,
 		filters.maxCalories,
@@ -201,11 +204,14 @@ export function RecipeListContainer() {
 			.getAll()
 			.catch(() => [])
 			.then(setAvailableTags)
+	}, [])
+
+	useEffect(() => {
 		recipeService
-			.getAuthors()
+			.getAuthors(filters.hidden)
 			.catch(() => [])
 			.then(setAuthors)
-	}, [])
+	}, [filters.hidden])
 
 	const loadRecipes = useCallback(async () => {
 		setLoading(true)
@@ -216,6 +222,7 @@ export function RecipeListContainer() {
 				pageSize,
 				search: normalizeText(search),
 				visibility: filters.visibility,
+				hidden: filters.hidden,
 				ingredient: filters.ingredient,
 				difficulty: filters.difficulty || undefined,
 				minCookTime: filters.minCookTime ? Number(filters.minCookTime) : undefined,
@@ -228,6 +235,7 @@ export function RecipeListContainer() {
 			})
 			setRecipes(result.data)
 			setTotal(result.total)
+			setHiddenTotal(result.hiddenTotal)
 		} catch {
 			setError(t('recipes.loadError'))
 		} finally {
@@ -241,9 +249,18 @@ export function RecipeListContainer() {
 	}, [loadRecipes])
 
 	const handleDelete = async (id: number) => {
+		const recipeToDelete = recipes.find((recipe) => recipe.id === id)
+		const deletingAsAdmin =
+			authService.isAdmin() && recipeToDelete?.userId !== authService.getUser()?.id
 		const confirmed = await confirm({
 			title: t('recipes.deleteTitle'),
-			message: t('recipes.deleteConfirm'),
+			message:
+				deletingAsAdmin && recipeToDelete
+					? t('recipes.adminDeleteConfirm', {
+							title: recipeToDelete.title,
+							owner: recipeToDelete.authorName || `#${recipeToDelete.userId}`,
+						})
+					: t('recipes.deleteConfirm'),
 			confirmText: t('delete'),
 			type: 'danger',
 		})
@@ -281,6 +298,32 @@ export function RecipeListContainer() {
 		}
 	}
 
+	const handleUnhide = async (recipe: Recipe) => {
+		try {
+			await recipeService.unhide(recipe.id)
+			setSelectedIds((prev) => {
+				const next = new Set(prev)
+				next.delete(recipe.id)
+				return next
+			})
+			if (recipes.length === 1 && currentPage > 1) {
+				setSearchParams(
+					(prev) => {
+						const p = new URLSearchParams(prev)
+						p.set('page', String(currentPage - 1))
+						return p
+					},
+					{ replace: true }
+				)
+			} else {
+				await loadRecipes()
+			}
+			toast.success(t('recipes.unhidden'))
+		} catch {
+			toast.error(t('recipes.unhideError'))
+		}
+	}
+
 	const handleSearch = (value: string) => {
 		setSearchParams(
 			(prev) => {
@@ -303,6 +346,7 @@ export function RecipeListContainer() {
 				const setOrDel = (key: string, val: string | undefined) =>
 					val ? p.set(key, val) : p.delete(key)
 
+				setOrDel('hidden', newFilters.hidden === 'only' ? 'only' : undefined)
 				setOrDel('visibility', newFilters.visibility !== 'all' ? newFilters.visibility : undefined)
 				setOrDel('minCal', newFilters.minCalories || undefined)
 				setOrDel('maxCal', newFilters.maxCalories || undefined)
@@ -337,6 +381,7 @@ export function RecipeListContainer() {
 			(prev) => {
 				const p = new URLSearchParams(prev)
 				for (const key of [
+					'hidden',
 					'visibility',
 					'minCal',
 					'maxCal',
@@ -891,6 +936,22 @@ export function RecipeListContainer() {
 				/>
 				<button
 					type='button'
+					className={`btn btn-outline${filters.hidden === 'only' ? ' active' : ''}`}
+					onClick={() =>
+						handleFiltersChange({
+							...filters,
+							hidden: filters.hidden === 'only' ? 'exclude' : 'only',
+							visibility: 'all',
+							authorId: null,
+						})
+					}
+					aria-pressed={filters.hidden === 'only'}>
+					{filters.hidden === 'only'
+						? t('recipes.showVisible')
+						: t('recipes.showHiddenCount', { count: hiddenTotal })}
+				</button>
+				<button
+					type='button'
 					className={`btn btn-outline recipe-filter-toggle${activeFilterCount > 0 ? ' active' : ''}`}
 					onClick={() => setFiltersOpen((o) => !o)}>
 					{t('recipes.filters')}
@@ -918,7 +979,9 @@ export function RecipeListContainer() {
 				onAddToWeek={handleAddToWeek}
 				selectedIds={selectedIds}
 				onToggleSelect={handleToggleSelect}
-				onHide={handleHide}
+				onHide={filters.hidden === 'exclude' ? handleHide : undefined}
+				onUnhide={filters.hidden === 'only' ? handleUnhide : undefined}
+				showingHidden={filters.hidden === 'only'}
 			/>
 
 			{showExportModal && (

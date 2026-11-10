@@ -107,5 +107,6 @@
 			"updatedAt": "2024-01-02T00:00:00.000Z"
 		}
 	],
-	"total": 2
+	"total": 2,
+	"hiddenTotal": 1
 }

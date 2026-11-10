@@ -12,6 +12,8 @@ interface RecipeListProps {
 	selectedIds?: Set<number>
 	onToggleSelect?: (id: number) => void
 	onHide?: (recipe: Recipe) => void
+	onUnhide?: (recipe: Recipe) => void
+	showingHidden?: boolean
 }
 
 export function RecipeList({
@@ -22,14 +24,18 @@ export function RecipeList({
 	selectedIds,
 	onToggleSelect,
 	onHide,
+	onUnhide,
+	showingHidden = false,
 }: RecipeListProps) {
 	const { t } = useTranslation()
 
 	if (recipes.length === 0) {
 		return (
 			<div className='empty-state'>
-				<p>{t('recipes.emptyTitle')}</p>
-				<p className='text-secondary text-sm mt-1'>{t('recipes.emptyHint')}</p>
+				<p>{t(showingHidden ? 'recipes.hiddenEmptyTitle' : 'recipes.emptyTitle')}</p>
+				<p className='text-secondary text-sm mt-1'>
+					{t(showingHidden ? 'recipes.hiddenEmptyHint' : 'recipes.emptyHint')}
+				</p>
 			</div>
 		)
 	}
@@ -46,6 +52,7 @@ export function RecipeList({
 					isSelected={selectedIds?.has(recipe.id)}
 					onSelect={onToggleSelect}
 					onHide={onHide}
+					onUnhide={onUnhide}
 				/>
 			))}
 		</div>

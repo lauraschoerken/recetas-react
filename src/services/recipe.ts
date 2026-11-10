@@ -39,6 +39,7 @@ export const recipeService = {
 		pageSize: number
 		search?: string
 		visibility?: 'all' | 'public' | 'mine' | 'private'
+		hidden?: 'exclude' | 'only'
 		ingredient?: string
 		difficulty?: string
 		minCookTime?: number
@@ -48,10 +49,11 @@ export const recipeService = {
 		sortBy?: string
 		sortOrder?: string
 		authorId?: number | null
-	}): Promise<{ data: Recipe[]; total: number }> {
+	}): Promise<{ data: Recipe[]; total: number; hiddenTotal: number }> {
 		const q = new URLSearchParams({ page: String(params.page), pageSize: String(params.pageSize) })
 		if (params.search) q.set('search', params.search)
 		if (params.visibility && params.visibility !== 'all') q.set('visibility', params.visibility)
+		if (params.hidden === 'only') q.set('hidden', 'only')
 		if (params.ingredient) q.set('ingredient', params.ingredient)
 		if (params.difficulty) q.set('difficulty', params.difficulty)
 		if (params.minCookTime != null) q.set('minCookTime', String(params.minCookTime))
@@ -62,15 +64,16 @@ export const recipeService = {
 		if (params.sortBy) q.set('sortBy', params.sortBy)
 		if (params.sortOrder) q.set('sortOrder', params.sortOrder)
 		if (params.authorId != null) q.set('author', String(params.authorId))
-		return api.get<{ data: Recipe[]; total: number }>(`/recipes?${q}`)
+		return api.get<{ data: Recipe[]; total: number; hiddenTotal: number }>(`/recipes?${q}`)
 	},
 
 	async getById(id: number): Promise<Recipe> {
 		return api.get<Recipe>(`/recipes/${id}`)
 	},
 
-	async getAuthors(): Promise<{ id: number; name: string }[]> {
-		return api.get<{ id: number; name: string }[]>('/recipes/authors')
+	async getAuthors(hidden: 'exclude' | 'only' = 'exclude'): Promise<{ id: number; name: string }[]> {
+		const query = hidden === 'only' ? '?hidden=only' : ''
+		return api.get<{ id: number; name: string }[]>(`/recipes/authors${query}`)
 	},
 
 	async create(data: CreateRecipeData): Promise<Recipe> {
@@ -93,8 +96,11 @@ export const recipeService = {
 		return api.delete(`/recipes/${id}/hide`)
 	},
 
-	async getHidden(): Promise<Recipe[]> {
-		return api.get<Recipe[]>('/recipes/hidden')
+	async getHidden(params: { page: number; pageSize: number; search?: string; authorId?: number }) {
+		const q = new URLSearchParams({ page: String(params.page), pageSize: String(params.pageSize) })
+		if (params.search) q.set('search', params.search)
+		if (params.authorId != null) q.set('author', String(params.authorId))
+		return api.get<{ data: Recipe[]; total: number; hiddenTotal: number }>(`/recipes/hidden?${q}`)
 	},
 
 	async exportCsv(ids: number[]): Promise<void> {

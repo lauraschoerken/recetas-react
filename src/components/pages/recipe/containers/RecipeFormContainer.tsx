@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useNavigate, useParams } from 'react-router-dom'
 
 import { alertService } from '@/services/alert'
 import { authService } from '@/services/auth'
@@ -23,6 +23,8 @@ export function RecipeFormContainer() {
 	const [createMinServings, setCreateMinServings] = useState('')
 
 	const isEditing = !!id
+	const isAdminEditingAnotherUser =
+		isEditing && authService.isAdmin() && recipe?.userId !== authService.getUser()?.id
 
 	useEffect(() => {
 		if (id) {
@@ -125,6 +127,18 @@ export function RecipeFormContainer() {
 			<div className='page-header'>
 				<h1 className='page-title'>{isEditing ? t('recipes.editTitle') : t('recipes.newTitle')}</h1>
 			</div>
+
+			{isAdminEditingAnotherUser && recipe && (
+				<div className='recipe-admin-edit-notice' role='status'>
+					<strong>{t('recipes.adminEditingAnotherUser')}</strong>
+					<span>
+						{t('recipes.adminOwnershipLabel', {
+							visibility: t(recipe.isPublic ? 'public' : 'private'),
+							owner: recipe.authorName || `#${recipe.userId}`,
+						})}
+					</span>
+				</div>
+			)}
 
 			<div className='card'>
 				<RecipeForm

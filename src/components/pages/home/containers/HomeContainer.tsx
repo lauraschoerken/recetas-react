@@ -32,7 +32,7 @@ export function HomeContainer() {
 	const [searchParams, setSearchParams] = useSearchParams()
 	const [showAddForm, setShowAddForm] = useState(false)
 	const [searchQuery, setSearchQuery] = useState('')
-	const [pageSize] = useState(getStoredPageSize)
+	const [pageSize] = useState(() => getStoredPageSize('home'))
 
 	const activeTab = (searchParams.get('tab') as HomeLocation) ?? 'nevera'
 	const currentPage = parseInt(searchParams.get('page') || '1', 10)

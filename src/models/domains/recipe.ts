@@ -55,6 +55,7 @@ export interface Recipe {
 	tags?: { id: number; name: string; color?: string | null }[]
 	createdAt: string
 	updatedAt: string
+	isHiddenForCurrentUser?: boolean
 	ingredients: Ingredient[]
 	components?: RecipeComponent[]
 	totalCalories?: number | null

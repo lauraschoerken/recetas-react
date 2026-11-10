@@ -45,7 +45,7 @@ export function IngredientListContainer() {
 	const [loading, setLoading] = useState(true)
 	const [total, setTotal] = useState(0)
 	const [searchParams, setSearchParams] = useSearchParams()
-	const [pageSize] = useState(getStoredPageSize)
+	const [pageSize] = useState(() => getStoredPageSize('ingredients'))
 	const [stores, setStores] = useState<UserStore[]>([])
 	const [filtersOpen, setFiltersOpen] = useState(false)
 	const [availableTags, setAvailableTags] = useState<IngredientTag[]>([])

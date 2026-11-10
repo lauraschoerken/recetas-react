@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useNavigate, useParams } from 'react-router-dom'
 
 import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
 import { authService } from '@/services/auth'
@@ -38,9 +38,16 @@ export function RecipeDetailContainer() {
 
 	const handleDelete = async () => {
 		if (!recipe) return
+		const deletingAsAdmin =
+			authService.isAdmin() && recipe.userId !== authService.getUser()?.id
 		const confirmed = await confirm({
 			title: t('recipes.deleteTitle'),
-			message: t('recipes.deleteConfirm'),
+			message: deletingAsAdmin
+				? t('recipes.adminDeleteConfirm', {
+						title: recipe.title,
+						owner: recipe.authorName || `#${recipe.userId}`,
+					})
+				: t('recipes.deleteConfirm'),
 			confirmText: t('delete'),
 			type: 'danger',
 		})
@@ -70,16 +77,28 @@ export function RecipeDetailContainer() {
 
 		try {
 			await recipeService.hide(recipe.id)
+			setRecipe({ ...recipe, isHiddenForCurrentUser: true })
 			toast.success(t('recipes.hidden'))
-			navigate('/recipes')
 		} catch {
 			toast.error(t('recipes.hideError'))
+		}
+	}
+
+	const handleUnhide = async () => {
+		if (!recipe) return
+		try {
+			await recipeService.unhide(recipe.id)
+			setRecipe({ ...recipe, isHiddenForCurrentUser: false })
+			toast.success(t('recipes.unhidden'))
+		} catch {
+			toast.error(t('recipes.unhideError'))
 		}
 	}
 
 	if (loading) return <div className='loading'>{t('recipes.loading')}</div>
 	if (error || !recipe) return <div className='error-message'>{error || t('error')}</div>
 	const isOwner = recipe.userId === authService.getUser()?.id
+	const isAdmin = authService.isAdmin()
 
 	return (
 		<>
@@ -87,9 +106,18 @@ export function RecipeDetailContainer() {
 				recipe={recipe}
 				onDelete={handleDelete}
 				onAddToWeek={handleAddToWeek}
-				onHide={!isOwner && recipe.isPublic ? handleHide : undefined}
+				onHide={
+					!isOwner && recipe.isPublic && !recipe.isHiddenForCurrentUser ? handleHide : undefined
+				}
+				onUnhide={
+					!isOwner && recipe.isPublic && recipe.isHiddenForCurrentUser
+						? handleUnhide
+						: undefined
+				}
 				isOwner={isOwner}
-				canEdit={isOwner || authService.isAdmin()}
+				canEdit={isOwner || isAdmin}
+				canDelete={isAdmin}
+				showAdminOwnership={isAdmin}
 			/>
 
 			<AddToWeekModal recipe={recipe} isOpen={modalOpen} onClose={() => setModalOpen(false)} />

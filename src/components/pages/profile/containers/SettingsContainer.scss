@@ -541,6 +541,13 @@
 	margin-top: 0.5rem;
 }
 
+.pagination-settings-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+	gap: 1.25rem;
+	margin-top: 1rem;
+}
+
 .page-size-btn {
 	min-width: 3rem;
 	padding: 0.4rem 0.75rem;

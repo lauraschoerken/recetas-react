@@ -403,3 +403,18 @@
 		}
 	}
 }
+
+.recipe-admin-edit-notice {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	margin-bottom: 1rem;
+	padding: 0.8rem 1rem;
+	border: 1px solid var(--warning-color, #d99a00);
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--warning-color, #d99a00) 10%, var(--surface-0));
+	color: var(--text-primary);
+
+	span { color: var(--text-secondary); }
+}

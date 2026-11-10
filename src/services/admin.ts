@@ -83,6 +83,34 @@ export interface AuditedIngredient extends PendingIngredient {
 	}
 }
 
+export interface IngredientImportChange {
+	path: string
+	before: unknown
+	after: unknown
+	impactedReferences: number
+	risk: 'normal' | 'structural'
+}
+
+export interface IngredientImportPreview {
+	valid: boolean
+	overview: {
+		received: number
+		changed: number
+		unchanged: number
+		totalChanges: number
+		impactedReferences: number
+		structuralChanges: number
+	}
+	ingredients: Array<{
+		id: number
+		name: string
+		changes: IngredientImportChange[]
+		usageTotal: number
+		impactedReferences: number
+		omittedPreserved: { variants: string[]; conversions: string[]; tags: string[] }
+	}>
+}
+
 class AdminService {
 	async getUsers(params?: {
 		page?: number
@@ -120,11 +148,11 @@ class AdminService {
 		return api.post<Record<string, unknown>>('/admin/ingredients/audit/export', { ids })
 	}
 
-	async validateIngredientImport(payload: unknown): Promise<{ valid: boolean; updated: number }> {
+	async validateIngredientImport(payload: unknown): Promise<IngredientImportPreview> {
 		return api.post('/admin/ingredients/audit/import', { payload, dryRun: true })
 	}
 
-	async importIngredients(payload: unknown): Promise<{ valid: boolean; updated: number }> {
+	async importIngredients(payload: unknown): Promise<IngredientImportPreview & { updated: number }> {
 		return api.post('/admin/ingredients/audit/import', { payload, dryRun: false })
 	}
 

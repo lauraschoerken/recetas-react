@@ -7,6 +7,7 @@ import { TagMultiSelect } from '@/components/shared/tag-multi-select/TagMultiSel
 import { IngredientTag } from '@/services/ingredientExtras'
 
 export interface RecipeFilterValues {
+	hidden: 'exclude' | 'only'
 	visibility: 'all' | 'public' | 'private'
 	// Calorías (client-side)
 	minCalories: string
@@ -42,6 +43,7 @@ interface RecipeFiltersProps {
 }
 
 export const DEFAULT_FILTERS: RecipeFilterValues = {
+	hidden: 'exclude',
 	visibility: 'all',
 	minCalories: '',
 	maxCalories: '',
@@ -163,6 +165,32 @@ export function RecipeFilters({
 
 	return (
 		<div className='recipe-filters'>
+			<div className='recipe-filters__group'>
+				<label className='recipe-filters__label'>{t('recipes.filterCollection')}</label>
+				<div className='recipe-filters__radio-group'>
+					{(['exclude', 'only'] as const).map((value) => (
+						<label
+							key={value}
+							className={`recipe-filters__radio${filters.hidden === value ? ' active' : ''}`}>
+							<input
+								type='radio'
+								name='hidden'
+								value={value}
+								checked={filters.hidden === value}
+								onChange={() =>
+									updateImmediate({
+										hidden: value,
+										visibility: value === 'only' ? 'all' : filters.visibility,
+										authorId: null,
+									})
+								}
+							/>
+							{t(value === 'only' ? 'recipes.filterHidden' : 'recipes.filterVisible')}
+						</label>
+					))}
+				</div>
+			</div>
+
 			{/* ── Ordenación ── */}
 			<div className='recipe-filters__group'>
 				<label className='recipe-filters__label'>{t('recipes.sortBy')}</label>
@@ -199,7 +227,7 @@ export function RecipeFilters({
 			</div>
 
 			{/* ── Visibilidad ── */}
-			<div className='recipe-filters__group'>
+			{filters.hidden !== 'only' && <div className='recipe-filters__group'>
 				<label className='recipe-filters__label'>{t('recipes.filterVisibility')}</label>
 				<div className='recipe-filters__radio-group'>
 					{(['all', 'public', 'private'] as const).map((v) => (
@@ -219,7 +247,7 @@ export function RecipeFilters({
 						</label>
 					))}
 				</div>
-			</div>
+			</div>}
 
 			{/* ── Dificultad ── */}
 			<div className='recipe-filters__group'>

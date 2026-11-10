@@ -29,7 +29,7 @@ describe('Recetas — con mocks', () => {
 		})
 
 		it('muestra la página de recetas', () => {
-			cy.contains(/recetas/i).should('be.visible')
+			cy.contains(/recetas|recipes/i).should('be.visible')
 		})
 
 		it('muestra las tarjetas de recetas del fixture', () => {
@@ -38,11 +38,11 @@ describe('Recetas — con mocks', () => {
 		})
 
 		it('muestra el botón de nueva receta', () => {
-			cy.contains(/nueva receta/i).should('be.visible')
+			cy.contains(/nueva receta|new recipe/i).should('be.visible')
 		})
 
 		it('navega al formulario de nueva receta', () => {
-			cy.contains(/nueva receta/i).click()
+			cy.contains(/nueva receta|new recipe/i).click()
 			cy.url().should('include', '/recipes/new')
 		})
 
@@ -61,7 +61,9 @@ describe('Recetas — con mocks', () => {
 			cy.wait('@getRecipes')
 
 			// El componente debe mostrar algún mensaje de estado vacío
-			cy.contains(/no hay recetas|sin recetas|ninguna receta/i).should('be.visible')
+			cy.contains(/no hay recetas|sin recetas|ninguna receta|don't have any recipes/i).should(
+				'be.visible'
+			)
 		})
 	})
 
@@ -76,8 +78,8 @@ describe('Recetas — con mocks', () => {
 
 		it('lanza una nueva petición al buscar por texto', () => {
 			// La búsqueda genera una nueva petición con ?search=...
-			cy.intercept('GET', '/api/recipes*search=tortilla*', {
-				body: { data: [], total: 0 },
+			cy.intercept({ method: 'GET', pathname: '/api/recipes', query: { search: 'tortilla' } }, {
+				body: { data: [], total: 0, hiddenTotal: 0 },
 			}).as('searchRecipes')
 
 			cy.get('input[type="search"], input[placeholder*="buscar" i], input[placeholder*="search" i]')
@@ -89,7 +91,63 @@ describe('Recetas — con mocks', () => {
 		})
 
 		it('muestra los filtros de visibilidad', () => {
-			cy.contains(/visibilidad|todas|mis recetas|públicas/i).should('exist')
+			cy.contains('button', /filtros|filters/i).click()
+			cy.contains(/visibilidad|visibility|todas|all|públicas|public/i).should('exist')
+		})
+
+		it('mantiene acceso visible y foco perceptible en móvil', () => {
+			cy.viewport(375, 667)
+			cy.contains('button', /ver ocultas|view hidden/i)
+				.should('be.visible')
+				.focus()
+				.should('have.css', 'outline-style', 'solid')
+			cy.document().then((document) => {
+				expect(document.documentElement.scrollWidth).to.be.at.most(375)
+			})
+		})
+
+		it('permite buscar ocultas y volver a mostrarlas desde Recetas', () => {
+			let restored = false
+			cy.intercept('GET', '/api/recipes?*hidden=only*', (req) => {
+				req.reply({
+					data: restored
+						? []
+						: [
+								{
+									id: 99,
+									title: 'Receta Oculta de Prueba',
+									description: null,
+									servings: 2,
+									isPublic: true,
+									userId: 2,
+									authorName: 'Otra persona',
+									ingredients: [],
+									components: [],
+									createdAt: '2024-01-01T00:00:00.000Z',
+									updatedAt: '2024-01-01T00:00:00.000Z',
+								},
+							],
+					total: restored ? 0 : 1,
+					hiddenTotal: restored ? 0 : 1,
+				})
+			}).as('getHiddenRecipes')
+			cy.intercept('GET', '/api/recipes/authors?hidden=only', {
+				body: [{ id: 2, name: 'Otra persona' }],
+			}).as('getHiddenAuthors')
+			cy.intercept('DELETE', '/api/recipes/99/hide', (req) => {
+				restored = true
+				req.reply({ statusCode: 200, body: { success: true } })
+			}).as('unhideRecipe')
+
+			cy.contains(/ver ocultas|view hidden/i).click()
+			cy.wait('@getHiddenRecipes')
+			cy.get('input[type="search"]').first().type('Oculta')
+			cy.wait('@getHiddenRecipes')
+			cy.contains('Receta Oculta de Prueba').should('be.visible')
+			cy.get('[title="Volver a mostrar"], [title="Show again"]').click({ force: true })
+			cy.wait('@unhideRecipe')
+			cy.wait('@getHiddenRecipes')
+			cy.contains(/no hay recetas ocultas|no hidden recipes/i).should('be.visible')
 		})
 	})
 
@@ -97,10 +155,10 @@ describe('Recetas — con mocks', () => {
 
 	describe('Paginación', () => {
 		it('muestra controles de paginación cuando el total supera el pageSize', () => {
-			// Fixture con 13 recetas (pageSize default = 12)
+			// El total supera el tamaño por defecto de Recetas (30)
 			cy.intercept('GET', '/api/recipes*', {
 				body: {
-					data: Array.from({ length: 12 }, (_, i) => ({
+					data: Array.from({ length: 30 }, (_, i) => ({
 						id: i + 1,
 						title: `Receta ${i + 1}`,
 						description: null,
@@ -113,7 +171,7 @@ describe('Recetas — con mocks', () => {
 						createdAt: '2024-01-01T00:00:00.000Z',
 						updatedAt: '2024-01-01T00:00:00.000Z',
 					})),
-					total: 13,
+					total: 31,
 				},
 			}).as('getRecipesPaginated')
 			cy.intercept('GET', '/api/recipes/authors', { body: [] }).as('getAuthors')
@@ -151,11 +209,38 @@ describe('Recetas — con mocks', () => {
 		})
 
 		it('muestra el botón de editar para el propietario', () => {
-			cy.contains(/editar/i).should('be.visible')
+			cy.contains(/editar|edit/i).should('be.visible')
 		})
 
 		it('muestra el botón de eliminar para el propietario', () => {
-			cy.contains(/eliminar/i).should('be.visible')
+			cy.contains(/eliminar|delete/i).should('be.visible')
+		})
+	})
+
+	describe('Detalle de receta oculta', () => {
+		it('muestra el estado oculto y permite restaurar sin salir del detalle', () => {
+			cy.fixture('recipes/detail.json').then((recipe) => {
+				cy.intercept('GET', '/api/recipes/1', {
+					body: {
+						...recipe,
+						userId: 2,
+						isPublic: true,
+						isHiddenForCurrentUser: true,
+					},
+				}).as('getHiddenRecipeDetail')
+			})
+			cy.intercept('DELETE', '/api/recipes/1/hide', {
+				statusCode: 200,
+				body: { success: true },
+			}).as('unhideFromDetail')
+
+			cy.visit('/recipes/1')
+			cy.wait('@getHiddenRecipeDetail')
+			cy.contains(/oculta para ti|hidden for you/i).should('be.visible')
+			cy.contains('button', /volver a mostrar|show again/i).click()
+			cy.wait('@unhideFromDetail')
+			cy.contains(/oculta para ti|hidden for you/i).should('not.exist')
+			cy.contains('button', /ocultar|hide/i).should('be.visible')
 		})
 	})
 
@@ -184,7 +269,7 @@ describe('Recetas — con mocks', () => {
 		})
 
 		it('muestra el formulario de creación de receta', () => {
-			cy.get('input[placeholder*="Tortilla" i], input[placeholder*="nombre" i]').should(
+			cy.get('input[placeholder*="Tortilla" i], input[placeholder*="nombre" i], input[placeholder*="title" i]').should(
 				'be.visible'
 			)
 		})
@@ -220,7 +305,7 @@ describe('Recetas — con mocks', () => {
 				'getNewRecipe'
 			)
 
-			cy.get('input[placeholder*="Tortilla" i], input[placeholder*="nombre" i]')
+			cy.get('input[placeholder*="Tortilla" i], input[placeholder*="nombre" i], input[placeholder*="title" i]')
 				.first()
 				.type('Receta Test')
 
@@ -245,7 +330,7 @@ describe('Recetas — con mocks', () => {
 		})
 
 		it('pre-rellena el formulario con los datos de la receta', () => {
-			cy.get('input[placeholder*="Tortilla" i], input[placeholder*="nombre" i]')
+			cy.get('input[placeholder*="Tortilla" i], input[placeholder*="nombre" i], input[placeholder*="title" i]')
 				.first()
 				.should('have.value', 'Tortilla de Patatas')
 		})
@@ -269,7 +354,7 @@ describe('Recetas — con mocks', () => {
 			)
 			cy.intercept('GET', '/api/recipes/1', { body: updatedRecipe }).as('getUpdatedRecipe')
 
-			cy.get('input[placeholder*="Tortilla" i], input[placeholder*="nombre" i]')
+			cy.get('input[placeholder*="Tortilla" i], input[placeholder*="nombre" i], input[placeholder*="title" i]')
 				.first()
 				.clear()
 				.type('Tortilla de Patatas Actualizada')
@@ -297,7 +382,7 @@ describe('Recetas — con mocks', () => {
 			cy.visit('/recipes/1')
 			cy.wait('@getRecipe')
 
-			cy.contains(/eliminar/i).click()
+			cy.contains(/eliminar|delete/i).click()
 			cy.get('.confirm-dialog-overlay, [data-testid="confirm-dialog"]').should('be.visible')
 		})
 
@@ -308,12 +393,12 @@ describe('Recetas — con mocks', () => {
 			cy.visit('/recipes/1')
 			cy.wait('@getRecipe')
 
-			cy.contains(/eliminar/i).click()
+			cy.contains(/eliminar|delete/i).click()
 			cy.get('.confirm-dialog-overlay, [data-testid="confirm-dialog"]').should('be.visible')
 
 			// Confirmar la eliminación
 			cy.get('.confirm-dialog-overlay button, [data-testid="confirm-dialog"] button')
-				.contains(/eliminar|confirmar/i)
+				.contains(/eliminar|confirmar|delete|confirm/i)
 				.click()
 
 			cy.wait('@deleteRecipe')
@@ -327,11 +412,11 @@ describe('Recetas — con mocks', () => {
 			cy.visit('/recipes/1')
 			cy.wait('@getRecipe')
 
-			cy.contains(/eliminar/i).click()
+			cy.contains(/eliminar|delete/i).click()
 			cy.get('.confirm-dialog-overlay, [data-testid="confirm-dialog"]').should('be.visible')
 
 			cy.get('.confirm-dialog-overlay button, [data-testid="confirm-dialog"] button')
-				.contains(/cancelar/i)
+				.contains(/cancelar|cancel/i)
 				.click()
 
 			cy.get('@deleteSpy').should('not.have.been.called')
@@ -348,11 +433,11 @@ describe('Recetas — con mocks', () => {
 			cy.visit('/recipes/1')
 			cy.wait('@getRecipe')
 
-			cy.contains(/eliminar/i).click()
+			cy.contains(/eliminar|delete/i).click()
 			cy.get('.confirm-dialog-overlay, [data-testid="confirm-dialog"]').should('be.visible')
 
 			cy.get('.confirm-dialog-overlay button, [data-testid="confirm-dialog"] button')
-				.contains(/eliminar|confirmar/i)
+				.contains(/eliminar|confirmar|delete|confirm/i)
 				.click()
 
 			cy.wait('@deleteError')

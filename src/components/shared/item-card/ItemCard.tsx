@@ -1,7 +1,7 @@
 import './ItemCard.scss'
 
 import { useTranslation } from 'react-i18next'
-import { HiOutlineArrowDownTray, HiOutlineLockClosed } from 'react-icons/hi2'
+import { HiOutlineArrowDownTray, HiOutlineEye, HiOutlineLockClosed } from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
 
 import { CalendarAddIcon, DeleteIcon, EditIcon, HideIcon } from '@/components/shared/icons'
@@ -32,7 +32,10 @@ interface ItemCardProps {
 	isSelected?: boolean
 	onSelect?: () => void
 	onHide?: () => void
+	onUnhide?: () => void
 	canEdit?: boolean
+	canDelete?: boolean
+	managementLabel?: string
 }
 
 export function ItemCard({
@@ -46,7 +49,10 @@ export function ItemCard({
 	isSelected,
 	onSelect,
 	onHide,
+	onUnhide,
 	canEdit,
+	canDelete,
+	managementLabel,
 }: ItemCardProps) {
 	const { t } = useTranslation()
 	const isOwner = item.userId === currentUserId
@@ -64,7 +70,8 @@ export function ItemCard({
 
 	return (
 		<div
-			className={`item-card ${item.type === 'dish' ? 'item-card--dish' : ''}${isSelected ? ' item-card--selected' : ''}`}>
+			className={`item-card ${item.type === 'dish' ? 'item-card--dish' : ''}${isSelected ? ' item-card--selected' : ''}${managementLabel ? ' item-card--managed' : ''}`}>
+			{managementLabel && <span className='item-card-management'>{managementLabel}</span>}
 			{/* Checkbox de selección — esquina superior derecha */}
 			{onSelect && (
 				<button
@@ -123,7 +130,7 @@ export function ItemCard({
 							<EditIcon size={14} aria-hidden='true' />
 						</Link>
 					)}
-					{isOwner && (
+					{(isOwner || canDelete) && (
 						<>
 							<button
 								className='item-card-action-btn item-card-action-btn--danger'
@@ -139,6 +146,14 @@ export function ItemCard({
 							onClick={onHide}
 							title={t('recipes.hide')}>
 							<HideIcon size={14} aria-hidden='true' />
+						</button>
+					)}
+					{!isOwner && item.isPublic && onUnhide && (
+						<button
+							className='item-card-action-btn'
+							onClick={onUnhide}
+							title={t('recipes.unhide')}>
+							<HiOutlineEye size={14} aria-hidden='true' />
 						</button>
 					)}
 				</div>
@@ -167,16 +182,14 @@ export function ItemCard({
 			</div>
 
 			{/* Lock: sits inside the card so it's not occluded by overlays; appears on hover */}
-			{!item.isPublic &&
-				(console.log('render lock', item.isPublic),
-				(
-					<span
-						className={`item-card-lock ${item.tags && item.tags.length > 0 ? 'item-card-lock--above-tags' : 'item-card-lock--in-tags'}${item.imageUrl ? ' item-card-lock--over-image' : ''}`}
-						title={t('private')}
-						aria-hidden='true'>
-						<HiOutlineLockClosed size={14} />
-					</span>
-				))}
+			{!item.isPublic && (
+				<span
+					className={`item-card-lock ${item.tags && item.tags.length > 0 ? 'item-card-lock--above-tags' : 'item-card-lock--in-tags'}${item.imageUrl ? ' item-card-lock--over-image' : ''}`}
+					title={t('private')}
+					aria-hidden='true'>
+					<HiOutlineLockClosed size={14} />
+				</span>
+			)}
 		</div>
 	)
 }

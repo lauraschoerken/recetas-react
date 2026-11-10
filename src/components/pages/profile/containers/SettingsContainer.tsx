@@ -13,19 +13,20 @@ import {
 	HiOutlineTrash,
 	HiOutlineXMark,
 } from 'react-icons/hi2'
+import { Link } from 'react-router-dom'
 
 import { alertService, IngredientThreshold, RecipeThreshold } from '@/services/alert'
 import { authService } from '@/services/auth'
 import { backupService } from '@/services/backup'
 import { Household, householdService } from '@/services/household'
 import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras'
-import { Recipe, recipeService } from '@/services/recipe'
 import { storeService, UserStore } from '@/services/store'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import { copyTextToClipboard } from '@/utils/clipboard'
 import {
 	getStoredPageSize,
 	getStoredSnoozeDuration,
+	PageSizeScope,
 	PAGE_SIZE_OPTIONS,
 	setStoredPageSize,
 	setStoredSnoozeDuration,
@@ -63,7 +64,11 @@ export function SettingsContainer() {
 		{ id: 'display', label: t('settings.displaySection'), icon: '🎛️' },
 	]
 
-	const [pageSize, setPageSizeState] = useState(getStoredPageSize)
+	const [pageSizes, setPageSizes] = useState<Record<PageSizeScope, number>>(() => ({
+		recipes: getStoredPageSize('recipes'),
+		ingredients: getStoredPageSize('ingredients'),
+		home: getStoredPageSize('home'),
+	}))
 	const [snoozeDuration, setSnoozeDurationState] = useState(getStoredSnoozeDuration)
 
 	// Thresholds state
@@ -155,8 +160,6 @@ export function SettingsContainer() {
 	const [pdfShowVisibility, setPdfShowVisibility] = useState(
 		() => localStorage.getItem('pdfShowVisibility') === 'true'
 	)
-	const [hiddenRecipes, setHiddenRecipes] = useState<Recipe[]>([])
-	const [hiddenRecipesLoading, setHiddenRecipesLoading] = useState(false)
 
 	const aiRecipeTemplate = JSON.stringify(
 		{
@@ -799,31 +802,7 @@ export function SettingsContainer() {
 		if (activeSection === 'tags') {
 			loadTags()
 		}
-		if (activeSection === 'hiddenRecipes') {
-			loadHiddenRecipes()
-		}
 	}, [activeSection])
-
-	const loadHiddenRecipes = async () => {
-		setHiddenRecipesLoading(true)
-		try {
-			setHiddenRecipes(await recipeService.getHidden())
-		} catch {
-			toast.error(t('settings.hiddenRecipesLoadError'))
-		} finally {
-			setHiddenRecipesLoading(false)
-		}
-	}
-
-	const handleUnhideRecipe = async (recipe: Recipe) => {
-		try {
-			await recipeService.unhide(recipe.id)
-			setHiddenRecipes((prev) => prev.filter((item) => item.id !== recipe.id))
-			toast.success(t('settings.recipeUnhidden'))
-		} catch {
-			toast.error(t('settings.recipeUnhideError'))
-		}
-	}
 
 	useEffect(() => {
 		const isOpen = !!unshareModal || !!mergeModal
@@ -2630,23 +2609,29 @@ export function SettingsContainer() {
 							<h2 className='settings-card-title'>{t('settings.displaySection')}</h2>
 							<p className='settings-card-description'>{t('settings.displaySectionDesc')}</p>
 
-							<div className='form-group' style={{ maxWidth: '16rem', marginTop: '1rem' }}>
-								<label className='form-label'>{t('settings.itemsPerPage')}</label>
-								<div className='page-size-options'>
-									{PAGE_SIZE_OPTIONS.map((size) => (
-										<button
-											key={size}
-											type='button'
-											className={`page-size-btn ${pageSize === size ? 'active' : ''}`}
-											onClick={() => {
-												setStoredPageSize(size)
-												setPageSizeState(size)
-												toast.success(t('settings.configSaved'))
-											}}>
-											{size}
-										</button>
-									))}
-								</div>
+							<div className='pagination-settings-grid'>
+								{(['recipes', 'ingredients', 'home'] as PageSizeScope[]).map((scope) => (
+									<div className='form-group' key={scope}>
+										<label className='form-label'>
+											{t(`settings.itemsPerPage_${scope}`)}
+										</label>
+										<div className='page-size-options'>
+											{PAGE_SIZE_OPTIONS.map((size) => (
+												<button
+													key={size}
+													type='button'
+													className={`page-size-btn ${pageSizes[scope] === size ? 'active' : ''}`}
+													onClick={() => {
+														setStoredPageSize(scope, size)
+														setPageSizes((current) => ({ ...current, [scope]: size }))
+														toast.success(t('settings.configSaved'))
+													}}>
+													{size}
+												</button>
+											))}
+										</div>
+									</div>
+								))}
 							</div>
 						</div>
 					)}
@@ -2655,39 +2640,10 @@ export function SettingsContainer() {
 						<div className='settings-card'>
 							<h2 className='settings-card-title'>{t('settings.hiddenRecipesSection')}</h2>
 							<p className='settings-card-description'>{t('settings.hiddenRecipesDesc')}</p>
-
-							{hiddenRecipesLoading ? (
-								<p className='settings-card-description'>{t('settings.loading')}</p>
-							) : hiddenRecipes.length === 0 ? (
-								<p className='settings-empty-message'>{t('settings.hiddenRecipesEmpty')}</p>
-							) : (
-								<div className='hidden-recipes-list'>
-									{hiddenRecipes.map((recipe) => (
-										<div key={recipe.id} className='hidden-recipe-row'>
-											<div className='hidden-recipe-info'>
-												{recipe.imageUrl && (
-													<img src={recipe.imageUrl} alt='' className='hidden-recipe-image' />
-												)}
-												<div>
-													<strong>{recipe.title}</strong>
-													{recipe.authorName && (
-														<span className='hidden-recipe-author'>
-															{t('settings.hiddenRecipeAuthor', { name: recipe.authorName })}
-														</span>
-													)}
-												</div>
-											</div>
-											<button
-												type='button'
-												className='btn btn-outline btn-sm'
-												onClick={() => handleUnhideRecipe(recipe)}>
-												<HiOutlineEye />
-												{t('settings.unhideRecipe')}
-											</button>
-										</div>
-									))}
-								</div>
-							)}
+							<Link to='/recipes?hidden=only' className='btn btn-primary'>
+								<HiOutlineEye />
+								{t('settings.manageHiddenRecipes')}
+							</Link>
 						</div>
 					)}
 				</div>

@@ -32,6 +32,29 @@
 	border-color: var(--primary-color);
 }
 
+.item-card-management {
+	position: absolute;
+	top: 0.45rem;
+	left: 0.45rem;
+	z-index: 12;
+	max-width: calc(100% - 3rem);
+	padding: 0.2rem 0.5rem;
+	border-radius: 999px;
+	background: rgba(0, 0, 0, 0.72);
+	color: #fff;
+	font-size: 0.62rem;
+	font-weight: 700;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	pointer-events: none;
+}
+
+.item-card--managed .item-card-overlay,
+.item-card--managed .item-card-no-image {
+	padding-top: 2.15rem;
+}
+
 // ── Checkbox de selección (esquina superior derecha) ────────────
 .item-card-select {
 	position: absolute;

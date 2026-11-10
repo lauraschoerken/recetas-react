@@ -40,6 +40,22 @@
 	margin-top: 0.4rem;
 }
 
+.recipe-detail-admin-owner {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: 0.55rem;
+	font-size: 0.82rem;
+	color: var(--text-secondary);
+
+	strong {
+		padding: 0.18rem 0.5rem;
+		border-radius: 999px;
+		background: var(--surface-2);
+		color: var(--text-primary);
+	}
+}
+
 .recipe-detail-chip {
 	display: inline-flex;
 	align-items: center;
@@ -50,6 +66,12 @@
 	color: var(--primary-color);
 	background: var(--primary-light);
 	border: 1px solid var(--primary-color);
+}
+
+.recipe-detail-chip--hidden {
+	border: 1px solid color-mix(in srgb, var(--warning-color, #d97706) 45%, transparent);
+	background: color-mix(in srgb, var(--warning-color, #d97706) 12%, transparent);
+	color: var(--warning-color, #b45309);
 }
 
 .recipe-detail-actions {

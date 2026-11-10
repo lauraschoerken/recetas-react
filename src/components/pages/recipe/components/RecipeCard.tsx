@@ -23,6 +23,7 @@ interface RecipeCardProps {
 	isSelected?: boolean
 	onSelect?: (id: number) => void
 	onHide?: (recipe: Recipe) => void
+	onUnhide?: (recipe: Recipe) => void
 }
 
 export function RecipeCard({
@@ -33,9 +34,11 @@ export function RecipeCard({
 	isSelected,
 	onSelect,
 	onHide,
+	onUnhide,
 }: RecipeCardProps) {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
+	const isAdmin = authService.isAdmin()
 	const [showPdfOptions, setShowPdfOptions] = useState(false)
 	const [showExportModal, setShowExportModal] = useState(false)
 	const [pdfComponentSelections, setPdfComponentSelections] = useState<Record<string, number>>({})
@@ -273,9 +276,19 @@ export function RecipeCard({
 				editPath={`/recipes/${recipe.id}/edit`}
 				detailPath={`/recipes/${recipe.id}`}
 				isSelected={isSelected}
-				canEdit={authService.isAdmin()}
+				canEdit={isAdmin}
+				canDelete={isAdmin}
+				managementLabel={
+					isAdmin
+						? t('recipes.adminOwnershipLabel', {
+								visibility: t(recipe.isPublic ? 'public' : 'private'),
+								owner: recipe.authorName || `#${recipe.userId}`,
+							})
+						: undefined
+				}
 				onSelect={onSelect ? () => onSelect(recipe.id) : undefined}
 				onHide={onHide ? () => onHide(recipe) : undefined}
+				onUnhide={onUnhide ? () => onUnhide(recipe) : undefined}
 			/>
 
 			<RecipeExportModal

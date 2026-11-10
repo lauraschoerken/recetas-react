@@ -4,7 +4,7 @@ import '@uiw/react-markdown-preview/markdown.css'
 import MDPreview from '@uiw/react-markdown-preview'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { HiOutlineEyeSlash, HiOutlineLockClosed } from 'react-icons/hi2'
+import { HiOutlineEye, HiOutlineEyeSlash, HiOutlineLockClosed } from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
 
 import {
@@ -24,8 +24,11 @@ interface RecipeDetailProps {
 	onDelete: () => void
 	onAddToWeek: () => void
 	onHide?: () => void
+	onUnhide?: () => void
 	isOwner?: boolean
 	canEdit?: boolean
+	canDelete?: boolean
+	showAdminOwnership?: boolean
 }
 
 export function RecipeDetail({
@@ -33,8 +36,11 @@ export function RecipeDetail({
 	onDelete,
 	onAddToWeek,
 	onHide,
+	onUnhide,
 	isOwner = false,
 	canEdit = false,
+	canDelete = false,
+	showAdminOwnership = false,
 }: RecipeDetailProps) {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
@@ -351,7 +357,18 @@ export function RecipeDetail({
 							<span className='recipe-detail-chip'>{formatCookTime(recipe.cookTimeMinutes)}</span>
 						)}
 						{difficultyText && <span className='recipe-detail-chip'>{difficultyText}</span>}
+						{recipe.isHiddenForCurrentUser && (
+							<span className='recipe-detail-chip recipe-detail-chip--hidden'>
+								{t('recipes.hiddenForYou')}
+							</span>
+						)}
 					</div>
+					{showAdminOwnership && (
+						<div className='recipe-detail-admin-owner'>
+							<strong>{t(recipe.isPublic ? 'public' : 'private')}</strong>
+							<span>{t('recipes.adminOwner', { owner: recipe.authorName || `#${recipe.userId}`, id: recipe.userId })}</span>
+						</div>
+					)}
 				</div>
 				<div className='recipe-detail-actions'>
 					<button className='btn btn-primary' onClick={onAddToWeek}>
@@ -368,7 +385,7 @@ export function RecipeDetail({
 							{t('edit')}
 						</Link>
 					)}
-					{isOwner && (
+					{(isOwner || canDelete) && (
 						<>
 							<button className='btn btn-danger' onClick={onDelete}>
 								{t('delete')}
@@ -379,6 +396,12 @@ export function RecipeDetail({
 						<button className='btn btn-outline' onClick={onHide}>
 							<HiOutlineEyeSlash aria-hidden='true' />
 							{t('recipes.hide')}
+						</button>
+					)}
+					{!isOwner && recipe.isPublic && onUnhide && (
+						<button className='btn btn-outline' onClick={onUnhide}>
+							<HiOutlineEye aria-hidden='true' />
+							{t('recipes.unhide')}
 						</button>
 					)}
 				</div>
