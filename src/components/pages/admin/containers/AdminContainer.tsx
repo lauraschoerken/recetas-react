@@ -8,7 +8,9 @@ import { adminService, AdminUser, PendingIngredient, Proposal } from '@/services
 import { backupService } from '@/services/backup'
 import { useDialog } from '@/utils/dialog/DialogContext'
 
-type Tab = 'users' | 'pendingIngredients' | 'proposals' | 'backup'
+import { IngredientAuditPanel } from './IngredientAuditPanel'
+
+type Tab = 'users' | 'audit' | 'pendingIngredients' | 'proposals' | 'backup'
 
 export function AdminContainer() {
 	const { t } = useTranslation()
@@ -31,7 +33,6 @@ export function AdminContainer() {
 
 	useEffect(() => {
 		loadData()
-		// eslint-disable-line react-hooks/exhaustive-deps
 	}, [tab])
 
 	const loadData = async () => {
@@ -140,8 +141,8 @@ export function AdminContainer() {
 			const result = await backupService.importAdminBackupFile(file, adminImportMode)
 			setAdminImportResult(result.results)
 			toast.success(t('admin.backup.importSuccess'))
-		} catch (err: any) {
-			toast.error(err?.message ?? t('admin.backup.importError'))
+		} catch (err: unknown) {
+			toast.error(err instanceof Error ? err.message : t('admin.backup.importError'))
 		} finally {
 			setImportingGlobal(false)
 		}
@@ -152,7 +153,7 @@ export function AdminContainer() {
 			<h1 className='admin-container__title'>{t('admin.title')}</h1>
 
 			<div className='admin-container__tabs'>
-				{(['users', 'pendingIngredients', 'proposals', 'backup'] as Tab[]).map((t2) => (
+				{(['users', 'audit', 'pendingIngredients', 'proposals', 'backup'] as Tab[]).map((t2) => (
 					<button
 						key={t2}
 						className={`admin-container__tab${tab === t2 ? ' admin-container__tab--active' : ''}`}
@@ -234,6 +235,8 @@ export function AdminContainer() {
 							)}
 						</div>
 					)}
+
+					{tab === 'audit' && <IngredientAuditPanel />}
 
 					{/* TAB: PENDING INGREDIENTS */}
 					{tab === 'pendingIngredients' && (
@@ -444,7 +447,9 @@ export function AdminContainer() {
 										<select
 											className='form-input'
 											value={adminImportMode}
-											onChange={(e) => setAdminImportMode(e.target.value as any)}>
+										onChange={(e) =>
+											setAdminImportMode(e.target.value as 'overwrite' | 'keep' | 'review')
+										}>
 											<option value='keep'>{t('settings.importKeep')}</option>
 											<option value='overwrite'>{t('settings.importOverwrite')}</option>
 											<option value='review'>{t('settings.importReview')}</option>

@@ -58,6 +58,31 @@ export interface Proposal {
 	createdAt: string
 }
 
+export type IngredientAuditIssue =
+	| 'MISSING_IMAGE'
+	| 'MISSING_MACROS'
+	| 'POSSIBLE_DUPLICATE'
+	| 'UNREVIEWED'
+
+export interface AuditedIngredient extends PendingIngredient {
+	preferredUnit?: string | null
+	createdAt: string
+	updatedAt: string
+	reviewedAt?: string | null
+	reviewedByUserId?: number | null
+	issues: IngredientAuditIssue[]
+	duplicateCandidates: Array<{ id: number; name: string; score: number }>
+	usage: {
+		recipes: number
+		home: number
+		shopping: number
+		weekPlans: number
+		stores: number
+		settings: number
+		total: number
+	}
+}
+
 class AdminService {
 	async getUsers(params?: {
 		page?: number
@@ -85,6 +110,30 @@ class AdminService {
 
 	async getPendingProposals(): Promise<Proposal[]> {
 		return api.get<Proposal[]>('/admin/proposals/pending')
+	}
+
+	async getIngredientAudit(): Promise<AuditedIngredient[]> {
+		return api.get<AuditedIngredient[]>('/admin/ingredients/audit')
+	}
+
+	async exportIngredients(ids: number[]): Promise<Record<string, unknown>> {
+		return api.post<Record<string, unknown>>('/admin/ingredients/audit/export', { ids })
+	}
+
+	async validateIngredientImport(payload: unknown): Promise<{ valid: boolean; updated: number }> {
+		return api.post('/admin/ingredients/audit/import', { payload, dryRun: true })
+	}
+
+	async importIngredients(payload: unknown): Promise<{ valid: boolean; updated: number }> {
+		return api.post('/admin/ingredients/audit/import', { payload, dryRun: false })
+	}
+
+	async markIngredientReviewed(id: number): Promise<void> {
+		return api.patch(`/admin/ingredients/${id}/reviewed`, {})
+	}
+
+	async mergeIngredients(targetId: number, sourceIds: number[]): Promise<void> {
+		return api.post('/admin/ingredients/merge', { targetId, sourceIds })
 	}
 
 	async approveIngredient(id: number): Promise<void> {

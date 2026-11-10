@@ -1267,9 +1267,43 @@
 		"joinedAt": "Registrado",
 		"tabs": {
 			"users": "Usuarios",
+			"audit": "Auditoría de ingredientes",
 			"pendingIngredients": "Ingredientes pendientes",
 			"proposals": "Propuestas",
 			"backup": "Backup global"
+		},
+		"audit": {
+			"desc": "Detecta ingredientes incompletos o posiblemente duplicados. Las referencias indican cuántos sitios se conservarán al unificar.",
+			"search": "Buscar por nombre o ID...",
+			"all": "Todos los ingredientes",
+			"problems": "Problemas detectados",
+			"usage": "Uso",
+			"created": "Creado / revisión",
+			"references": "referencias",
+			"notReviewed": "Sin revisar",
+			"reviewedDate": "Revisado el {{date}}",
+			"markReviewed": "Marcar revisado",
+			"reviewed": "Ingrediente marcado como revisado",
+			"export": "Exportar seleccionados ({{count}})",
+			"exportError": "No se pudo exportar la selección",
+			"import": "Importar ediciones JSON",
+			"importTitle": "Aplicar ediciones",
+			"importConfirm": "El archivo es válido. ¿Actualizar {{count}} ingredientes? Los cambios quedarán registrados en la auditoría.",
+			"imported": "Se han actualizado {{count}} ingredientes",
+			"importError": "No se pudo importar el archivo",
+			"loadError": "No se pudo cargar la auditoría",
+			"mergeTitle": "Unificar ingredientes",
+			"mergeConfirm": "¿Unificar «{{source}}» dentro de «{{target}}»? Se reasignarán de forma transaccional sus {{uses}} referencias y se eliminará el origen.",
+			"mergeInto": "Unificar en {{name}} ({{score}}% similitud)",
+			"merged": "Ingredientes unificados; las referencias se han conservado",
+			"mergeError": "No se pudieron unificar los ingredientes",
+			"usageDetail": "Recetas: {{recipes}}, despensa: {{home}}, compra: {{shopping}}, planificación: {{weekPlans}}, tiendas: {{stores}}, ajustes y etiquetas: {{settings}}",
+			"issues": {
+				"UNREVIEWED": "Sin revisar",
+				"MISSING_MACROS": "Faltan macros",
+				"MISSING_IMAGE": "Falta imagen",
+				"POSSIBLE_DUPLICATE": "Posible duplicado"
+			}
 		},
 		"backup": {
 			"title": "Backup global del sistema",

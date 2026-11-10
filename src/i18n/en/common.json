@@ -1187,9 +1187,43 @@
 		"joinedAt": "Joined",
 		"tabs": {
 			"users": "Users",
+			"audit": "Ingredient audit",
 			"pendingIngredients": "Pending ingredients",
 			"proposals": "Proposals",
 			"backup": "Global backup"
+		},
+		"audit": {
+			"desc": "Find incomplete or possibly duplicated ingredients. Reference counts show how many usages will be preserved during a merge.",
+			"search": "Search by name or ID...",
+			"all": "All ingredients",
+			"problems": "Detected issues",
+			"usage": "Usage",
+			"created": "Created / review",
+			"references": "references",
+			"notReviewed": "Not reviewed",
+			"reviewedDate": "Reviewed on {{date}}",
+			"markReviewed": "Mark reviewed",
+			"reviewed": "Ingredient marked as reviewed",
+			"export": "Export selected ({{count}})",
+			"exportError": "Could not export the selection",
+			"import": "Import JSON edits",
+			"importTitle": "Apply edits",
+			"importConfirm": "The file is valid. Update {{count}} ingredients? Changes will be recorded in the audit log.",
+			"imported": "Updated {{count}} ingredients",
+			"importError": "Could not import the file",
+			"loadError": "Could not load the audit",
+			"mergeTitle": "Merge ingredients",
+			"mergeConfirm": "Merge “{{source}}” into “{{target}}”? Its {{uses}} references will be reassigned transactionally and the source will be deleted.",
+			"mergeInto": "Merge into {{name}} ({{score}}% match)",
+			"merged": "Ingredients merged and references preserved",
+			"mergeError": "Could not merge the ingredients",
+			"usageDetail": "Recipes: {{recipes}}, pantry: {{home}}, shopping: {{shopping}}, plans: {{weekPlans}}, stores: {{stores}}, settings and tags: {{settings}}",
+			"issues": {
+				"UNREVIEWED": "Not reviewed",
+				"MISSING_MACROS": "Missing macros",
+				"MISSING_IMAGE": "Missing image",
+				"POSSIBLE_DUPLICATE": "Possible duplicate"
+			}
 		},
 		"backup": {
 			"title": "Global system backup",

@@ -617,6 +617,65 @@
 	}
 }
 
+.admin-audit {
+	&__summary {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(130px, 1fr));
+		gap: 0.75rem;
+		margin-bottom: 1rem;
+	}
+
+	&__metric {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		padding: 0.8rem 1rem;
+		border: 1px solid var(--border-color);
+		border-radius: 0.75rem;
+		background: var(--card-bg, var(--background-secondary));
+		color: inherit;
+		cursor: pointer;
+		text-align: left;
+		strong { font-size: 1.5rem; }
+		span { font-size: 0.85rem; }
+	}
+
+	&__toolbar {
+		display: grid;
+		grid-template-columns: minmax(180px, 1fr) minmax(170px, 0.45fr) auto auto;
+		gap: 0.65rem;
+		align-items: center;
+		margin-bottom: 0.75rem;
+	}
+
+	&__table-wrap { overflow-x: auto; }
+	&__table {
+		min-width: 980px;
+		td { vertical-align: top; }
+		td small { display: block; margin-top: 0.25rem; opacity: 0.7; }
+	}
+	&__issues { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+	&__issue { white-space: nowrap; }
+	&__merge {
+		display: block;
+		margin-top: 0.35rem;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		color: var(--primary-color);
+		font-size: 0.78rem;
+		cursor: pointer;
+		text-decoration: underline;
+	}
+}
+
+@media (max-width: 900px) {
+	.admin-audit {
+		&__summary { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+		&__toolbar { grid-template-columns: 1fr 1fr; }
+	}
+}
+
 // Reuse global btn utility classes
 .btn {
 	display: inline-flex;
