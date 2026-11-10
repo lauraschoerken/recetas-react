@@ -41,7 +41,7 @@ export function RecipeList({
 	}
 
 	return (
-		<div className='grid grid-4'>
+		<div className='recipe-list-grid'>
 			{recipes.map((recipe) => (
 				<RecipeCard
 					key={recipe.id}

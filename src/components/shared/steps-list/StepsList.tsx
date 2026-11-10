@@ -116,6 +116,7 @@ export function StepsList({ steps, onChange }: StepsListProps) {
 								}}
 								className='step-input'
 								value={step}
+								aria-label={`${t('recipes.stepsLabel')} ${index + 1}`}
 								onChange={(e) => handleTextareaChange(index, e.target.value, e.target)}
 								onKeyDown={(e) => handleEditKeyDown(e, index)}
 								rows={1}
@@ -124,6 +125,7 @@ export function StepsList({ steps, onChange }: StepsListProps) {
 								type='button'
 								className='step-btn step-btn-remove'
 								onClick={() => removeStep(index)}
+								aria-label={`${t('delete')} ${t('recipes.stepsLabel')} ${index + 1}`}
 								title={t('delete')}>
 								<CloseIcon size={14} aria-hidden='true' />
 							</button>
@@ -138,6 +140,7 @@ export function StepsList({ steps, onChange }: StepsListProps) {
 					ref={newInputRef}
 					className='step-input'
 					value={newStep}
+					aria-label={`${t('recipes.stepsLabel')} ${steps.length + 1}`}
 					onChange={(e) => {
 						setNewStep(e.target.value)
 						autoResize(e.target)
@@ -150,6 +153,7 @@ export function StepsList({ steps, onChange }: StepsListProps) {
 					type='button'
 					className='step-btn step-btn-add'
 					onClick={addStep}
+					aria-label={t('recipes.addStep')}
 					disabled={!newStep.trim()}>
 					+
 				</button>

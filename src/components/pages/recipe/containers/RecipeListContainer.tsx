@@ -832,8 +832,17 @@ export function RecipeListContainer() {
 		await handleImportPdf(file, e.target)
 	}
 
-	if (loading && initialLoad) return <div className='loading'>{t('recipes.loading')}</div>
-	if (error) return <div className='error-message'>{error}</div>
+	if (loading && initialLoad) {
+		return <div className='recipe-page-state' role='status'>{t('recipes.loading')}</div>
+	}
+	if (error) {
+		return (
+			<div className='recipe-page-state recipe-page-state--error' role='alert'>
+				<p>{error}</p>
+				<button type='button' className='btn btn-outline' onClick={() => void loadRecipes()}>{t('retry')}</button>
+			</div>
+		)
+	}
 
 	// Filtro client-side de macros (los calcula el servidor pero no filtra por ellos)
 	const applyClientFilters = (list: Recipe[]) => {
@@ -856,6 +865,79 @@ export function RecipeListContainer() {
 	}
 
 	const visibleRecipes = applyClientFilters(recipes)
+	const rangeLabel = (label: string, min: string, max: string, unit: string) =>
+		`${label}: ${min || '0'}–${max || '∞'}${unit ? ` ${unit}` : ''}`
+	const activeFilterChips: { key: string; label: string; clear: () => void }[] = []
+	if (filters.visibility !== 'all') {
+		activeFilterChips.push({
+			key: 'visibility',
+			label: `${t('recipes.filterVisibility')}: ${t(filters.visibility)}`,
+			clear: () => handleFiltersChange({ ...filters, visibility: 'all' }),
+		})
+	}
+	if (filters.difficulty) {
+		activeFilterChips.push({
+			key: 'difficulty',
+			label: `${t('recipes.difficultyLabel')}: ${t(`recipes.difficulty${filters.difficulty.charAt(0).toUpperCase() + filters.difficulty.slice(1)}`)}`,
+			clear: () => handleFiltersChange({ ...filters, difficulty: '' }),
+		})
+	}
+	if (filters.ingredient) {
+		activeFilterChips.push({
+			key: 'ingredient',
+			label: `${t('recipes.filterIngredient')}: ${filters.ingredient}`,
+			clear: () => handleFiltersChange({ ...filters, ingredient: '' }),
+		})
+	}
+	if (filters.authorId != null) {
+		activeFilterChips.push({
+			key: 'author',
+			label: `${t('recipes.filterAuthor')}: ${authors.find((a) => a.id === filters.authorId)?.name || `#${filters.authorId}`}`,
+			clear: () => handleFiltersChange({ ...filters, authorId: null }),
+		})
+	}
+	if (filters.minCookTime || filters.maxCookTime) {
+		activeFilterChips.push({
+			key: 'cook-time',
+			label: rangeLabel(t('recipes.filterCookTime'), filters.minCookTime, filters.maxCookTime, t('recipes.minuteShort')),
+			clear: () => handleFiltersChange({ ...filters, minCookTime: '', maxCookTime: '' }),
+		})
+	}
+	if (filters.minCalories || filters.maxCalories) {
+		activeFilterChips.push({
+			key: 'calories',
+			label: rangeLabel(t('recipes.filterCalories'), filters.minCalories, filters.maxCalories, 'kcal'),
+			clear: () => handleFiltersChange({ ...filters, minCalories: '', maxCalories: '' }),
+		})
+	}
+	if (filters.minProtein || filters.maxProtein) {
+		activeFilterChips.push({
+			key: 'protein',
+			label: rangeLabel(t('weekPlan.protein'), filters.minProtein, filters.maxProtein, 'g'),
+			clear: () => handleFiltersChange({ ...filters, minProtein: '', maxProtein: '' }),
+		})
+	}
+	if (filters.minCarbs || filters.maxCarbs) {
+		activeFilterChips.push({
+			key: 'carbs',
+			label: rangeLabel(t('weekPlan.carbs'), filters.minCarbs, filters.maxCarbs, 'g'),
+			clear: () => handleFiltersChange({ ...filters, minCarbs: '', maxCarbs: '' }),
+		})
+	}
+	if (filters.minFat || filters.maxFat) {
+		activeFilterChips.push({
+			key: 'fat',
+			label: rangeLabel(t('weekPlan.fat'), filters.minFat, filters.maxFat, 'g'),
+			clear: () => handleFiltersChange({ ...filters, minFat: '', maxFat: '' }),
+		})
+	}
+	if (filters.tagIds.length || filters.excludeTagIds.length) {
+		activeFilterChips.push({
+			key: 'tags',
+			label: `${t('recipes.filterTags')}: ${filters.tagIds.length + filters.excludeTagIds.length}`,
+			clear: () => handleFiltersChange({ ...filters, tagIds: [], excludeTagIds: [] }),
+		})
+	}
 
 	return (
 		<>
@@ -926,11 +1008,13 @@ export function RecipeListContainer() {
 				</div>
 			)}
 
+			<div className='recipe-library-toolbar'>
 			<div className='search-bar-container'>
 				<input
 					type='search'
 					className='form-input'
 					placeholder={t('search')}
+					aria-label={t('search')}
 					value={search}
 					onChange={(e) => handleSearch(e.target.value)}
 				/>
@@ -960,6 +1044,17 @@ export function RecipeListContainer() {
 					)}
 				</button>
 			</div>
+			{activeFilterChips.length > 0 && (
+				<div className='recipe-active-filters' aria-label={t('recipes.filters')}>
+					{activeFilterChips.map((chip) => (
+						<span key={chip.key} className='recipe-active-filter'>
+							{chip.label}
+							<button type='button' onClick={chip.clear} aria-label={`${t('recipes.filterClear')}: ${chip.label}`}>×</button>
+						</span>
+					))}
+				</div>
+			)}
+			</div>
 
 			{filtersOpen && (
 				<RecipeFilters
@@ -972,6 +1067,11 @@ export function RecipeListContainer() {
 				/>
 			)}
 
+			<p className='recipe-results-summary' aria-live='polite'>
+				{t('recipes.resultsCount', { count: visibleRecipes.length })}
+			</p>
+			<div className='recipe-results' aria-busy={loading}>
+				{loading && <span className='recipe-results-loading'>{t('recipes.loading')}</span>}
 			<RecipeList
 				recipes={visibleRecipes}
 				currentUserId={currentUser?.id || 0}
@@ -983,6 +1083,7 @@ export function RecipeListContainer() {
 				onUnhide={filters.hidden === 'only' ? handleUnhide : undefined}
 				showingHidden={filters.hidden === 'only'}
 			/>
+			</div>
 
 			{showExportModal && (
 				<div className='modal-overlay' onClick={() => setShowExportModal(false)}>

@@ -1,7 +1,13 @@
 import './ItemCard.scss'
 
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { HiOutlineArrowDownTray, HiOutlineEye, HiOutlineLockClosed } from 'react-icons/hi2'
+import {
+	HiOutlineArrowDownTray,
+	HiOutlineEye,
+	HiOutlineGlobeAlt,
+	HiOutlineLockClosed,
+} from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
 
 import { CalendarAddIcon, DeleteIcon, EditIcon, HideIcon } from '@/components/shared/icons'
@@ -19,6 +25,7 @@ export interface ItemCardData {
 	tags?: { id: number; name: string; color?: string | null }[]
 	type: 'recipe' | 'dish'
 	isPublic?: boolean
+	authorName?: string | null
 }
 
 interface ItemCardProps {
@@ -57,6 +64,9 @@ export function ItemCard({
 	const { t } = useTranslation()
 	const isOwner = item.userId === currentUserId
 	const linkPath = detailPath || editPath
+	const [imageFailed, setImageFailed] = useState(false)
+	const hasImage = Boolean(item.imageUrl) && !imageFailed
+	const visibilityState = item.isPublic === true ? 'public' : item.isPublic === false ? 'private' : 'unknown'
 
 	const metaChips: string[] = []
 	if (item.caloriesPerServing != null)
@@ -69,7 +79,7 @@ export function ItemCard({
 	}
 
 	return (
-		<div
+		<article
 			className={`item-card ${item.type === 'dish' ? 'item-card--dish' : ''}${isSelected ? ' item-card--selected' : ''}${managementLabel ? ' item-card--managed' : ''}`}>
 			{managementLabel && <span className='item-card-management'>{managementLabel}</span>}
 			{/* Checkbox de selección — esquina superior derecha */}
@@ -86,26 +96,38 @@ export function ItemCard({
 					{isSelected ? '✓' : ''}
 				</button>
 			)}
-			{/* Área clickable principal */}
 			<Link to={linkPath} className='item-card-clickable' tabIndex={0}>
-				{item.imageUrl ? (
-					<div className='item-card-cover' style={{ backgroundImage: `url(${item.imageUrl})` }}>
-						<div className='item-card-overlay'>
-							<span className='item-card-title item-card-title--over-image'>{item.title}</span>
-							{metaChips.length > 0 && (
-								<span className='item-card-meta item-card-meta--over-image'>
-									{metaChips.join(' · ')}
-								</span>
-							)}
+				<div className={`item-card-media${hasImage ? '' : ' item-card-media--empty'}`}>
+					{hasImage ? (
+						<img src={item.imageUrl!} alt='' onError={() => setImageFailed(true)} />
+					) : (
+						<span className='item-card-placeholder' aria-hidden='true'>
+							{item.title.trim().charAt(0).toUpperCase() || 'M'}
+						</span>
+					)}
+					<span className={`item-card-visibility item-card-visibility--${visibilityState}`}>
+						{visibilityState === 'public' ? (
+							<HiOutlineGlobeAlt aria-hidden='true' />
+						) : visibilityState === 'private' ? (
+							<HiOutlineLockClosed aria-hidden='true' />
+						) : <span aria-hidden='true'>?</span>}
+						{visibilityState === 'unknown' ? t('recipes.visibilityUnknown') : t(visibilityState)}
+					</span>
+				</div>
+				<div className='item-card-content'>
+					<h3 className='item-card-title'>{item.title}</h3>
+					<p className='item-card-author'>{item.authorName || `#${item.userId}`}</p>
+					{metaChips.length > 0 && <p className='item-card-meta'>{metaChips.join(' · ')}</p>}
+					{!hasImage && item.description && <p className='item-card-description'>{item.description}</p>}
+					{item.tags && item.tags.length > 0 && (
+						<div className='item-card-tags'>
+							{item.tags.slice(0, 2).map((tag) => (
+								<span key={tag.id} className='item-card-tag'>{tag.name}</span>
+							))}
+							{item.tags.length > 2 && <span className='item-card-tag'>+{item.tags.length - 2}</span>}
 						</div>
-					</div>
-				) : (
-					<div className='item-card-no-image'>
-						<span className='item-card-title'>{item.title}</span>
-						{item.description && <p className='item-card-meta'>{item.description}</p>}
-						{metaChips.length > 0 && <p className='item-card-chips'>{metaChips.join(' · ')}</p>}
-					</div>
-				)}
+					)}
+				</div>
 			</Link>
 
 			{/* Acciones rápidas (hover) */}
@@ -114,6 +136,7 @@ export function ItemCard({
 					<button
 						className='item-card-action-btn'
 						onClick={onAddToWeek}
+						aria-label={t('recipes.addToWeekBtn')}
 						title={t('recipes.addToWeekBtn')}>
 						<CalendarAddIcon size={14} aria-hidden='true' />
 					</button>
@@ -121,12 +144,13 @@ export function ItemCard({
 						<button
 							className='item-card-action-btn'
 							onClick={onDownloadPdf}
+							aria-label={t('recipes.downloadPdf')}
 							title={t('recipes.downloadPdf')}>
 							<HiOutlineArrowDownTray size={14} aria-hidden='true' />
 						</button>
 					)}
 					{(isOwner || canEdit) && (
-						<Link to={editPath} className='item-card-action-btn' title={t('edit')}>
+						<Link to={editPath} className='item-card-action-btn' aria-label={t('edit')} title={t('edit')}>
 							<EditIcon size={14} aria-hidden='true' />
 						</Link>
 					)}
@@ -135,6 +159,7 @@ export function ItemCard({
 							<button
 								className='item-card-action-btn item-card-action-btn--danger'
 								onClick={() => onDelete(item.id)}
+								aria-label={t('delete')}
 								title={t('delete')}>
 								<DeleteIcon size={14} aria-hidden='true' />
 							</button>
@@ -144,6 +169,7 @@ export function ItemCard({
 						<button
 							className='item-card-action-btn'
 							onClick={onHide}
+							aria-label={t('recipes.hide')}
 							title={t('recipes.hide')}>
 							<HideIcon size={14} aria-hidden='true' />
 						</button>
@@ -152,6 +178,7 @@ export function ItemCard({
 						<button
 							className='item-card-action-btn'
 							onClick={onUnhide}
+							aria-label={t('recipes.unhide')}
 							title={t('recipes.unhide')}>
 							<HiOutlineEye size={14} aria-hidden='true' />
 						</button>
@@ -159,37 +186,6 @@ export function ItemCard({
 				</div>
 			</div>
 
-			{/* Área de tags (pie de card) */}
-			<div
-				className={`item-card-tags-wrapper${item.imageUrl ? ' item-card-tags--over-image' : ''}`}>
-				{item.tags && item.tags.length > 0 ? (
-					<div className={`item-card-tags${item.imageUrl ? ' item-card-tags--over-image' : ''}`}>
-						{item.tags.slice(0, 2).map((tag) => (
-							<span
-								key={tag.id}
-								className='item-card-tag'
-								style={
-									tag.color ? ({ '--tag-color': tag.color } as React.CSSProperties) : undefined
-								}>
-								{tag.name}
-							</span>
-						))}
-						{item.tags.length > 2 && (
-							<span className='item-card-tag item-card-tag--more'>+{item.tags.length - 2}</span>
-						)}
-					</div>
-				) : null}
-			</div>
-
-			{/* Lock: sits inside the card so it's not occluded by overlays; appears on hover */}
-			{!item.isPublic && (
-				<span
-					className={`item-card-lock ${item.tags && item.tags.length > 0 ? 'item-card-lock--above-tags' : 'item-card-lock--in-tags'}${item.imageUrl ? ' item-card-lock--over-image' : ''}`}
-					title={t('private')}
-					aria-hidden='true'>
-					<HiOutlineLockClosed size={14} />
-				</span>
-			)}
-		</div>
+		</article>
 	)
 }

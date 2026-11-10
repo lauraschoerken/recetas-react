@@ -62,6 +62,7 @@ export function RecipeCard({
 		tags: recipe.tags,
 		type: 'recipe',
 		isPublic: recipe.isPublic,
+		authorName: recipe.authorName,
 	}
 
 	const selectionKey = (recipeId: number, componentId: number) => `${recipeId}:${componentId}`

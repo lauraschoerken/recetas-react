@@ -1,8 +1,21 @@
 ﻿@use '../../../../assets/styles/tokens' as t;
 
 .recipe-form {
-	max-width: 1200px;
+	max-width: 76rem;
 	margin: 0 auto;
+}
+
+.form-error-summary {
+	margin-bottom: t.$space-5;
+	padding: t.$space-4 t.$space-5;
+	background: var(--danger-light);
+	border: 1px solid color-mix(in srgb, var(--danger-color) 45%, var(--border-color));
+	border-radius: var(--radius);
+	color: var(--danger-fg);
+	scroll-margin-top: 6rem;
+
+	ul { margin: t.$space-2 0 0; padding-left: 1.25rem; }
+	button { padding: 0; background: transparent; border: 0; color: inherit; cursor: pointer; text-decoration: underline; text-align: left; }
 }
 
 // --- Validation error styles ---
@@ -116,6 +129,28 @@
 .form-section {
 	margin-bottom: t.$space-8;
 	overflow: visible;
+	scroll-margin-top: 6rem;
+}
+
+.form-section--surface {
+	padding: clamp(1rem, 2.5vw, 1.5rem);
+	background: var(--card-background);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+}
+
+.form-section--secondary {
+	background: var(--surface-1);
+	box-shadow: none;
+}
+
+.form-section-heading {
+	margin: 0 0 t.$space-5;
+	padding-bottom: t.$space-3;
+	border-bottom: 1px solid var(--border-color);
+	font-size: 1.2rem;
+	letter-spacing: -0.015em;
 }
 
 .form-hint {
@@ -136,7 +171,7 @@
 
 .form-grid-2 {
 	display: grid;
-	grid-template-columns: 20% 70%;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: t.$space-4;
 }
 
@@ -331,11 +366,17 @@
 }
 
 .form-actions {
+	position: sticky;
+	bottom: t.$space-3;
+	z-index: 20;
 	display: flex;
 	gap: t.$space-4;
 	margin-top: t.$space-8;
-	padding-top: t.$space-6;
-	border-top: 2px solid var(--border-color);
+	padding: t.$space-3;
+	background: color-mix(in srgb, var(--card-background) 95%, transparent);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-lg);
 	justify-content: flex-end;
 
 	.btn {
@@ -345,14 +386,15 @@
 }
 
 .image-url-input {
-	display: flex;
-	flex-direction: column;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 10rem;
+	align-items: start;
 	gap: t.$space-2;
 }
 
 .image-preview {
-	width: 120px;
-	height: 80px;
+	width: 100%;
+	aspect-ratio: 16 / 10;
 	border-radius: var(--radius);
 	overflow: hidden;
 	border: 1px solid var(--border-color);
@@ -392,7 +434,9 @@
 	}
 
 	.form-actions {
-		flex-direction: column;
+		position: sticky;
+		bottom: max(0.5rem, env(safe-area-inset-bottom));
+		flex-direction: row;
 		gap: t.$space-3;
 		margin-top: t.$space-6;
 		padding-top: t.$space-4;
@@ -402,6 +446,10 @@
 			width: 100%;
 		}
 	}
+
+	.image-url-input { grid-template-columns: 1fr; }
+	.image-preview { max-width: 14rem; }
+	.form-section--surface { padding: 1rem; }
 }
 
 .recipe-admin-edit-notice {

@@ -772,6 +772,37 @@ export function RecipeForm({
 		}
 	}
 
+	const formSignature = JSON.stringify({
+		title,
+		description,
+		imageUrl,
+		cookTimeMinutes,
+		difficulty,
+		steps,
+		servings,
+		isPublic,
+		defaultLocation,
+		ingredients,
+		includedRecipes,
+		components,
+		customMacros,
+	})
+	const initialFormSignature = useRef(formSignature)
+	const isDirty = formSignature !== initialFormSignature.current
+
+	useEffect(() => {
+		if (!isDirty || loading) return
+		const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+			event.preventDefault()
+		}
+		window.addEventListener('beforeunload', warnBeforeUnload)
+		return () => window.removeEventListener('beforeunload', warnBeforeUnload)
+	}, [isDirty, loading])
+
+	const handleCancel = () => {
+		if (!isDirty || window.confirm(t('recipes.unsavedChangesConfirm'))) onCancel()
+	}
+
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
 			const target = e.target as HTMLElement
@@ -795,11 +826,24 @@ export function RecipeForm({
 					{error}
 				</div>
 			)}
+			{Object.keys(formErrors).length > 0 && (
+				<div className='form-error-summary' role='alert' tabIndex={-1}>
+					<strong>{t('recipes.validationSummary')}</strong>
+					<ul>
+						{formErrors.title && <li><button type='button' onClick={() => titleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>{formErrors.title}</button></li>}
+						{formErrors.servings && <li>{formErrors.servings}</li>}
+						{formErrors.ingredients && <li><button type='button' onClick={() => ingredientsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>{formErrors.ingredients}</button></li>}
+						{formErrors.components && <li><button type='button' onClick={() => componentsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>{formErrors.components}</button></li>}
+					</ul>
+				</div>
+			)}
 
-			<div className='form-section'>
+			<section className='form-section form-section--surface'>
+				<h2 className='form-section-heading'>{t('recipes.formGeneral')}</h2>
 				<div className={`form-group${formErrors.title ? ' has-error' : ''}`} ref={titleRef}>
-					<label className='form-label'>{t('recipes.titleLabel')}</label>
+					<label className='form-label' htmlFor='recipe-title'>{t('recipes.titleLabel')}</label>
 					<input
+						id='recipe-title'
 						type='text'
 						className='form-input'
 						value={title}
@@ -809,8 +853,8 @@ export function RecipeForm({
 					{formErrors.title && <p className='field-error'>{formErrors.title}</p>}
 				</div>
 
-				<div className='form-group'>
-					<label className='form-label'>{t('recipes.descriptionLabel')}</label>
+				<div className='form-group' role='group' aria-labelledby='recipe-description-label'>
+					<label className='form-label' id='recipe-description-label'>{t('recipes.descriptionLabel')}</label>
 					<MarkdownEditor
 						value={description}
 						onChange={setDescription}
@@ -819,9 +863,10 @@ export function RecipeForm({
 				</div>
 
 				<div className='form-group'>
-					<label className='form-label'>{t('recipes.imageUrlLabel')}</label>
+					<label className='form-label' htmlFor='recipe-image-url'>{t('recipes.imageUrlLabel')}</label>
 					<div className='image-url-input'>
 						<input
+							id='recipe-image-url'
 							type='url'
 							className='form-input'
 							value={imageUrl}
@@ -839,13 +884,15 @@ export function RecipeForm({
 						)}
 					</div>
 				</div>
-			</div>
+			</section>
 
-			<div className='form-section'>
+			<section className='form-section form-section--surface'>
+				<h2 className='form-section-heading'>{t('recipes.formDetails')}</h2>
 				<div className='form-grid-2'>
 					<div className={`form-group${formErrors.servings ? ' has-error' : ''}`}>
-						<label className='form-label'>{t('recipes.servingsLabel')}</label>
+						<label className='form-label' htmlFor='recipe-servings'>{t('recipes.servingsLabel')}</label>
 						<input
+							id='recipe-servings'
 							type='number'
 							className='form-input'
 							value={servings}
@@ -868,6 +915,7 @@ export function RecipeForm({
 							</p>
 							<div className='threshold-form'>
 								<input
+									aria-label={t('recipes.minServings')}
 									type='number'
 									className='form-input form-input-sm'
 									placeholder={t('recipes.minServings')}
@@ -907,6 +955,7 @@ export function RecipeForm({
 							</p>
 							<div className='threshold-form'>
 								<input
+									aria-label={t('recipes.minServings')}
 									type='number'
 									className='form-input form-input-sm'
 									placeholder={t('recipes.minServings')}
@@ -921,8 +970,9 @@ export function RecipeForm({
 					)}
 
 					<div className='form-group'>
-						<label className='form-label'>{t('recipes.timeLabel')}</label>
+						<label className='form-label' htmlFor='recipe-cook-time'>{t('recipes.timeLabel')}</label>
 						<input
+							id='recipe-cook-time'
 							type='number'
 							className='form-input'
 							value={cookTimeMinutes || ''}
@@ -933,8 +983,9 @@ export function RecipeForm({
 					</div>
 
 					<div className='form-group'>
-						<label className='form-label'>{t('recipes.difficultyLabel')}</label>
+						<label className='form-label' htmlFor='recipe-difficulty'>{t('recipes.difficultyLabel')}</label>
 						<select
+							id='recipe-difficulty'
 							className='form-input'
 							value={difficulty}
 							onChange={(e) => setDifficulty(e.target.value)}>
@@ -946,8 +997,9 @@ export function RecipeForm({
 					</div>
 
 					<div className='form-group'>
-						<label className='form-label'>{t('recipes.saveInLabel')}</label>
+						<label className='form-label' htmlFor='recipe-location'>{t('recipes.saveInLabel')}</label>
 						<select
+							id='recipe-location'
 							className='form-input'
 							value={defaultLocation}
 							onChange={(e) => setDefaultLocation(e.target.value)}>
@@ -963,6 +1015,7 @@ export function RecipeForm({
 						<div className={`visibility-box ${isPublic ? 'is-public' : 'is-private'}`}>
 							<label className='toggle-container'>
 								<input
+									aria-label={t('recipes.visibilityLabel')}
 									type='checkbox'
 									checked={isPublic}
 									onChange={(e) => setIsPublic(e.target.checked)}
@@ -975,7 +1028,7 @@ export function RecipeForm({
 						</div>
 					</div>
 				</div>
-			</div>
+			</section>
 
 			<div className='form-tabs'>
 				<button
@@ -994,8 +1047,9 @@ export function RecipeForm({
 
 			{activeTab === 'recipe' && (
 				<>
-					<div className='form-section' ref={ingredientsSectionRef}>
-						<label className='form-label'>{t('recipes.directIngredients')}</label>
+					<section className='form-section form-section--surface' ref={ingredientsSectionRef}>
+						<h2 className='form-section-heading'>{t('recipes.formIngredients')}</h2>
+						<p className='form-label'>{t('recipes.directIngredients')}</p>
 						<p className='form-hint'>{t('recipes.directIngredientsHint')}</p>
 						{formErrors.ingredients && <p className='section-error'>{formErrors.ingredients}</p>}
 						{duplicateIngredients.length > 0 && (
@@ -1015,15 +1069,15 @@ export function RecipeForm({
 								.filter((g) => g.name.trim() !== '')}
 							onAddToGroup={handleAddToGroup}
 						/>
-					</div>
+					</section>
 
-					<div className='form-section'>
+					<section className='form-section form-section--surface form-section--secondary'>
 						<label className='form-label'>{t('recipes.includedRecipes')}</label>
 						<p className='form-hint'>{t('recipes.includedRecipesHint')}</p>
 						<IncludedRecipes recipes={includedRecipes} onChange={setIncludedRecipes} />
-					</div>
+					</section>
 
-					<div className='form-section' ref={componentsSectionRef}>
+					<section className='form-section form-section--surface form-section--secondary' ref={componentsSectionRef}>
 						<label className='form-label'>{t('recipes.optionalVariants')}</label>
 						<p className='form-hint'>{t('recipes.optionalVariantsHint')}</p>
 						{formErrors.components && <p className='section-error'>{formErrors.components}</p>}
@@ -1035,12 +1089,13 @@ export function RecipeForm({
 							onConvertToFixed={handleConvertToFixed}
 							showErrors={!!formErrors.components}
 						/>
-					</div>
+					</section>
 
-					<div className='form-section'>
-						<label className='form-label'>{t('recipes.stepsLabel')}</label>
+					<section className='form-section form-section--surface'>
+						<h2 className='form-section-heading'>{t('recipes.formPreparation')}</h2>
+						<p className='form-label'>{t('recipes.stepsLabel')}</p>
 						<StepsList steps={steps} onChange={setSteps} />
-					</div>
+					</section>
 
 					{displayNutrition && (
 						<div className='form-section nutrition-summary'>
@@ -1083,18 +1138,19 @@ export function RecipeForm({
 			)}
 
 			{activeTab === 'nutrition' && (
-				<div className='form-section'>
+				<section className='form-section form-section--surface'>
+					<h2 className='form-section-heading'>{t('recipes.formNutrition')}</h2>
 					<NutritionEditor
 						ingredients={nutritionIngredients}
 						customMacros={customMacros}
 						servings={servings}
 						onChange={handleNutritionChange}
 					/>
-				</div>
+				</section>
 			)}
 
 			<div className='form-actions'>
-				<button type='button' className='btn btn-outline' onClick={onCancel}>
+				<button type='button' className='btn btn-outline' onClick={handleCancel}>
 					{t('cancel')}
 				</button>
 				<button type='submit' className='btn btn-primary' disabled={loading}>

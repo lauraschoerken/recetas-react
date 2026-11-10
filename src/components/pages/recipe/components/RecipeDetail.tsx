@@ -4,7 +4,7 @@ import '@uiw/react-markdown-preview/markdown.css'
 import MDPreview from '@uiw/react-markdown-preview'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { HiOutlineEye, HiOutlineEyeSlash, HiOutlineLockClosed } from 'react-icons/hi2'
+import { HiOutlineEye, HiOutlineEyeSlash, HiOutlineGlobeAlt, HiOutlineLockClosed } from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
 
 import {
@@ -341,15 +341,13 @@ export function RecipeDetail({
 		<div className='recipe-detail'>
 			<div className='recipe-detail-header'>
 				<div>
-					<h1 className='recipe-detail-title'>
-						{recipe.title}
-						{recipe.isPublic === false && (
-							<span className='recipe-detail-lock' title={t('private')} aria-hidden='true'>
-								<HiOutlineLockClosed size={18} />
-							</span>
-						)}
-					</h1>
+					<h1 className='recipe-detail-title'>{recipe.title}</h1>
+					<p className='recipe-detail-author'>{recipe.authorName || `#${recipe.userId}`}</p>
 					<div className='recipe-detail-meta'>
+						<span className='recipe-detail-chip recipe-detail-chip--visibility'>
+							{recipe.isPublic ? <HiOutlineGlobeAlt aria-hidden='true' /> : <HiOutlineLockClosed aria-hidden='true' />}
+							{t(recipe.isPublic ? 'public' : 'private')}
+						</span>
 						<span className='recipe-detail-chip'>
 							{recipe.servings} {t('recipes.portionsUnit')}
 						</span>
@@ -387,7 +385,7 @@ export function RecipeDetail({
 					)}
 					{(isOwner || canDelete) && (
 						<>
-							<button className='btn btn-danger' onClick={onDelete}>
+							<button className='btn btn-danger recipe-detail-delete' onClick={onDelete}>
 								{t('delete')}
 							</button>
 						</>
@@ -407,41 +405,13 @@ export function RecipeDetail({
 				</div>
 			</div>
 
-			<div className='recipe-threshold-section'>
-				<h3>
-					{t('recipes.minStock')} {hasThreshold && <span className='threshold-active'>✓</span>}
-				</h3>
-				<p className='form-hint'>{t('recipes.minStockHint')}</p>
-				<div className='threshold-form'>
-					<input
-						type='number'
-						className='form-input form-input-sm'
-						placeholder={t('recipes.minServings')}
-						value={minServings}
-						onChange={(e) => setMinServings(e.target.value)}
-						min={0}
-						step={1}
-					/>
-					<span className='threshold-unit'>{t('recipes.portionsUnit')}</span>
-					<button
-						className='btn btn-sm btn-primary'
-						onClick={handleSaveThreshold}
-						disabled={!minServings || Number(minServings) <= 0}>
-						{t('recipes.saveThreshold')}
-					</button>
-					{hasThreshold && (
-						<button className='btn btn-sm btn-outline btn-danger' onClick={handleDeleteThreshold}>
-							{t('recipes.removeThreshold')}
-						</button>
-					)}
-				</div>
-			</div>
-
+			<div className={`recipe-detail-intro${recipe.imageUrl ? '' : ' recipe-detail-intro--no-image'}`}>
 			{recipe.imageUrl && (
 				<div className='recipe-detail-image'>
 					<img src={recipe.imageUrl} alt={recipe.title} />
 				</div>
 			)}
+			<div className='recipe-detail-summary'>
 
 			{recipe.description && (
 				<div className='recipe-detail-description'>
@@ -455,7 +425,7 @@ export function RecipeDetail({
 						<span
 							key={tag.id}
 							className='recipe-detail-tag'
-							style={tag.color ? { borderColor: tag.color, color: tag.color } : {}}>
+							style={tag.color ? { borderColor: tag.color } : {}}>
 							{tag.name}
 						</span>
 					))}
@@ -503,7 +473,11 @@ export function RecipeDetail({
 					)}
 				</div>
 			)}
+			</div>
+			</div>
 
+			<div className={`recipe-reading-layout${hasIngredients || hasComponents ? '' : ' recipe-reading-layout--steps-only'}`}>
+			{(hasIngredients || hasComponents) && <aside className='recipe-reading-sidebar'>
 			{hasIngredients && (
 				<div className='recipe-detail-section'>
 					<h2>{t('recipes.ingredientsTab')}</h2>
@@ -567,7 +541,9 @@ export function RecipeDetail({
 					</div>
 				</div>
 			)}
+			</aside>}
 
+			<article className='recipe-reading-steps'>
 			{recipe.instructions && (
 				<div className='recipe-detail-section'>
 					<h2>{t('recipes.instructions')}</h2>
@@ -581,6 +557,42 @@ export function RecipeDetail({
 					</div>
 				</div>
 			)}
+			</article>
+			</div>
+
+			<details className='recipe-threshold-section'>
+				<summary>
+					{t('recipes.minStock')} {hasThreshold && <span className='threshold-active'>✓</span>}
+				</summary>
+				<div className='recipe-threshold-content'>
+					<p className='form-hint'>{t('recipes.minStockHint')}</p>
+					<div className='threshold-form'>
+						<label className='sr-only' htmlFor='recipe-min-servings'>{t('recipes.minServings')}</label>
+						<input
+							id='recipe-min-servings'
+							type='number'
+							className='form-input form-input-sm'
+							placeholder={t('recipes.minServings')}
+							value={minServings}
+							onChange={(e) => setMinServings(e.target.value)}
+							min={0}
+							step={1}
+						/>
+						<span className='threshold-unit'>{t('recipes.portionsUnit')}</span>
+						<button
+							className='btn btn-sm btn-primary'
+							onClick={handleSaveThreshold}
+							disabled={!minServings || Number(minServings) <= 0}>
+							{t('recipes.saveThreshold')}
+						</button>
+						{hasThreshold && (
+							<button className='btn btn-sm btn-outline btn-danger' onClick={handleDeleteThreshold}>
+								{t('recipes.removeThreshold')}
+							</button>
+						)}
+					</div>
+				</div>
+			</details>
 
 			<RecipeExportModal
 				isOpen={showExportFormatModal}
