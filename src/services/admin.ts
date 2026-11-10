@@ -71,7 +71,13 @@ export interface AuditedIngredient extends PendingIngredient {
 	reviewedAt?: string | null
 	reviewedByUserId?: number | null
 	issues: IngredientAuditIssue[]
-	duplicateCandidates: Array<{ id: number; name: string; score: number }>
+	duplicateCandidates: Array<{
+		id: number
+		name: string
+		score: number
+		variants: PendingIngredientVariant[]
+		conversions: PendingIngredientConversion[]
+	}>
 	usage: {
 		recipes: number
 		home: number
@@ -140,8 +146,22 @@ class AdminService {
 		return api.get<Proposal[]>('/admin/proposals/pending')
 	}
 
-	async getIngredientAudit(): Promise<AuditedIngredient[]> {
-		return api.get<AuditedIngredient[]>('/admin/ingredients/audit')
+	async getIngredientAudit(params: {
+		page: number
+		pageSize: number
+		search?: string
+		issue?: IngredientAuditIssue | 'ALL'
+	}): Promise<{
+		data: AuditedIngredient[]
+		total: number
+		page: number
+		pageSize: number
+		summary: Record<IngredientAuditIssue, number>
+	}> {
+		const query = new URLSearchParams({ page: String(params.page), pageSize: String(params.pageSize) })
+		if (params.search) query.set('search', params.search)
+		if (params.issue && params.issue !== 'ALL') query.set('issue', params.issue)
+		return api.get(`/admin/ingredients/audit?${query}`)
 	}
 
 	async exportIngredients(ids: number[]): Promise<Record<string, unknown>> {

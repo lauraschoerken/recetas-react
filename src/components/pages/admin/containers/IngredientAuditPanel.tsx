@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { IngredientFormModal } from '@/components/pages/ingredient/containers/IngredientFormModal'
+import { Pagination } from '@/components/shared/pagination/Pagination'
 import { RecipeJsonTextModal } from '@/components/shared/recipe-import-modal/RecipeJsonTextModal'
 import {
 	adminService,
@@ -26,8 +27,18 @@ export function IngredientAuditPanel() {
 	const { toast, confirm } = useDialog()
 	const [items, setItems] = useState<AuditedIngredient[]>([])
 	const [loading, setLoading] = useState(true)
+	const [searchInput, setSearchInput] = useState('')
 	const [search, setSearch] = useState('')
 	const [issue, setIssue] = useState<IngredientAuditIssue | 'ALL'>('ALL')
+	const [currentPage, setCurrentPage] = useState(1)
+	const [pageSize, setPageSize] = useState(30)
+	const [total, setTotal] = useState(0)
+	const [summary, setSummary] = useState<Record<IngredientAuditIssue, number>>({
+		UNREVIEWED: 0,
+		MISSING_MACROS: 0,
+		MISSING_IMAGE: 0,
+		POSSIBLE_DUPLICATE: 0,
+	})
 	const [selected, setSelected] = useState<Set<number>>(new Set())
 	const [editing, setEditing] = useState<AuditedIngredient | null>(null)
 	const [busy, setBusy] = useState(false)
@@ -42,7 +53,18 @@ export function IngredientAuditPanel() {
 	const load = async () => {
 		setLoading(true)
 		try {
-			setItems(await adminService.getIngredientAudit())
+			const result = await adminService.getIngredientAudit({
+				page: currentPage,
+				pageSize,
+				search: search || undefined,
+				issue,
+			})
+			setItems(result.data)
+			setTotal(result.total)
+			setSummary(result.summary)
+			if (result.data.length === 0 && result.total > 0 && currentPage > 1) {
+				setCurrentPage((page) => page - 1)
+			}
 		} catch {
 			toast.error(t('admin.audit.loadError'))
 		} finally {
@@ -52,16 +74,7 @@ export function IngredientAuditPanel() {
 
 	useEffect(() => {
 		void load()
-	}, [])
-
-	const filtered = useMemo(() => {
-		const normalized = search.trim().toLocaleLowerCase()
-		return items.filter(
-			(item) =>
-				(issue === 'ALL' || item.issues.includes(issue)) &&
-				(!normalized || item.name.toLocaleLowerCase().includes(normalized) || String(item.id) === normalized)
-		)
-	}, [items, issue, search])
+	}, [currentPage, pageSize, search, issue])
 
 	const toggle = (id: number) => {
 		setSelected((current) => {
@@ -73,7 +86,7 @@ export function IngredientAuditPanel() {
 	}
 
 	const toggleAll = () => {
-		const visibleIds = filtered.map((item) => item.id)
+		const visibleIds = items.map((item) => item.id)
 		const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selected.has(id))
 		setSelected((current) => {
 			const next = new Set(current)
@@ -169,20 +182,17 @@ export function IngredientAuditPanel() {
 	const markReviewed = async (item: AuditedIngredient) => {
 		try {
 			await adminService.markIngredientReviewed(item.id)
-			setItems((current) =>
-				current.map((candidate) =>
-					candidate.id === item.id
-						? { ...candidate, reviewedAt: new Date().toISOString(), issues: candidate.issues.filter((value) => value !== 'UNREVIEWED') }
-						: candidate
-				)
-			)
 			toast.success(t('admin.audit.reviewed'))
+			await load()
 		} catch (error: unknown) {
 			toast.error(errorMessage(error, t('admin.reviewError')))
 		}
 	}
 
-	const merge = async (source: AuditedIngredient, target: AuditedIngredient) => {
+	const merge = async (
+		source: AuditedIngredient,
+		target: Pick<AuditedIngredient, 'id' | 'name' | 'variants' | 'conversions'>
+	) => {
 		const preservedVariants = source.variants.filter((variant) => {
 			const match = target.variants.find((candidate) => candidate.name.toLocaleLowerCase() === variant.name.toLocaleLowerCase())
 			return match && ['calories', 'protein', 'carbs', 'fat', 'fiber', 'weightFactor'].some(
@@ -227,18 +237,28 @@ export function IngredientAuditPanel() {
 		<div className='admin-container__section admin-audit'>
 			<div className='admin-audit__summary'>
 				{issueKeys.map((key) => (
-					<button key={key} className='admin-audit__metric' onClick={() => setIssue(key)}>
-						<strong>{items.filter((item) => item.issues.includes(key)).length}</strong>
+					<button key={key} className='admin-audit__metric' onClick={() => { setIssue(key); setCurrentPage(1) }}>
+						<strong>{summary[key]}</strong>
 						<span>{t(`admin.audit.issues.${key}`)}</span>
 					</button>
 				))}
 			</div>
 
 			<div className='admin-audit__toolbar'>
-				<input className='form-input' value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('admin.audit.search')} />
-				<select className='form-input' value={issue} onChange={(event) => setIssue(event.target.value as IngredientAuditIssue | 'ALL')}>
+				<input
+					className='form-input'
+					value={searchInput}
+					onChange={(event) => setSearchInput(event.target.value)}
+					onKeyDown={(event) => { if (event.key === 'Enter') { setSearch(searchInput.trim()); setCurrentPage(1) } }}
+					placeholder={t('admin.audit.search')}
+				/>
+				<button className='btn btn--secondary' onClick={() => { setSearch(searchInput.trim()); setCurrentPage(1) }}>{t('search')}</button>
+				<select className='form-input' value={issue} onChange={(event) => { setIssue(event.target.value as IngredientAuditIssue | 'ALL'); setCurrentPage(1) }}>
 					<option value='ALL'>{t('admin.audit.all')}</option>
 					{issueKeys.map((key) => <option key={key} value={key}>{t(`admin.audit.issues.${key}`)}</option>)}
+				</select>
+				<select className='form-input admin-audit__page-size' value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setCurrentPage(1) }} aria-label={t('admin.audit.pageSize')}>
+					{[20, 30, 50, 100].map((size) => <option key={size} value={size}>{t('admin.audit.perPage', { count: size })}</option>)}
 				</select>
 				<button className='btn btn--secondary' disabled={!selected.size || busy} onClick={exportSelected}>{t('admin.audit.export', { count: selected.size })}</button>
 				<label className={`btn btn--primary${busy ? ' btn--disabled' : ''}`}>
@@ -252,19 +272,16 @@ export function IngredientAuditPanel() {
 			<div className='admin-audit__table-wrap'>
 				<table className='admin-container__table admin-audit__table'>
 					<thead><tr>
-						<th><input type='checkbox' checked={filtered.length > 0 && filtered.every((item) => selected.has(item.id))} onChange={toggleAll} /></th>
+						<th><input type='checkbox' checked={items.length > 0 && items.every((item) => selected.has(item.id))} onChange={toggleAll} /></th>
 						<th>{t('admin.ingredient')}</th><th>{t('admin.audit.problems')}</th><th>{t('admin.audit.usage')}</th><th>{t('admin.audit.created')}</th><th></th>
 					</tr></thead>
 					<tbody>
-						{filtered.map((item) => (
+						{items.map((item) => (
 							<tr key={item.id}>
 								<td><input type='checkbox' checked={selected.has(item.id)} onChange={() => toggle(item.id)} /></td>
 								<td><strong>{item.name}</strong><small>#{item.id} · {item.unit}</small></td>
 								<td><div className='admin-audit__issues'>{item.issues.map((value) => <span key={value} className={`admin-container__pill admin-audit__issue admin-audit__issue--${value.toLowerCase()}`}>{t(`admin.audit.issues.${value}`)}</span>)}</div>
-					{item.duplicateCandidates.map((candidate) => <button key={candidate.id} className='admin-audit__merge' disabled={busy} onClick={() => {
-						const target = items.find((entry) => entry.id === candidate.id)
-						if (target) void merge(item, target)
-					}}>{t('admin.audit.mergeInto', { name: candidate.name, score: Math.round(candidate.score * 100) })}</button>)}</td>
+					{item.duplicateCandidates.map((candidate) => <button key={candidate.id} className='admin-audit__merge' disabled={busy} onClick={() => void merge(item, candidate)}>{t('admin.audit.mergeInto', { name: candidate.name, score: Math.round(candidate.score * 100) })}</button>)}</td>
 								<td title={t('admin.audit.usageDetail', item.usage)}><strong>{item.usage.total}</strong><small>{t('admin.audit.references')}</small></td>
 								<td>{new Date(item.createdAt).toLocaleDateString()}<small>{item.reviewedAt ? t('admin.audit.reviewedDate', { date: new Date(item.reviewedAt).toLocaleDateString() }) : t('admin.audit.notReviewed')}</small></td>
 								<td className='admin-container__actions'><button className='btn btn--secondary btn--sm' onClick={() => setEditing(item)}>{t('edit')}</button>{!item.reviewedAt && <button className='btn btn--primary btn--sm' onClick={() => markReviewed(item)}>{t('admin.audit.markReviewed')}</button>}</td>
@@ -273,6 +290,7 @@ export function IngredientAuditPanel() {
 					</tbody>
 				</table>
 			</div>
+			<Pagination currentPage={currentPage} total={total} pageSize={pageSize} onPageChange={setCurrentPage} />
 
 			<IngredientFormModal
 				isOpen={!!editing}

@@ -1296,6 +1296,8 @@
 			"desc": "Detecta ingredientes incompletos o posiblemente duplicados. Las referencias indican cuántos sitios se conservarán al unificar.",
 			"search": "Buscar por nombre o ID...",
 			"all": "Todos los ingredientes",
+			"pageSize": "Ingredientes por página",
+			"perPage": "{{count}} por página",
 			"problems": "Problemas detectados",
 			"usage": "Uso",
 			"created": "Creado / revisión",

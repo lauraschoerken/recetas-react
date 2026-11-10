@@ -1216,6 +1216,8 @@
 			"desc": "Find incomplete or possibly duplicated ingredients. Reference counts show how many usages will be preserved during a merge.",
 			"search": "Search by name or ID...",
 			"all": "All ingredients",
+			"pageSize": "Ingredients per page",
+			"perPage": "{{count}} per page",
 			"problems": "Detected issues",
 			"usage": "Usage",
 			"created": "Created / review",

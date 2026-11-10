@@ -641,11 +641,14 @@
 	}
 
 	&__toolbar {
-		display: grid;
-		grid-template-columns: minmax(180px, 1fr) minmax(170px, 0.45fr) auto auto auto;
+		display: flex;
+		flex-wrap: wrap;
 		gap: 0.65rem;
 		align-items: center;
 		margin-bottom: 0.75rem;
+
+		> input { flex: 1 1 220px; }
+		> select { flex: 0 1 190px; }
 	}
 
 	&__table-wrap { overflow-x: auto; }
@@ -672,7 +675,7 @@
 @media (max-width: 900px) {
 	.admin-audit {
 		&__summary { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
-		&__toolbar { grid-template-columns: 1fr 1fr; }
+		&__toolbar > * { flex: 1 1 100%; }
 	}
 }
 
