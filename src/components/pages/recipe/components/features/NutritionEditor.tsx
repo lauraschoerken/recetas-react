@@ -85,7 +85,7 @@ interface NutritionEditorProps {
 		ingredientUpdates: IngredientUpdate[]
 		customMacros: CustomMacros
 		calculatedNutrition: CalculatedNutritionPayload
-	}) => void
+	}, meta?: { initial: boolean }) => void
 }
 
 interface CalculatedNutrition {
@@ -133,7 +133,9 @@ export function NutritionEditor({
 		if (ingredients.length === 0) return
 		if (Object.keys(cookedVariants).length === 0) return
 		hasEmittedInitialRef.current = true
-		onChange(buildPayload(cookedVariants, useCustomMacros ? localCustomMacros : {}))
+		onChange(buildPayload(cookedVariants, useCustomMacros ? localCustomMacros : {}), {
+			initial: true,
+		})
 	}, [cookedVariants]) // eslint-disable-line react-hooks/exhaustive-deps
 
 	const calculatedNutrition = useMemo<CalculatedNutrition>(() => {

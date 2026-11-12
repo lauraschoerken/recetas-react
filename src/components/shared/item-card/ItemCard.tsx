@@ -113,9 +113,6 @@ export function ItemCard({
 							{(item.authorName || '?').trim().charAt(0).toUpperCase()}
 						</span>
 					)}
-				</div>
-				<div className='item-card-content'>
-					<h3 className='item-card-title'>{item.title}</h3>
 					<span
 						className={`item-card-visibility item-card-visibility--${visibilityState}`}
 						title={
@@ -132,10 +129,10 @@ export function ItemCard({
 							{visibilityState === 'unknown' ? t('recipes.visibilityUnknown') : t(visibilityState)}
 						</span>
 					</span>
+				</div>
+				<div className='item-card-content'>
+					<h3 className='item-card-title'>{item.title}</h3>
 					{metaChips.length > 0 && <p className='item-card-meta'>{metaChips.join(' · ')}</p>}
-					{!hasImage && item.description && (
-						<p className='item-card-description'>{item.description}</p>
-					)}
 					{item.tags && item.tags.length > 0 && (
 						<div className='item-card-tags'>
 							{item.tags.slice(0, 2).map((tag) => (
@@ -143,6 +140,7 @@ export function ItemCard({
 									key={tag.id}
 									className='item-card-tag'
 									style={{ '--tag-color': tag.color || 'var(--border-strong)' } as CSSProperties}>
+									<span className='item-card-tag-dot' aria-hidden='true' />
 									{tag.name}
 								</span>
 							))}

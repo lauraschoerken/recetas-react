@@ -103,6 +103,8 @@ export function RecipeForm({
 	const [servings, setServings] = useState(initialData?.servings || 4)
 	const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true)
 	const [defaultLocation, setDefaultLocation] = useState(initialData?.defaultLocation || '')
+	const [showNutritionDetails, setShowNutritionDetails] = useState(false)
+	const [activeSection, setActiveSection] = useState('general')
 
 	// Macros manuales
 	const [customMacros, setCustomMacros] = useState<CustomMacrosState>({
@@ -722,7 +724,11 @@ export function RecipeForm({
 			fat: number
 			fiber: number
 		}
-	}) => {
+	}, meta?: { initial: boolean }) => {
+		if (meta?.initial) {
+			if (data.calculatedNutrition) setLiveNutrition(data.calculatedNutrition)
+			return
+		}
 		const newIngredients = [...ingredients]
 		const newComponents = [...components]
 
@@ -785,6 +791,21 @@ export function RecipeForm({
 	})
 	const initialFormSignature = useRef(formSignature)
 	const isDirty = formSignature !== initialFormSignature.current
+
+	useEffect(() => {
+		const sections = Array.from(document.querySelectorAll<HTMLElement>('[id^="recipe-form-"]'))
+		const observer = new IntersectionObserver(
+			(entries) => {
+				const visible = entries
+					.filter((entry) => entry.isIntersecting)
+					.sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+				if (visible) setActiveSection(visible.target.id.replace('recipe-form-', ''))
+			},
+			{ rootMargin: '-96px 0px -58% 0px', threshold: [0.05, 0.25, 0.5] }
+		)
+		sections.forEach((section) => observer.observe(section))
+		return () => observer.disconnect()
+	}, [])
 
 	useEffect(() => {
 		if (!isDirty || loading) return
@@ -932,10 +953,19 @@ export function RecipeForm({
 						['stock', t('recipes.minStock')],
 						['nutrition', t('recipes.formNutrition')],
 					].map(([id, label], index) => (
-						<a key={id} href={`#recipe-form-${id}`}>
+						<button
+							type='button'
+							key={id}
+							className={activeSection === id ? 'active' : ''}
+							onClick={() => {
+								setActiveSection(id)
+								document
+									.getElementById(`recipe-form-${id}`)
+									?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+							}}>
 							<span>{index + 1}</span>
 							{label}
-						</a>
+						</button>
 					))}
 				</nav>
 				<div className='form-editor-content'>
@@ -971,6 +1001,7 @@ export function RecipeForm({
 							<label className='form-label' htmlFor='recipe-image-url'>
 								{t('recipes.imageUrlLabel')}
 							</label>
+							<p className='form-hint'>{t('recipes.imageUrlHint')}</p>
 							<div className='image-url-input'>
 								<input
 									id='recipe-image-url'
@@ -1041,22 +1072,6 @@ export function RecipeForm({
 									<option value='easy'>{t('recipes.difficultyEasy')}</option>
 									<option value='medium'>{t('recipes.difficultyMedium')}</option>
 									<option value='hard'>{t('recipes.difficultyHard')}</option>
-								</select>
-							</div>
-
-							<div className='form-group'>
-								<label className='form-label' htmlFor='recipe-location'>
-									{t('recipes.saveInLabel')}
-								</label>
-								<select
-									id='recipe-location'
-									className='form-input'
-									value={defaultLocation}
-									onChange={(e) => setDefaultLocation(e.target.value)}>
-									<option value=''>{t('recipes.noPreference')}</option>
-									<option value='nevera'>{t('homePage.fridge')}</option>
-									<option value='congelador'>{t('homePage.freezer')}</option>
-									<option value='despensa'>{t('homePage.pantry')}</option>
 								</select>
 							</div>
 
@@ -1141,7 +1156,24 @@ export function RecipeForm({
 							{t('recipes.minStock')}{' '}
 							{thresholdConfig?.hasThreshold && <span className='threshold-active'>✓</span>}
 						</h2>
-						{stockSettings}
+						<div className='form-grid-2'>
+							<div>{stockSettings}</div>
+							<div className='form-group'>
+								<label className='form-label' htmlFor='recipe-location'>
+									{t('recipes.saveInLabel')}
+								</label>
+								<select
+									id='recipe-location'
+									className='form-input'
+									value={defaultLocation}
+									onChange={(e) => setDefaultLocation(e.target.value)}>
+									<option value=''>{t('recipes.noPreference')}</option>
+									<option value='nevera'>{t('homePage.fridge')}</option>
+									<option value='congelador'>{t('homePage.freezer')}</option>
+									<option value='despensa'>{t('homePage.pantry')}</option>
+								</select>
+							</div>
+						</div>
 					</section>
 
 					{displayNutrition && (
@@ -1182,18 +1214,40 @@ export function RecipeForm({
 						</div>
 					)}
 					<section id='recipe-form-nutrition' className='form-section form-section--surface'>
-						<h2 className='form-section-heading'>{t('recipes.formNutrition')}</h2>
-						<NutritionEditor
-							ingredients={nutritionIngredients}
-							customMacros={customMacros}
-							servings={servings}
-							onChange={handleNutritionChange}
-						/>
+						<div className='nutrition-section-heading'>
+							<div>
+								<h2 className='form-section-heading'>{t('recipes.formNutrition')}</h2>
+								<p className='form-hint'>{t('recipes.nutritionDetailsHint')}</p>
+							</div>
+							<button
+								type='button'
+								className='btn btn-outline'
+								aria-expanded={showNutritionDetails}
+								aria-controls='recipe-nutrition-details'
+								onClick={() => setShowNutritionDetails((visible) => !visible)}>
+								{showNutritionDetails
+									? t('recipes.hideNutritionDetails')
+									: t('recipes.showNutritionDetails')}
+							</button>
+						</div>
+						{showNutritionDetails && (
+							<div id='recipe-nutrition-details' className='nutrition-details-panel'>
+								<NutritionEditor
+									ingredients={nutritionIngredients}
+									customMacros={customMacros}
+									servings={servings}
+									onChange={handleNutritionChange}
+								/>
+							</div>
+						)}
 					</section>
 				</div>
 			</div>
 
 			<div className='form-actions'>
+				<span className={`form-save-state${isDirty ? ' is-dirty' : ''}`}>
+					{t(isDirty ? 'recipes.unsavedChanges' : 'recipes.noUnsavedChanges')}
+				</span>
 				<button type='button' className='btn btn-outline' onClick={handleCancel}>
 					{t('cancel')}
 				</button>

@@ -41,6 +41,7 @@ interface RecipeFiltersProps {
 	authors: { id: number; name: string }[]
 	onChange: (filters: RecipeFilterValues) => void
 	onClear: () => void
+	onClose: () => void
 	activeCount: number
 	hiddenTotal?: number
 }
@@ -75,6 +76,7 @@ export function RecipeFilters({
 	authors,
 	onChange,
 	onClear,
+	onClose,
 	activeCount,
 	hiddenTotal = 0,
 }: RecipeFiltersProps) {
@@ -158,7 +160,27 @@ export function RecipeFilters({
 
 	return (
 		<div className='recipe-filters'>
-			<div className='recipe-filters__group'>
+			<div className='recipe-filters__header'>
+				<div>
+					<h2>{t('recipes.filterTitle')}</h2>
+					<p>{t('recipes.filterHint')}</p>
+				</div>
+				<div className='recipe-filters__header-actions'>
+					{activeCount > 0 && (
+						<button type='button' className='btn btn-ghost btn-sm' onClick={onClear}>
+							{t('recipes.filterClear')}
+						</button>
+					)}
+					<button
+						type='button'
+						className='recipe-filters__close'
+						onClick={onClose}
+						aria-label={t('close')}>
+						×
+					</button>
+				</div>
+			</div>
+			<div className='recipe-filters__group recipe-filters__group--collection'>
 				<label className='recipe-filters__label'>{t('recipes.filterCollection')}</label>
 				<div className='recipe-filters__radio-group'>
 					{(['exclude', 'only'] as const).map((value) => (
@@ -187,7 +209,7 @@ export function RecipeFilters({
 			</div>
 
 			{/* ── Ordenación ── */}
-			<div className='recipe-filters__group'>
+			<div className='recipe-filters__group recipe-filters__group--sort'>
 				<label className='recipe-filters__label'>{t('recipes.sortBy')}</label>
 				<div className='recipe-filters__row'>
 					<select
@@ -223,7 +245,7 @@ export function RecipeFilters({
 
 			{/* ── Visibilidad ── */}
 			{filters.hidden !== 'only' && (
-				<div className='recipe-filters__group'>
+				<div className='recipe-filters__group recipe-filters__group--visibility'>
 					<label className='recipe-filters__label'>{t('recipes.filterVisibility')}</label>
 					<div className='recipe-filters__radio-group'>
 						{(['all', 'public', 'private'] as const).map((v) => (
@@ -249,30 +271,19 @@ export function RecipeFilters({
 			)}
 
 			{/* ── Dificultad ── */}
-			<div className='recipe-filters__group'>
+			<div className='recipe-filters__group recipe-filters__group--difficulty'>
 				<label className='recipe-filters__label'>{t('recipes.difficultyLabel')}</label>
-				<div className='recipe-filters__radio-group'>
-					{(['', 'easy', 'medium', 'hard'] as const).map((d) => (
-						<label
-							key={d}
-							className={`recipe-filters__radio${filters.difficulty === d ? ' active' : ''}`}>
-							<input
-								type='radio'
-								name='difficulty'
-								value={d}
-								checked={filters.difficulty === d}
-								onChange={() => updateImmediate({ difficulty: d })}
-							/>
-							{d === ''
-								? t('recipes.filterAll')
-								: t(
-										`recipes.difficulty${d.charAt(0).toUpperCase() + d.slice(1)}` as Parameters<
-											typeof t
-										>[0]
-									)}
-						</label>
-					))}
-				</div>
+				<select
+					className='form-input recipe-filters__select'
+					value={filters.difficulty}
+					onChange={(e) =>
+						updateImmediate({ difficulty: e.target.value as RecipeFilterValues['difficulty'] })
+					}>
+					<option value=''>{t('recipes.filterAll')}</option>
+					<option value='easy'>{t('recipes.difficultyEasy')}</option>
+					<option value='medium'>{t('recipes.difficultyMedium')}</option>
+					<option value='hard'>{t('recipes.difficultyHard')}</option>
+				</select>
 			</div>
 
 			{/* ── Tiempo de cocción ── */}
@@ -502,15 +513,9 @@ export function RecipeFilters({
 				</div>
 			)}
 
-			{activeCount > 0 && (
-				<button type='button' className='btn btn-outline recipe-filters__clear' onClick={onClear}>
-					{t('recipes.filterClear')}
-				</button>
-			)}
-
 			{/* ── Autor ── */}
 			{authors.length > 0 && (
-				<div className='recipe-filters__group'>
+				<div className='recipe-filters__group recipe-filters__group--author'>
 					<label className='recipe-filters__label'>{t('recipes.filterAuthor')}</label>
 					<select
 						className='form-input'

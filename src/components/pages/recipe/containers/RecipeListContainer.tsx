@@ -976,7 +976,10 @@ export function RecipeListContainer() {
 	return (
 		<>
 			<div className='page-header'>
-				<h1 className='page-title'>{t('recipes.title')}</h1>
+				<div className='recipe-page-heading'>
+					<h1 className='page-title'>{t('recipes.title')}</h1>
+					<p>{t('recipes.listSubtitle')}</p>
+				</div>
 				<div className='page-header-actions'>
 					<button
 						type='button'
@@ -1086,6 +1089,7 @@ export function RecipeListContainer() {
 					authors={authors}
 					onChange={handleFiltersChange}
 					onClear={handleFiltersClear}
+						onClose={() => setFiltersOpen(false)}
 					activeCount={activeFilterCount}
 					hiddenTotal={hiddenTotal}
 				/>

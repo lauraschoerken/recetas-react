@@ -44,6 +44,34 @@ input.has-error.form-input {
 	align-items: center;
 }
 
+/* Issue 7 — denser editor rows while keeping every existing action available. */
+.ingredients-table {
+	padding: 0.85rem;
+	background: var(--surface-1);
+	border: 1px solid var(--border-color);
+	border-radius: 0.625rem;
+	box-shadow: none;
+}
+
+.ingredients-table-header,
+.ingredients-table-row {
+	grid-template-columns: minmax(9.5rem, 1.7fr) minmax(7.5rem, 1fr) 5.125rem 6.25rem 9.5rem;
+	gap: 0.45rem;
+}
+
+.ingredient-icon-btn {
+	width: 2.25rem;
+	height: 2.25rem;
+	background: transparent;
+	border: 1px solid transparent;
+}
+
+.ingredient-icon-btn:hover,
+.ingredient-icon-btn:focus-visible {
+	background: var(--surface-2);
+	border-color: var(--border-color);
+}
+
 .ingredients-table-body {
 	display: flex;
 	flex-direction: column;
@@ -58,8 +86,8 @@ input.has-error.form-input {
 
 .ingredients-table-row {
 	display: grid;
-	grid-template-columns: minmax(12rem, 1fr) 150px 80px 110px 11.5rem;
-	gap: 0.5rem;
+	grid-template-columns: minmax(9.5rem, 1.7fr) minmax(7.5rem, 1fr) 5.125rem 6.25rem 9.5rem;
+	gap: 0.45rem;
 	align-items: center;
 
 	.form-input {
@@ -99,10 +127,10 @@ input.has-error.form-input {
 }
 
 .ingredient-icon-btn {
-	width: 2.75rem;
-	height: 2.75rem;
-	border: none;
-	background: t.$color-slate-100;
+	width: 2.25rem;
+	height: 2.25rem;
+	border: 1px solid transparent;
+	background: transparent;
 	font-size: 0.85rem;
 	cursor: pointer;
 	border-radius: t.$radius-sm;

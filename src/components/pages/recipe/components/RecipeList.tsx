@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { profileService } from '@/services/profile'
 import { Recipe } from '@/services/recipe'
 import {
 	getStoredRecipeCardStyle,
 	RECIPE_CARD_STYLE_EVENT,
 	RecipeCardStyle,
+	setStoredRecipeCardStyle,
 } from '@/utils/recipeCardStyle'
 
 import { RecipeCard } from './RecipeCard'
@@ -47,6 +49,18 @@ export function RecipeList({
 			window.removeEventListener(RECIPE_CARD_STYLE_EVENT, handleStyleChange)
 			window.removeEventListener('storage', handleStorage)
 		}
+	}, [])
+
+	useEffect(() => {
+		void profileService
+			.getProfile()
+			.then((profile) => {
+				if (profile.recipeCardStyle === 'minimal' || profile.recipeCardStyle === 'visual') {
+					setStoredRecipeCardStyle(profile.recipeCardStyle)
+					setCardStyle(profile.recipeCardStyle)
+				}
+			})
+			.catch(() => undefined)
 	}, [])
 
 	if (recipes.length === 0) {

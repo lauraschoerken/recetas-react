@@ -521,6 +521,9 @@ export function RecipeDetail({
 												{comp.isOptional && (
 													<span className='optional-badge'>{t('recipes.optionalBadge')}</span>
 												)}
+											{!comp.isOptional && (
+												<span className='required-badge'>{t('recipes.requiredBadge')}</span>
+											)}
 												{comp.isOptional && comp.defaultEnabled && (
 													<span className='default-badge'>{t('recipes.defaultBadge')}</span>
 												)}
@@ -577,7 +580,9 @@ export function RecipeDetail({
 									? recipe.instructions.split('\n---\n')
 									: recipe.instructions.split('\n')
 								).map((line, index) => (
-									<p key={index}>{line}</p>
+									<p key={index}>
+										<span>{line}</span>
+									</p>
 								))}
 							</div>
 						</div>

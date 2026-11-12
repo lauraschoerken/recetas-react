@@ -1160,11 +1160,30 @@ export function SettingsContainer() {
 			const { profileService } = await import('@/services/profile')
 			const profileData = await profileService.getProfile()
 			setPlanningScope((profileData as any).planningAlertScope || 'own')
+			if (profileData.recipeCardStyle === 'minimal' || profileData.recipeCardStyle === 'visual') {
+				setStoredRecipeCardStyle(profileData.recipeCardStyle)
+				setRecipeCardStyle(profileData.recipeCardStyle)
+			}
 		} catch {
 			console.error('Error loading planning scope')
 		}
 
 		setLoading(false)
+	}
+
+	const handleRecipeCardStyleChange = async (style: RecipeCardStyle) => {
+		const previous = recipeCardStyle
+		setStoredRecipeCardStyle(style)
+		setRecipeCardStyle(style)
+		try {
+			const { profileService } = await import('@/services/profile')
+			await profileService.updateProfile({ recipeCardStyle: style })
+			toast.success(t('settings.configSaved'))
+		} catch {
+			setStoredRecipeCardStyle(previous)
+			setRecipeCardStyle(previous)
+			toast.error(t('settings.errorSaving'))
+		}
 	}
 
 	const handleCreateHousehold = async () => {
@@ -2659,27 +2678,50 @@ export function SettingsContainer() {
 									{t('settings.recipeViewTitle')}
 								</h3>
 								<p className='settings-card-description'>{t('settings.recipeViewDesc')}</p>
-								<div className='recipe-view-options' role='radiogroup'>
-									{(['minimal', 'visual'] as RecipeCardStyle[]).map((style) => (
-										<label
-											key={style}
-											className={`recipe-view-option${recipeCardStyle === style ? ' active' : ''}`}>
-											<input
-												type='radio'
-												name='recipe-card-style'
-												value={style}
-												checked={recipeCardStyle === style}
-												onChange={() => {
-													setStoredRecipeCardStyle(style)
-													setRecipeCardStyle(style)
-												}}
-											/>
-											<span className='recipe-view-option-copy'>
-												<strong>{t(`settings.recipeView_${style}`)}</strong>
-												<small>{t(`settings.recipeView_${style}Desc`)}</small>
-											</span>
-										</label>
-									))}
+								<div className='recipe-view-configurator'>
+									<div className='recipe-view-options' role='radiogroup'>
+										{(['minimal', 'visual'] as RecipeCardStyle[]).map((style) => (
+											<label
+												key={style}
+												className={`recipe-view-option${recipeCardStyle === style ? ' active' : ''}`}>
+												<input
+													type='radio'
+													name='recipe-card-style'
+													value={style}
+													checked={recipeCardStyle === style}
+													onChange={() => void handleRecipeCardStyleChange(style)}
+												/>
+												<span className='recipe-view-option-copy'>
+													<strong>{t(`settings.recipeView_${style}`)}</strong>
+													<small>{t(`settings.recipeView_${style}Desc`)}</small>
+												</span>
+											</label>
+										))}
+									</div>
+									<div
+										className='recipe-view-preview'
+										aria-label={t('settings.recipeViewPreview')}>
+										<span className='recipe-view-preview-label'>
+											{t('settings.recipeViewPreview')}
+										</span>
+										<div
+											className={`recipe-view-preview-card recipe-view-preview-card--${recipeCardStyle}`}>
+											<div className='recipe-view-preview-image'>
+												<img
+													src='https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=720&q=80'
+													alt=''
+													onError={(event) => (event.currentTarget.style.display = 'none')}
+												/>
+												<span className='recipe-view-preview-visibility'>◎</span>
+											</div>
+											<div className='recipe-view-preview-copy'>
+												<strong>{t('settings.recipeViewPreviewTitle')}</strong>
+												<small>585 kcal · 35 min · {t('recipes.difficultyEasy')}</small>
+												<span>{t('settings.recipeViewPreviewTag')}</span>
+											</div>
+											<div className='recipe-view-preview-actions'>▣　⇩　✎　⌫</div>
+										</div>
+									</div>
 								</div>
 							</section>
 

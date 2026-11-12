@@ -1,9 +1,10 @@
 .recipe-list-grid {
 	display: grid;
 	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: clamp(0.85rem, 1.5vw, 1.2rem);
+	gap: 1rem;
 	margin-bottom: 2rem;
 }
+
 .item-card {
 	position: relative;
 	display: flex;
@@ -12,179 +13,193 @@
 	overflow: hidden;
 	background: var(--card-background);
 	border: 1px solid var(--border-color);
-	border-radius: var(--radius);
-	box-shadow: var(--shadow);
-	transition:
-		border-color 0.16s ease,
-		box-shadow 0.16s ease;
+	border-radius: 0.75rem;
+	transition: border-color 0.16s ease;
 }
+
 .item-card:hover,
-.item-card:focus-within {
-	border-color: var(--border-strong);
-	box-shadow: var(--shadow-lg);
-}
+.item-card:focus-within { border-color: var(--border-strong); }
+
 .item-card--selected {
 	border-color: var(--primary-color);
 	box-shadow: 0 0 0 2px var(--primary-light);
 }
+
 .item-card-clickable {
 	display: block;
 	min-width: 0;
 	color: inherit;
 	text-decoration: none;
 }
+
 .item-card-clickable:focus-visible {
 	outline: 3px solid var(--primary-color);
 	outline-offset: -3px;
 }
+
 .item-card-media {
 	position: relative;
-	aspect-ratio: 16/9;
+	aspect-ratio: 16 / 9;
 	overflow: hidden;
 	background: var(--surface-2);
 }
+
 .item-card-media img {
 	display: block;
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 }
+
 .item-card-media--empty {
 	display: grid;
 	place-items: center;
 	background:
-		linear-gradient(
-			135deg,
-			transparent 0 48%,
-			color-mix(in srgb, var(--primary-color) 9%, transparent) 48% 52%,
-			transparent 52%
-		),
+		linear-gradient(135deg, transparent 0 48%, color-mix(in srgb, var(--primary-color) 9%, transparent) 48% 52%, transparent 52%),
 		var(--surface-2);
 }
+
 .item-card-placeholder {
 	display: grid;
-	width: 3.5rem;
-	height: 3.5rem;
+	width: 3.25rem;
+	height: 3.25rem;
 	place-items: center;
 	border: 1px solid var(--border-strong);
 	border-radius: 50%;
 	color: var(--text-secondary);
-	font-size: 1.45rem;
+	font-size: 1.35rem;
 	font-weight: 700;
 }
-.item-card-owner {
+
+.item-card-owner,
+.item-card-visibility {
 	position: absolute;
+	z-index: 2;
+	display: grid;
+	place-items: center;
+	background: rgba(8, 16, 27, 0.84);
+	border: 1px solid rgba(255, 255, 255, 0.24);
+	border-radius: 50%;
+	color: #fff;
+	backdrop-filter: blur(4px);
+}
+
+.item-card-owner {
 	top: 0.55rem;
 	right: 0.55rem;
-	display: grid;
-	width: 2.15rem;
-	height: 2.15rem;
-	place-items: center;
-	background: color-mix(in srgb, var(--card-background) 90%, transparent);
-	border: 1px solid var(--border-strong);
-	border-radius: 50%;
-	color: var(--text-primary);
-	font-size: 0.8rem;
+	width: 1.75rem;
+	height: 1.75rem;
+	font-size: 0.7rem;
 	font-weight: 750;
-	box-shadow: var(--shadow);
 }
+
+.item-card-visibility {
+	top: 0.55rem;
+	left: 0.55rem;
+	width: 1.75rem;
+	height: 1.75rem;
+}
+
+.item-card-visibility svg {
+	width: 0.9rem;
+	height: 0.9rem;
+}
+
 .item-card-content {
 	display: flex;
-	min-height: 7.8rem;
+	min-height: 5.4rem;
 	flex-direction: column;
-	padding: 0.75rem 0.85rem 0.65rem;
+	padding: 0.68rem 0.75rem 0.55rem;
 }
+
 .item-card-title {
 	min-width: 0;
 	overflow: hidden;
 	color: var(--text-primary);
-	font-size: 0.94rem;
+	font-size: 0.875rem;
 	font-weight: 750;
 	line-height: 1.35;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
-.item-card-meta,
-.item-card-description {
-	margin: 0.32rem 0 0;
-	color: var(--text-secondary);
-	font-size: 0.75rem;
-	line-height: 1.35;
-}
+
 .item-card-meta {
-	font-variant-numeric: tabular-nums;
-	white-space: nowrap;
+	margin: 0.25rem 0 0;
 	overflow: hidden;
-	text-overflow: ellipsis;
-}
-.item-card-description {
-	display: -webkit-box;
-	overflow: hidden;
-	-webkit-box-orient: vertical;
-	-webkit-line-clamp: 2;
-}
-.item-card-visibility {
-	display: inline-grid;
-	width: 1.7rem;
-	height: 1.7rem;
-	margin-top: 0.38rem;
-	place-items: center;
-	background: var(--surface-1);
-	border: 1px solid var(--border-color);
-	border-radius: 50%;
 	color: var(--text-secondary);
+	font-size: 0.69rem;
+	font-variant-numeric: tabular-nums;
+	line-height: 1.35;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
-.item-card-visibility svg {
-	width: 0.95rem;
-	height: 0.95rem;
-}
+
+.item-card-description { display: none; }
+
 .item-card-tags {
 	display: flex;
 	min-width: 0;
 	flex-wrap: nowrap;
 	gap: 0.3rem;
-	margin-top: auto;
-	padding-top: 0.55rem;
+	margin-top: 0.45rem;
+	padding-top: 0;
 	overflow: hidden;
 }
+
 .item-card-tag {
+	display: inline-flex;
 	max-width: 100%;
+	align-items: center;
+	gap: 0.3rem;
 	overflow: hidden;
-	padding: 0.12rem 0.42rem;
-	background: color-mix(in srgb, var(--tag-color) 10%, transparent);
-	border: 1px solid var(--tag-color);
+	padding: 0.12rem 0.4rem;
+	background: color-mix(in srgb, var(--tag-color) 7%, transparent);
+	border: 1px solid color-mix(in srgb, var(--tag-color) 78%, var(--border-color));
 	border-radius: 999px;
-	color: var(--text-secondary);
-	font-size: 0.68rem;
+	color: color-mix(in srgb, var(--tag-color) 70%, var(--text-primary));
+	font-size: 0.66rem;
 	font-weight: 650;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+
+.item-card-tag-dot {
+	width: 0.36rem;
+	height: 0.36rem;
+	flex: 0 0 auto;
+	background: var(--tag-color);
+	border-radius: 50%;
+}
+
 .item-card-bottom-bar {
 	display: flex;
+	min-height: 2.4rem;
 	justify-content: flex-end;
-	padding: 0.25rem 0.4rem;
+	padding: 0.18rem 0.3rem;
 	border-top: 1px solid var(--border-color);
 }
+
 .item-card-quick-actions {
 	display: flex;
 	align-items: center;
 	gap: 0.05rem;
 }
+
 .item-card-action-btn,
 .btn-icon {
 	display: inline-grid;
-	width: 2.65rem;
-	height: 2.65rem;
+	width: 2rem;
+	height: 2rem;
 	padding: 0;
 	place-items: center;
 	background: transparent;
 	border: 1px solid transparent;
-	border-radius: 0.5rem;
+	border-radius: 0.45rem;
 	color: var(--text-secondary);
 	cursor: pointer;
 	text-decoration: none;
 }
+
 .item-card-action-btn:hover,
 .item-card-action-btn:focus-visible,
 .btn-icon:hover,
@@ -194,159 +209,199 @@
 	color: var(--text-primary);
 	outline: none;
 }
+
 .item-card-action-btn--danger:hover,
 .item-card-action-btn--danger:focus-visible {
 	background: var(--danger-light);
 	color: var(--danger-color);
 }
+
 .item-card-select {
 	position: absolute;
-	top: 0.5rem;
-	right: 0.5rem;
+	top: 0.45rem;
+	right: 0.45rem;
 	z-index: 4;
 	display: grid;
-	width: 2.3rem;
-	height: 2.3rem;
+	width: 2rem;
+	height: 2rem;
 	padding: 0;
 	place-items: center;
 	opacity: 0;
-	background: color-mix(in srgb, var(--card-background) 94%, transparent);
-	border: 1px solid var(--border-strong);
+	background: rgba(8, 16, 27, 0.9);
+	border: 1px solid rgba(255, 255, 255, 0.34);
 	border-radius: 50%;
 	color: transparent;
 	cursor: pointer;
-	box-shadow: var(--shadow);
 	transition: opacity 0.15s ease;
 }
+
 .item-card:hover .item-card-select,
 .item-card:focus-within .item-card-select,
-.item-card-select--active {
-	opacity: 1;
-}
+.item-card-select--active { opacity: 1; }
+
 .item-card:hover .item-card-owner,
-.item-card:focus-within .item-card-owner {
-	opacity: 0;
-}
+.item-card:focus-within .item-card-owner { opacity: 0; }
+
 .item-card-select--active {
 	background: var(--primary-color);
 	border-color: var(--primary-color);
 	color: var(--text-inverse);
 }
+
 .item-card-management {
 	display: block;
-	padding: 0.4rem 0.85rem;
+	padding: 0.35rem 0.75rem;
 	background: var(--warning-light);
 	border-bottom: 1px solid var(--border-color);
 	color: var(--warning-fg);
-	font-size: 0.72rem;
+	font-size: 0.7rem;
 	font-weight: 650;
 }
 
 .item-card--minimal {
-	min-height: 13rem;
+	aspect-ratio: 1.58 / 1;
+	min-height: 9.375rem;
 }
-.item-card--minimal .item-card-clickable {
-	position: absolute;
-	inset: 0 0 2.9rem;
-}
+
+.item-card--minimal .item-card-clickable,
 .item-card--minimal .item-card-media {
 	position: absolute;
 	inset: 0;
-	aspect-ratio: auto;
 }
+
+.item-card--minimal .item-card-media { aspect-ratio: auto; }
+
 .item-card--minimal .item-card-media::after {
 	content: '';
 	position: absolute;
 	inset: 0;
-	background: linear-gradient(
-		180deg,
-		rgba(3, 9, 18, 0.78) 0%,
-		rgba(3, 9, 18, 0.16) 46%,
-		rgba(3, 9, 18, 0.88) 100%
-	);
+	background: linear-gradient(180deg, rgba(3, 9, 18, 0.78) 0%, rgba(3, 9, 18, 0.08) 48%, rgba(3, 9, 18, 0.9) 100%);
 }
+
 .item-card--minimal .item-card-content {
-	position: relative;
+	position: absolute;
 	z-index: 2;
-	min-height: 10rem;
-	height: 100%;
-	padding: 0.75rem;
+	inset: 0;
+	min-height: 0;
+	padding: 0;
 	color: #fff;
 	pointer-events: none;
 }
+
 .item-card--minimal .item-card-title {
+	position: absolute;
+	top: 0.68rem;
+	right: 2.65rem;
+	left: 0.75rem;
 	color: #fff;
-	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.72);
-}
-.item-card--minimal .item-card-visibility {
-	margin-top: 0.35rem;
-	background: rgba(5, 13, 23, 0.72);
-	border-color: rgba(255, 255, 255, 0.35);
-	color: #fff;
-}
-.item-card--minimal .item-card-meta {
-	margin-top: auto;
-	color: rgba(255, 255, 255, 0.92);
-	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-}
-.item-card--minimal .item-card-tags {
-	margin-top: 0.35rem;
-	padding-top: 0;
-}
-.item-card--minimal .item-card-tag {
-	background: rgba(5, 13, 23, 0.68);
-	color: #fff;
-}
-.item-card--minimal .item-card-description {
-	display: none;
-}
-.item-card--minimal .item-card-bottom-bar {
-	margin-top: auto;
-	background: var(--card-background);
+	font-size: 0.85rem;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
-@media (max-width: 70rem) {
-	.recipe-list-grid {
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-	}
+.item-card--minimal .item-card-visibility {
+	top: 2.45rem;
+	left: 0.68rem;
+	width: 1.5rem;
+	height: 1.5rem;
 }
-@media (max-width: 48rem) {
-	.recipe-list-grid {
+
+.item-card--minimal .item-card-visibility svg {
+	width: 0.78rem;
+	height: 0.78rem;
+}
+
+.item-card--minimal .item-card-meta {
+	position: absolute;
+	right: 5.25rem;
+	bottom: 0.7rem;
+	left: 0.75rem;
+	margin: 0;
+	color: rgba(255, 255, 255, 0.94);
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.86);
+}
+
+.item-card--minimal .item-card-tags {
+	position: absolute;
+	right: 5.25rem;
+	bottom: 2rem;
+	left: 0.75rem;
+	margin: 0;
+	padding: 0;
+}
+
+.item-card--minimal .item-card-tag {
+	background: rgba(5, 13, 23, 0.72);
+	color: #fff;
+}
+
+.item-card--minimal .item-card-owner { display: none; }
+
+.item-card--minimal .item-card-bottom-bar {
+	position: absolute;
+	z-index: 3;
+	right: 0.4rem;
+	bottom: 0.4rem;
+	min-height: auto;
+	padding: 0;
+	background: transparent;
+	border: 0;
+}
+
+@media (hover: hover) {
+	.item-card--minimal .item-card-bottom-bar {
+		opacity: 0;
+		transition: opacity 0.15s ease;
+	}
+
+	.item-card--minimal:hover .item-card-bottom-bar,
+	.item-card--minimal:focus-within .item-card-bottom-bar { opacity: 1; }
+}
+
+.item-card--minimal .item-card-action-btn {
+	background: rgba(5, 13, 23, 0.68);
+	color: rgba(255, 255, 255, 0.9);
+}
+
+.item-card--minimal .item-card-action-btn:hover,
+.item-card--minimal .item-card-action-btn:focus-visible {
+	background: rgba(5, 13, 23, 0.94);
+	border-color: rgba(255, 255, 255, 0.28);
+	color: #fff;
+}
+
+@media (max-width: 65.625rem) {
+	.recipe-list-grid:not(.recipe-list-grid--minimal) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 50rem) {
+	.recipe-list-grid,
+	.recipe-list-grid:not(.recipe-list-grid--minimal) {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 0.75rem;
 	}
 }
-@media (max-width: 31rem) {
-	.recipe-list-grid {
-		grid-template-columns: 1fr;
-	}
+
+@media (max-width: 35rem) {
+	.recipe-list-grid,
+	.recipe-list-grid:not(.recipe-list-grid--minimal) { grid-template-columns: 1fr; }
+
 	.item-card--visual {
 		display: grid;
-		grid-template-columns: 7.5rem minmax(0, 1fr);
+		grid-template-columns: 42% minmax(0, 1fr);
 	}
-	.item-card--visual .item-card-clickable {
-		display: contents;
-	}
+
+	.item-card--visual .item-card-clickable { display: contents; }
 	.item-card--visual .item-card-media {
 		aspect-ratio: auto;
-		min-height: 9.5rem;
+		min-height: 8.25rem;
 	}
-	.item-card--visual .item-card-content {
-		min-height: 0;
-		padding: 0.75rem;
-	}
-	.item-card--visual .item-card-bottom-bar {
-		grid-column: 1/-1;
-	}
-	.item-card-management {
-		grid-column: 1/-1;
-	}
+	.item-card--visual .item-card-content { min-height: 0; }
+	.item-card--visual .item-card-bottom-bar { grid-column: 1 / -1; }
+	.item-card-management { grid-column: 1 / -1; }
+	.item-card--minimal { aspect-ratio: 1.75 / 1; }
 }
+
 @media (hover: none) {
-	.item-card-select {
-		opacity: 0;
-	}
-	.item-card-select--active {
-		opacity: 1;
-	}
+	.item-card-select { opacity: 0; }
+	.item-card-select--active { opacity: 1; }
 }

@@ -62,6 +62,27 @@ describe('Recipe redesign — responsive and themes', () => {
 		})
 	}
 
+	it('persists the selected card style and updates its preview', () => {
+		cy.viewport(1440, 900)
+		cy.intercept('GET', '/api/**', { body: [] })
+		cy.intercept('GET', '/api/household', { body: { household: null } })
+		cy.intercept('GET', '/api/household/pending-invites', { body: [] })
+		cy.intercept('GET', '/api/profile', { body: { recipeCardStyle: 'minimal' } }).as('profile')
+		cy.intercept('PUT', '/api/profile', (request) => {
+			expect(request.body).to.deep.equal({ recipeCardStyle: 'visual' })
+			request.reply({ recipeCardStyle: 'visual' })
+		}).as('saveCardStyle')
+
+		visitAuthenticated('/settings', 'dark')
+		cy.wait('@profile')
+		cy.contains('.settings-nav-item', 'Display').click()
+		cy.get('.recipe-view-preview-card--minimal').should('be.visible')
+		cy.get('input[name="recipe-card-style"][value="visual"]').check()
+		cy.wait('@saveCardStyle')
+		cy.get('.recipe-view-preview-card--visual').should('be.visible')
+		cy.screenshot('issue-7/settings-view-preview-dark', { capture: 'viewport' })
+	})
+
 	for (const theme of themes) {
 		for (const [width, height] of viewports) {
 			it(`${width}x${height} ${theme}: list, detail and edit stay usable`, () => {
@@ -74,6 +95,12 @@ describe('Recipe redesign — responsive and themes', () => {
 				cy.get('.item-card-title').first().should('contain.text', 'Tortilla')
 				cy.get('.item-card-visibility').should('have.length.at.least', 2)
 				cy.get('.item-card-bottom-bar').first().should('be.visible')
+				cy.get('.recipe-filter-toggle').click()
+				cy.get('.recipe-filters').should('be.visible')
+				cy.get('.recipe-filters__select').should('be.visible')
+				cy.get('.recipe-filters__group--tags').should('be.visible')
+				cy.get('.recipe-filters__close').click()
+				cy.get('.recipe-filters').should('not.exist')
 				expectNoHorizontalOverflow()
 				cy.screenshot(`issue-7/list-${width}x${height}-${theme}`, { capture: 'viewport' })
 
@@ -101,6 +128,12 @@ describe('Recipe redesign — responsive and themes', () => {
 				cy.get('.form-section-heading').should('have.length.at.least', 4)
 				cy.get('label[for="recipe-title"]').should('be.visible')
 				cy.get('.form-actions').should('be.visible')
+				cy.get('.form-section-nav button').should('have.length.at.least', 7)
+				cy.get('.form-save-state').should('contain.text', 'No pending changes')
+				cy.get('#recipe-nutrition-details').should('not.exist')
+				cy.get('button[aria-controls="recipe-nutrition-details"]').click()
+				cy.get('#recipe-nutrition-details').should('be.visible')
+				cy.get('.form-save-state').should('contain.text', 'No pending changes')
 				expectNoHorizontalOverflow()
 				if (width === 390 || width === 1440) {
 					cy.screenshot(`issue-7/edit-${width}x${height}-${theme}`, { capture: 'viewport' })
