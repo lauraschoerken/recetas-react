@@ -1,5 +1,5 @@
 ﻿.settings-container {
-	max-width: 900px;
+	max-width: 1240px;
 	margin: 0 auto;
 	padding: 2rem;
 }
@@ -548,7 +548,7 @@
 
 .recipe-view-configurator {
 	display: grid;
-	grid-template-columns: minmax(18rem, 1fr) minmax(17rem, 0.85fr);
+	grid-template-columns: minmax(20rem, 1fr) minmax(24rem, 1.1fr);
 	gap: 1rem;
 	margin-top: 1rem;
 }
@@ -718,6 +718,10 @@
 	grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
 	gap: 1.25rem;
 	margin-top: 1rem;
+}
+
+@media (max-width: 68rem) {
+	.recipe-view-configurator { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 40rem) {
