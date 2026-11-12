@@ -1,8 +1,8 @@
 :root {
 	color-scheme: light;
-	--primary-color: #17647a;
-	--primary-hover: #0f5265;
-	--primary-light: #dceef3;
+	--primary-color: #248dcc;
+	--primary-hover: #1678b3;
+	--primary-light: #dceefa;
 	--secondary-color: #526b76;
 	--success-color: #10b981;
 	--success-light: #d1fae5;
@@ -13,18 +13,18 @@
 	--danger-light: #fde8e8;
 	--warning-color: #d97706;
 	--warning-light: #fef3c7;
-	--background-color: #f2f5f5;
+	--background-color: #f3f6fa;
 	--card-background: #ffffff;
 	--surface-0: #ffffff;
-	--surface-1: #f2f5f5;
-	--surface-2: #e5ecee;
-	--surface-3: #d5e0e3;
-	--text-primary: #152a33;
-	--text-secondary: #405b67;
-	--text-muted: #5d737d;
+	--surface-1: #f3f6fa;
+	--surface-2: #e8eef5;
+	--surface-3: #d8e2ed;
+	--text-primary: #142436;
+	--text-secondary: #455d75;
+	--text-muted: #61758a;
 	--text-inverse: #ffffff;
-	--border-color: #c9d5d9;
-	--border-strong: #9fb2ba;
+	--border-color: #ccd8e5;
+	--border-strong: #9fb3c7;
 	--info-bg: #dbeafe;
 	--info-fg: #1e40af;
 	--success-bg: #d1fae5;
@@ -54,9 +54,9 @@
 
 :root.theme-dark {
 	color-scheme: dark;
-	--primary-color: #7ac3d6;
-	--primary-hover: #a4d9e5;
-	--primary-light: #173c48;
+	--primary-color: #65b9f2;
+	--primary-hover: #8dccf6;
+	--primary-light: #142f47;
 	--secondary-color: #9bb1ba;
 	--success-color: #34d399;
 	--success-light: #11392f;
@@ -67,18 +67,18 @@
 	--danger-light: #4c1d24;
 	--warning-color: #fbbf24;
 	--warning-light: #4f3a0f;
-	--background-color: #0d181e;
-	--card-background: #15262e;
-	--surface-0: #15262e;
-	--surface-1: #101e25;
-	--surface-2: #20343e;
-	--surface-3: #2d4652;
-	--text-primary: #edf4f6;
-	--text-secondary: #b0c3cb;
-	--text-muted: #90a7b1;
+	--background-color: #0a111b;
+	--card-background: #111b29;
+	--surface-0: #111b29;
+	--surface-1: #0d1724;
+	--surface-2: #172436;
+	--surface-3: #213149;
+	--text-primary: #f3f7fb;
+	--text-secondary: #b6c5d6;
+	--text-muted: #8fa3b9;
 	--text-inverse: #0d2027;
-	--border-color: #36505b;
-	--border-strong: #58717c;
+	--border-color: #2a3b52;
+	--border-strong: #45617e;
 	--info-bg: #1e3a8a;
 	--info-fg: #bfdbfe;
 	--success-bg: #11392f;
@@ -109,9 +109,9 @@
 @media (prefers-color-scheme: dark) {
 	:root:not(.theme-light) {
 		color-scheme: dark;
-		--primary-color: #7ac3d6;
-		--primary-hover: #a4d9e5;
-		--primary-light: #173c48;
+		--primary-color: #65b9f2;
+		--primary-hover: #8dccf6;
+		--primary-light: #142f47;
 		--secondary-color: #9bb1ba;
 		--success-color: #34d399;
 		--success-light: #11392f;
@@ -119,18 +119,18 @@
 		--danger-light: #4c1d24;
 		--warning-color: #fbbf24;
 		--warning-light: #4f3a0f;
-		--background-color: #0d181e;
-		--card-background: #15262e;
-		--surface-0: #15262e;
-		--surface-1: #101e25;
-		--surface-2: #20343e;
-		--surface-3: #2d4652;
-		--text-primary: #edf4f6;
-		--text-secondary: #b0c3cb;
-		--text-muted: #90a7b1;
+		--background-color: #0a111b;
+		--card-background: #111b29;
+		--surface-0: #111b29;
+		--surface-1: #0d1724;
+		--surface-2: #172436;
+		--surface-3: #213149;
+		--text-primary: #f3f7fb;
+		--text-secondary: #b6c5d6;
+		--text-muted: #8fa3b9;
 		--text-inverse: #0d2027;
-		--border-color: #36505b;
-		--border-strong: #58717c;
+		--border-color: #2a3b52;
+		--border-strong: #45617e;
 		--info-bg: #1e3a8a;
 		--info-fg: #bfdbfe;
 		--success-bg: #11392f;
@@ -523,7 +523,9 @@ body:has(.modal-overlay, .confirm-dialog-overlay, .cook-modal-overlay) {
 		flex: 1;
 	}
 
-	input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+	input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not(
+			[type='color']
+		),
 	select {
 		min-height: 2.75rem;
 	}

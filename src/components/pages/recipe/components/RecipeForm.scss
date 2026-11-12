@@ -1,8 +1,60 @@
 ﻿@use '../../../../assets/styles/tokens' as t;
 
 .recipe-form {
-	max-width: 76rem;
+	max-width: 92rem;
 	margin: 0 auto;
+}
+
+.form-editor-layout {
+	display: grid;
+	grid-template-columns: 13rem minmax(0, 1fr);
+	gap: clamp(1rem, 2.5vw, 2rem);
+	align-items: start;
+}
+
+.form-editor-content {
+	min-width: 0;
+}
+
+.form-section-nav {
+	position: sticky;
+	top: 5rem;
+	display: grid;
+	gap: 0.25rem;
+	padding: 0.65rem;
+	background: var(--card-background);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+}
+
+.form-section-nav a {
+	display: grid;
+	grid-template-columns: 1.6rem minmax(0, 1fr);
+	align-items: center;
+	gap: 0.55rem;
+	min-height: 2.75rem;
+	padding: 0.45rem 0.55rem;
+	border-radius: 0.5rem;
+	color: var(--text-secondary);
+	font-size: 0.84rem;
+	font-weight: 650;
+	text-decoration: none;
+}
+
+.form-section-nav a:hover,
+.form-section-nav a:focus-visible {
+	background: var(--primary-light);
+	color: var(--primary-color);
+}
+.form-section-nav a span {
+	display: grid;
+	width: 1.5rem;
+	height: 1.5rem;
+	place-items: center;
+	border: 1px solid var(--border-color);
+	border-radius: 50%;
+	font-size: 0.7rem;
 }
 
 .form-error-summary {
@@ -14,8 +66,19 @@
 	color: var(--danger-fg);
 	scroll-margin-top: 6rem;
 
-	ul { margin: t.$space-2 0 0; padding-left: 1.25rem; }
-	button { padding: 0; background: transparent; border: 0; color: inherit; cursor: pointer; text-decoration: underline; text-align: left; }
+	ul {
+		margin: t.$space-2 0 0;
+		padding-left: 1.25rem;
+	}
+	button {
+		padding: 0;
+		background: transparent;
+		border: 0;
+		color: inherit;
+		cursor: pointer;
+		text-decoration: underline;
+		text-align: left;
+	}
 }
 
 // --- Validation error styles ---
@@ -407,6 +470,21 @@
 }
 
 @media (max-width: t.$bp-sm) {
+	.form-editor-layout {
+		display: block;
+	}
+	.form-section-nav {
+		position: sticky;
+		top: 3.5rem;
+		z-index: 15;
+		display: flex;
+		margin-bottom: 1rem;
+		overflow-x: auto;
+		scrollbar-width: thin;
+	}
+	.form-section-nav a {
+		flex: 0 0 auto;
+	}
 	.form-grid-2 {
 		grid-template-columns: 1fr;
 		gap: t.$space-4;
@@ -447,9 +525,24 @@
 		}
 	}
 
-	.image-url-input { grid-template-columns: 1fr; }
-	.image-preview { max-width: 14rem; }
-	.form-section--surface { padding: 1rem; }
+	.image-url-input {
+		grid-template-columns: 1fr;
+	}
+	.image-preview {
+		max-width: 14rem;
+	}
+	.form-section--surface {
+		padding: 1rem;
+	}
+}
+
+@media (min-width: t.$bp-sm) and (max-width: 62rem) {
+	.form-editor-layout {
+		grid-template-columns: 10.5rem minmax(0, 1fr);
+	}
+	.form-section-nav a {
+		font-size: 0.78rem;
+	}
 }
 
 .recipe-admin-edit-notice {
@@ -464,5 +557,7 @@
 	background: color-mix(in srgb, var(--warning-color, #d99a00) 10%, var(--surface-0));
 	color: var(--text-primary);
 
-	span { color: var(--text-secondary); }
+	span {
+		color: var(--text-secondary);
+	}
 }

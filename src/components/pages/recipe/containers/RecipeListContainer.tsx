@@ -155,6 +155,8 @@ export function RecipeListContainer() {
 		maxCarbs: searchParams.get('maxCarbs') || '',
 		minFat: searchParams.get('minFat') || '',
 		maxFat: searchParams.get('maxFat') || '',
+		minFiber: searchParams.get('minFiber') || '',
+		maxFiber: searchParams.get('maxFiber') || '',
 		difficulty: (searchParams.get('difficulty') as RecipeFilterValues['difficulty']) || '',
 		minCookTime: searchParams.get('minCook') || '',
 		maxCookTime: searchParams.get('maxCook') || '',
@@ -189,6 +191,8 @@ export function RecipeListContainer() {
 		filters.maxCarbs,
 		filters.minFat,
 		filters.maxFat,
+		filters.minFiber,
+		filters.maxFiber,
 		filters.difficulty,
 		filters.minCookTime,
 		filters.maxCookTime,
@@ -356,6 +360,8 @@ export function RecipeListContainer() {
 				setOrDel('maxCarbs', newFilters.maxCarbs || undefined)
 				setOrDel('minFat', newFilters.minFat || undefined)
 				setOrDel('maxFat', newFilters.maxFat || undefined)
+				setOrDel('minFiber', newFilters.minFiber || undefined)
+				setOrDel('maxFiber', newFilters.maxFiber || undefined)
 				setOrDel('difficulty', newFilters.difficulty || undefined)
 				setOrDel('minCook', newFilters.minCookTime || undefined)
 				setOrDel('maxCook', newFilters.maxCookTime || undefined)
@@ -391,6 +397,8 @@ export function RecipeListContainer() {
 					'maxCarbs',
 					'minFat',
 					'maxFat',
+					'minFiber',
+					'maxFiber',
 					'difficulty',
 					'minCook',
 					'maxCook',
@@ -833,13 +841,19 @@ export function RecipeListContainer() {
 	}
 
 	if (loading && initialLoad) {
-		return <div className='recipe-page-state' role='status'>{t('recipes.loading')}</div>
+		return (
+			<div className='recipe-page-state' role='status'>
+				{t('recipes.loading')}
+			</div>
+		)
 	}
 	if (error) {
 		return (
 			<div className='recipe-page-state recipe-page-state--error' role='alert'>
 				<p>{error}</p>
-				<button type='button' className='btn btn-outline' onClick={() => void loadRecipes()}>{t('retry')}</button>
+				<button type='button' className='btn btn-outline' onClick={() => void loadRecipes()}>
+					{t('retry')}
+				</button>
 			</div>
 		)
 	}
@@ -860,6 +874,9 @@ export function RecipeListContainer() {
 			if (filters.maxCarbs && carbs != null && carbs > Number(filters.maxCarbs)) return false
 			if (filters.minFat && fat != null && fat < Number(filters.minFat)) return false
 			if (filters.maxFat && fat != null && fat > Number(filters.maxFat)) return false
+			const fiber = r.nutritionPerServing?.fiber
+			if (filters.minFiber && fiber != null && fiber < Number(filters.minFiber)) return false
+			if (filters.maxFiber && fiber != null && fiber > Number(filters.maxFiber)) return false
 			return true
 		})
 	}
@@ -899,14 +916,24 @@ export function RecipeListContainer() {
 	if (filters.minCookTime || filters.maxCookTime) {
 		activeFilterChips.push({
 			key: 'cook-time',
-			label: rangeLabel(t('recipes.filterCookTime'), filters.minCookTime, filters.maxCookTime, t('recipes.minuteShort')),
+			label: rangeLabel(
+				t('recipes.filterCookTime'),
+				filters.minCookTime,
+				filters.maxCookTime,
+				t('recipes.minuteShort')
+			),
 			clear: () => handleFiltersChange({ ...filters, minCookTime: '', maxCookTime: '' }),
 		})
 	}
 	if (filters.minCalories || filters.maxCalories) {
 		activeFilterChips.push({
 			key: 'calories',
-			label: rangeLabel(t('recipes.filterCalories'), filters.minCalories, filters.maxCalories, 'kcal'),
+			label: rangeLabel(
+				t('recipes.filterCalories'),
+				filters.minCalories,
+				filters.maxCalories,
+				'kcal'
+			),
 			clear: () => handleFiltersChange({ ...filters, minCalories: '', maxCalories: '' }),
 		})
 	}
@@ -929,6 +956,13 @@ export function RecipeListContainer() {
 			key: 'fat',
 			label: rangeLabel(t('weekPlan.fat'), filters.minFat, filters.maxFat, 'g'),
 			clear: () => handleFiltersChange({ ...filters, minFat: '', maxFat: '' }),
+		})
+	}
+	if (filters.minFiber || filters.maxFiber) {
+		activeFilterChips.push({
+			key: 'fiber',
+			label: rangeLabel(t('fiber'), filters.minFiber, filters.maxFiber, 'g'),
+			clear: () => handleFiltersChange({ ...filters, minFiber: '', maxFiber: '' }),
 		})
 	}
 	if (filters.tagIds.length || filters.excludeTagIds.length) {
@@ -1009,51 +1043,40 @@ export function RecipeListContainer() {
 			)}
 
 			<div className='recipe-library-toolbar'>
-			<div className='search-bar-container'>
-				<input
-					type='search'
-					className='form-input'
-					placeholder={t('search')}
-					aria-label={t('search')}
-					value={search}
-					onChange={(e) => handleSearch(e.target.value)}
-				/>
-				<button
-					type='button'
-					className={`btn btn-outline${filters.hidden === 'only' ? ' active' : ''}`}
-					onClick={() =>
-						handleFiltersChange({
-							...filters,
-							hidden: filters.hidden === 'only' ? 'exclude' : 'only',
-							visibility: 'all',
-							authorId: null,
-						})
-					}
-					aria-pressed={filters.hidden === 'only'}>
-					{filters.hidden === 'only'
-						? t('recipes.showVisible')
-						: t('recipes.showHiddenCount', { count: hiddenTotal })}
-				</button>
-				<button
-					type='button'
-					className={`btn btn-outline recipe-filter-toggle${activeFilterCount > 0 ? ' active' : ''}`}
-					onClick={() => setFiltersOpen((o) => !o)}>
-					{t('recipes.filters')}
-					{activeFilterCount > 0 && (
-						<span className='recipe-filter-badge'>{activeFilterCount}</span>
-					)}
-				</button>
-			</div>
-			{activeFilterChips.length > 0 && (
-				<div className='recipe-active-filters' aria-label={t('recipes.filters')}>
-					{activeFilterChips.map((chip) => (
-						<span key={chip.key} className='recipe-active-filter'>
-							{chip.label}
-							<button type='button' onClick={chip.clear} aria-label={`${t('recipes.filterClear')}: ${chip.label}`}>×</button>
-						</span>
-					))}
+				<div className='search-bar-container'>
+					<input
+						type='search'
+						className='form-input'
+						placeholder={t('search')}
+						aria-label={t('search')}
+						value={search}
+						onChange={(e) => handleSearch(e.target.value)}
+					/>
+					<button
+						type='button'
+						className={`btn btn-outline recipe-filter-toggle${activeFilterCount > 0 ? ' active' : ''}`}
+						onClick={() => setFiltersOpen((o) => !o)}>
+						{t('recipes.filters')}
+						{activeFilterCount > 0 && (
+							<span className='recipe-filter-badge'>{activeFilterCount}</span>
+						)}
+					</button>
 				</div>
-			)}
+				{activeFilterChips.length > 0 && (
+					<div className='recipe-active-filters' aria-label={t('recipes.filters')}>
+						{activeFilterChips.map((chip) => (
+							<span key={chip.key} className='recipe-active-filter'>
+								{chip.label}
+								<button
+									type='button'
+									onClick={chip.clear}
+									aria-label={`${t('recipes.filterClear')}: ${chip.label}`}>
+									×
+								</button>
+							</span>
+						))}
+					</div>
+				)}
 			</div>
 
 			{filtersOpen && (
@@ -1064,6 +1087,7 @@ export function RecipeListContainer() {
 					onChange={handleFiltersChange}
 					onClear={handleFiltersClear}
 					activeCount={activeFilterCount}
+					hiddenTotal={hiddenTotal}
 				/>
 			)}
 
@@ -1072,17 +1096,17 @@ export function RecipeListContainer() {
 			</p>
 			<div className='recipe-results' aria-busy={loading}>
 				{loading && <span className='recipe-results-loading'>{t('recipes.loading')}</span>}
-			<RecipeList
-				recipes={visibleRecipes}
-				currentUserId={currentUser?.id || 0}
-				onDelete={handleDelete}
-				onAddToWeek={handleAddToWeek}
-				selectedIds={selectedIds}
-				onToggleSelect={handleToggleSelect}
-				onHide={filters.hidden === 'exclude' ? handleHide : undefined}
-				onUnhide={filters.hidden === 'only' ? handleUnhide : undefined}
-				showingHidden={filters.hidden === 'only'}
-			/>
+				<RecipeList
+					recipes={visibleRecipes}
+					currentUserId={currentUser?.id || 0}
+					onDelete={handleDelete}
+					onAddToWeek={handleAddToWeek}
+					selectedIds={selectedIds}
+					onToggleSelect={handleToggleSelect}
+					onHide={filters.hidden === 'exclude' ? handleHide : undefined}
+					onUnhide={filters.hidden === 'only' ? handleUnhide : undefined}
+					showingHidden={filters.hidden === 'only'}
+				/>
 			</div>
 
 			{showExportModal && (

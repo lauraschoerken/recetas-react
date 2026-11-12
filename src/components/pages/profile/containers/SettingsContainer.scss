@@ -534,6 +534,63 @@
 }
 // ── Pagination settings ──
 
+.recipe-view-settings {
+	margin-top: 1.5rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.recipe-view-options {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.75rem;
+	margin-top: 1rem;
+}
+
+.recipe-view-option {
+	display: flex;
+	min-height: 5.5rem;
+	align-items: flex-start;
+	gap: 0.75rem;
+	padding: 1rem;
+	background: var(--surface-1);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius);
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background-color 0.15s ease;
+
+	&:hover {
+		border-color: var(--border-strong);
+	}
+	&.active {
+		background: var(--primary-light);
+		border-color: var(--primary-color);
+	}
+	input {
+		margin-top: 0.25rem;
+		accent-color: var(--primary-color);
+	}
+}
+
+.recipe-view-option-copy {
+	display: grid;
+	gap: 0.25rem;
+
+	strong {
+		color: var(--text-primary);
+	}
+	small {
+		color: var(--text-secondary);
+		line-height: 1.45;
+	}
+}
+
+.settings-pagination-title {
+	margin-top: 1.5rem;
+}
+
 .page-size-options {
 	display: flex;
 	gap: 0.5rem;
@@ -546,6 +603,12 @@
 	grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
 	gap: 1.25rem;
 	margin-top: 1rem;
+}
+
+@media (max-width: 40rem) {
+	.recipe-view-options {
+		grid-template-columns: 1fr;
+	}
 }
 
 .page-size-btn {

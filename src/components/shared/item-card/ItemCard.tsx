@@ -1,6 +1,6 @@
 import './ItemCard.scss'
 
-import { useState } from 'react'
+import { CSSProperties, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
 	HiOutlineArrowDownTray,
@@ -43,6 +43,7 @@ interface ItemCardProps {
 	canEdit?: boolean
 	canDelete?: boolean
 	managementLabel?: string
+	variant?: 'minimal' | 'visual'
 }
 
 export function ItemCard({
@@ -60,13 +61,15 @@ export function ItemCard({
 	canEdit,
 	canDelete,
 	managementLabel,
+	variant = 'visual',
 }: ItemCardProps) {
 	const { t } = useTranslation()
 	const isOwner = item.userId === currentUserId
 	const linkPath = detailPath || editPath
 	const [imageFailed, setImageFailed] = useState(false)
 	const hasImage = Boolean(item.imageUrl) && !imageFailed
-	const visibilityState = item.isPublic === true ? 'public' : item.isPublic === false ? 'private' : 'unknown'
+	const visibilityState =
+		item.isPublic === true ? 'public' : item.isPublic === false ? 'private' : 'unknown'
 
 	const metaChips: string[] = []
 	if (item.caloriesPerServing != null)
@@ -80,7 +83,7 @@ export function ItemCard({
 
 	return (
 		<article
-			className={`item-card ${item.type === 'dish' ? 'item-card--dish' : ''}${isSelected ? ' item-card--selected' : ''}${managementLabel ? ' item-card--managed' : ''}`}>
+			className={`item-card item-card--${variant} ${item.type === 'dish' ? 'item-card--dish' : ''}${isSelected ? ' item-card--selected' : ''}${managementLabel ? ' item-card--managed' : ''}`}>
 			{managementLabel && <span className='item-card-management'>{managementLabel}</span>}
 			{/* Checkbox de selección — esquina superior derecha */}
 			{onSelect && (
@@ -105,26 +108,47 @@ export function ItemCard({
 							{item.title.trim().charAt(0).toUpperCase() || 'M'}
 						</span>
 					)}
-					<span className={`item-card-visibility item-card-visibility--${visibilityState}`}>
+					{variant === 'visual' && !isOwner && (
+						<span className='item-card-owner' title={item.authorName || `#${item.userId}`}>
+							{(item.authorName || '?').trim().charAt(0).toUpperCase()}
+						</span>
+					)}
+				</div>
+				<div className='item-card-content'>
+					<h3 className='item-card-title'>{item.title}</h3>
+					<span
+						className={`item-card-visibility item-card-visibility--${visibilityState}`}
+						title={
+							visibilityState === 'unknown' ? t('recipes.visibilityUnknown') : t(visibilityState)
+						}>
 						{visibilityState === 'public' ? (
 							<HiOutlineGlobeAlt aria-hidden='true' />
 						) : visibilityState === 'private' ? (
 							<HiOutlineLockClosed aria-hidden='true' />
-						) : <span aria-hidden='true'>?</span>}
-						{visibilityState === 'unknown' ? t('recipes.visibilityUnknown') : t(visibilityState)}
+						) : (
+							<span aria-hidden='true'>?</span>
+						)}
+						<span className='sr-only'>
+							{visibilityState === 'unknown' ? t('recipes.visibilityUnknown') : t(visibilityState)}
+						</span>
 					</span>
-				</div>
-				<div className='item-card-content'>
-					<h3 className='item-card-title'>{item.title}</h3>
-					<p className='item-card-author'>{item.authorName || `#${item.userId}`}</p>
 					{metaChips.length > 0 && <p className='item-card-meta'>{metaChips.join(' · ')}</p>}
-					{!hasImage && item.description && <p className='item-card-description'>{item.description}</p>}
+					{!hasImage && item.description && (
+						<p className='item-card-description'>{item.description}</p>
+					)}
 					{item.tags && item.tags.length > 0 && (
 						<div className='item-card-tags'>
 							{item.tags.slice(0, 2).map((tag) => (
-								<span key={tag.id} className='item-card-tag'>{tag.name}</span>
+								<span
+									key={tag.id}
+									className='item-card-tag'
+									style={{ '--tag-color': tag.color || 'var(--border-strong)' } as CSSProperties}>
+									{tag.name}
+								</span>
 							))}
-							{item.tags.length > 2 && <span className='item-card-tag'>+{item.tags.length - 2}</span>}
+							{item.tags.length > 2 && (
+								<span className='item-card-tag'>+{item.tags.length - 2}</span>
+							)}
 						</div>
 					)}
 				</div>
@@ -150,7 +174,11 @@ export function ItemCard({
 						</button>
 					)}
 					{(isOwner || canEdit) && (
-						<Link to={editPath} className='item-card-action-btn' aria-label={t('edit')} title={t('edit')}>
+						<Link
+							to={editPath}
+							className='item-card-action-btn'
+							aria-label={t('edit')}
+							title={t('edit')}>
 							<EditIcon size={14} aria-hidden='true' />
 						</Link>
 					)}
@@ -185,7 +213,6 @@ export function ItemCard({
 					)}
 				</div>
 			</div>
-
 		</article>
 	)
 }

@@ -19,6 +19,8 @@ export interface RecipeFilterValues {
 	maxCarbs: string
 	minFat: string
 	maxFat: string
+	minFiber: string
+	maxFiber: string
 	// Servidor
 	difficulty: '' | 'easy' | 'medium' | 'hard'
 	minCookTime: string
@@ -40,6 +42,7 @@ interface RecipeFiltersProps {
 	onChange: (filters: RecipeFilterValues) => void
 	onClear: () => void
 	activeCount: number
+	hiddenTotal?: number
 }
 
 export const DEFAULT_FILTERS: RecipeFilterValues = {
@@ -53,6 +56,8 @@ export const DEFAULT_FILTERS: RecipeFilterValues = {
 	maxCarbs: '',
 	minFat: '',
 	maxFat: '',
+	minFiber: '',
+	maxFiber: '',
 	difficulty: '',
 	minCookTime: '',
 	maxCookTime: '',
@@ -71,6 +76,7 @@ export function RecipeFilters({
 	onChange,
 	onClear,
 	activeCount,
+	hiddenTotal = 0,
 }: RecipeFiltersProps) {
 	const { t } = useTranslation()
 
@@ -84,6 +90,8 @@ export function RecipeFilters({
 	const [localMaxCarbs, setLocalMaxCarbs] = useState(filters.maxCarbs)
 	const [localMinFat, setLocalMinFat] = useState(filters.minFat)
 	const [localMaxFat, setLocalMaxFat] = useState(filters.maxFat)
+	const [localMinFiber, setLocalMinFiber] = useState(filters.minFiber)
+	const [localMaxFiber, setLocalMaxFiber] = useState(filters.maxFiber)
 	const [localMinCook, setLocalMinCook] = useState(filters.minCookTime)
 	const [localMaxCook, setLocalMaxCook] = useState(filters.maxCookTime)
 
@@ -98,6 +106,8 @@ export function RecipeFilters({
 		if (filters.maxCarbs === '') setLocalMaxCarbs('')
 		if (filters.minFat === '') setLocalMinFat('')
 		if (filters.maxFat === '') setLocalMaxFat('')
+		if (filters.minFiber === '') setLocalMinFiber('')
+		if (filters.maxFiber === '') setLocalMaxFiber('')
 		if (filters.minCookTime === '') setLocalMinCook('')
 		if (filters.maxCookTime === '') setLocalMaxCook('')
 	}, [filters])
@@ -117,6 +127,8 @@ export function RecipeFilters({
 				maxCarbs: localMaxCarbs,
 				minFat: localMinFat,
 				maxFat: localMaxFat,
+				minFiber: localMinFiber,
+				maxFiber: localMaxFiber,
 				minCookTime: localMinCook,
 				maxCookTime: localMaxCook,
 				...patch,
@@ -136,31 +148,12 @@ export function RecipeFilters({
 			maxCarbs: localMaxCarbs,
 			minFat: localMinFat,
 			maxFat: localMaxFat,
+			minFiber: localMinFiber,
+			maxFiber: localMaxFiber,
 			minCookTime: localMinCook,
 			maxCookTime: localMaxCook,
 			...patch,
 		})
-	}
-
-	const toggleTag = (tagId: number) => {
-		const inInclude = filters.tagIds.includes(tagId)
-		const inExclude = filters.excludeTagIds.includes(tagId)
-		if (!inInclude && !inExclude) {
-			updateImmediate({
-				tagIds: [...filters.tagIds, tagId],
-				excludeTagIds: filters.excludeTagIds.filter((id) => id !== tagId),
-			})
-		} else if (inInclude) {
-			updateImmediate({
-				tagIds: filters.tagIds.filter((id) => id !== tagId),
-				excludeTagIds: [...filters.excludeTagIds, tagId],
-			})
-		} else {
-			updateImmediate({
-				tagIds: filters.tagIds.filter((id) => id !== tagId),
-				excludeTagIds: filters.excludeTagIds.filter((id) => id !== tagId),
-			})
-		}
 	}
 
 	return (
@@ -185,7 +178,9 @@ export function RecipeFilters({
 									})
 								}
 							/>
-							{t(value === 'only' ? 'recipes.filterHidden' : 'recipes.filterVisible')}
+							{value === 'only'
+								? `${t('recipes.filterHidden')} (${hiddenTotal})`
+								: t('recipes.filterVisible')}
 						</label>
 					))}
 				</div>
@@ -227,27 +222,31 @@ export function RecipeFilters({
 			</div>
 
 			{/* ── Visibilidad ── */}
-			{filters.hidden !== 'only' && <div className='recipe-filters__group'>
-				<label className='recipe-filters__label'>{t('recipes.filterVisibility')}</label>
-				<div className='recipe-filters__radio-group'>
-					{(['all', 'public', 'private'] as const).map((v) => (
-						<label
-							key={v}
-							className={`recipe-filters__radio${filters.visibility === v ? ' active' : ''}`}>
-							<input
-								type='radio'
-								name='visibility'
-								value={v}
-								checked={filters.visibility === v}
-								onChange={() => updateImmediate({ visibility: v })}
-							/>
-							{t(
-								`recipes.filter${v.charAt(0).toUpperCase() + v.slice(1)}` as Parameters<typeof t>[0]
-							)}
-						</label>
-					))}
+			{filters.hidden !== 'only' && (
+				<div className='recipe-filters__group'>
+					<label className='recipe-filters__label'>{t('recipes.filterVisibility')}</label>
+					<div className='recipe-filters__radio-group'>
+						{(['all', 'public', 'private'] as const).map((v) => (
+							<label
+								key={v}
+								className={`recipe-filters__radio${filters.visibility === v ? ' active' : ''}`}>
+								<input
+									type='radio'
+									name='visibility'
+									value={v}
+									checked={filters.visibility === v}
+									onChange={() => updateImmediate({ visibility: v })}
+								/>
+								{t(
+									`recipes.filter${v.charAt(0).toUpperCase() + v.slice(1)}` as Parameters<
+										typeof t
+									>[0]
+								)}
+							</label>
+						))}
+					</div>
 				</div>
-			</div>}
+			)}
 
 			{/* ── Dificultad ── */}
 			<div className='recipe-filters__group'>
@@ -435,6 +434,39 @@ export function RecipeFilters({
 						onChange={(e) => {
 							setLocalMaxFat(e.target.value)
 							scheduleChange({ maxFat: e.target.value })
+						}}
+					/>
+					<span className='recipe-filters__unit'>g</span>
+				</div>
+			</div>
+
+			{/* ── Ingrediente ── */}
+			<div className='recipe-filters__group'>
+				<label className='recipe-filters__label'>{t('fiber')}</label>
+				<div className='recipe-filters__range-row'>
+					<input
+						type='number'
+						className='form-input recipe-filters__input-sm'
+						min={0}
+						step={1}
+						placeholder={t('recipes.filterMin')}
+						value={localMinFiber}
+						onChange={(e) => {
+							setLocalMinFiber(e.target.value)
+							scheduleChange({ minFiber: e.target.value })
+						}}
+					/>
+					<span className='recipe-filters__range-sep'>–</span>
+					<input
+						type='number'
+						className='form-input recipe-filters__input-sm'
+						min={0}
+						step={1}
+						placeholder={t('recipes.filterMax')}
+						value={localMaxFiber}
+						onChange={(e) => {
+							setLocalMaxFiber(e.target.value)
+							scheduleChange({ maxFiber: e.target.value })
 						}}
 					/>
 					<span className='recipe-filters__unit'>g</span>
