@@ -702,6 +702,18 @@
 	color: #fff;
 }
 
+/* The preview renders the production ItemCard; this wrapper only constrains it. */
+.recipe-view-preview .recipe-view-preview-card {
+	width: min(100%, 32rem);
+	overflow: visible;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	pointer-events: none;
+}
+
+.recipe-view-preview-card .item-card { width: 100%; }
+
 .settings-pagination-title {
 	margin-top: 1.5rem;
 }

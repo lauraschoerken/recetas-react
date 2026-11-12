@@ -76,10 +76,10 @@ describe('Recipe redesign — responsive and themes', () => {
 		visitAuthenticated('/settings', 'dark')
 		cy.wait('@profile')
 		cy.contains('.settings-nav-item', 'Display').click()
-		cy.get('.recipe-view-preview-card--minimal').should('be.visible')
+		cy.get('.recipe-view-preview-card .item-card--minimal').should('be.visible')
 		cy.get('input[name="recipe-card-style"][value="visual"]').check()
 		cy.wait('@saveCardStyle')
-		cy.get('.recipe-view-preview-card--visual').should('be.visible')
+		cy.get('.recipe-view-preview-card .item-card--visual').should('be.visible')
 		cy.screenshot('issue-7/settings-view-preview-dark', { capture: 'viewport' })
 	})
 

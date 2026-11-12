@@ -15,6 +15,7 @@ import {
 } from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
 
+import { ItemCard, ItemCardData } from '@/components/shared/item-card/ItemCard'
 import { alertService, IngredientThreshold, RecipeThreshold } from '@/services/alert'
 import { authService } from '@/services/auth'
 import { backupService } from '@/services/backup'
@@ -49,6 +50,23 @@ type SettingsSection =
 	| 'stores'
 	| 'tags'
 	| 'hiddenRecipes'
+
+const RECIPE_CARD_PREVIEW: ItemCardData = {
+	id: 0,
+	title: 'Pasta con pollo y pesto ligero',
+	description: 'Pasta cremosa con pesto, pollo y tomate seco.',
+	imageUrl:
+		'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=720&q=80',
+	userId: 1,
+	caloriesPerServing: 585,
+	cookTimeMinutes: 35,
+	difficulty: 'easy',
+	servings: 2,
+	tags: [{ id: 1, name: 'Frutos secos', color: '#d59a45' }],
+	type: 'recipe',
+	isPublic: true,
+	authorName: 'Demo',
+}
 
 export function SettingsContainer() {
 	const { t } = useTranslation()
@@ -2704,22 +2722,17 @@ export function SettingsContainer() {
 										<span className='recipe-view-preview-label'>
 											{t('settings.recipeViewPreview')}
 										</span>
-										<div
-											className={`recipe-view-preview-card recipe-view-preview-card--${recipeCardStyle}`}>
-											<div className='recipe-view-preview-image'>
-												<img
-													src='https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=720&q=80'
-													alt=''
-													onError={(event) => (event.currentTarget.style.display = 'none')}
-												/>
-												<span className='recipe-view-preview-visibility'>◎</span>
-											</div>
-											<div className='recipe-view-preview-copy'>
-												<strong>{t('settings.recipeViewPreviewTitle')}</strong>
-												<small>585 kcal · 35 min · {t('recipes.difficultyEasy')}</small>
-												<span>{t('settings.recipeViewPreviewTag')}</span>
-											</div>
-											<div className='recipe-view-preview-actions'>▣　⇩　✎　⌫</div>
+										<div className='recipe-view-preview-card' aria-hidden='true'>
+											<ItemCard
+												item={RECIPE_CARD_PREVIEW}
+												currentUserId={1}
+												onDelete={() => undefined}
+												onAddToWeek={() => undefined}
+												onDownloadPdf={() => undefined}
+												editPath='/settings'
+												detailPath='/settings'
+												variant={recipeCardStyle}
+											/>
 										</div>
 									</div>
 								</div>
