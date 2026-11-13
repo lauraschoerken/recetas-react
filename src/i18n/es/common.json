@@ -218,6 +218,7 @@
 		"filterCaloriesGt": "Mayor que",
 		"filterIngredient": "Ingrediente",
 		"filterIngredientPlaceholder": "Ej: pollo",
+		"filterIngredientAddPlaceholder": "Buscar otro ingrediente...",
 		"filterCookTime": "Tiempo cocción (min)",
 		"filterCalories": "kcal/porción",
 		"filterCaloriesLt": "Menor que",

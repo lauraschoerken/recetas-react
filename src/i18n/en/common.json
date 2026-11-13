@@ -214,6 +214,7 @@
 		"filterCaloriesGt": "Greater than",
 		"filterIngredient": "Ingredient",
 		"filterIngredientPlaceholder": "E.g.: chicken",
+		"filterIngredientAddPlaceholder": "Search for another ingredient...",
 		"filterCookTime": "Cook time (min)",
 		"filterCalories": "kcal/serving",
 		"filterCaloriesLt": "Less than",

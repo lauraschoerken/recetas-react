@@ -1,9 +1,10 @@
 import './RecipeFilters.scss'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { TagMultiSelect } from '@/components/shared/tag-multi-select/TagMultiSelect'
+import { Ingredient, ingredientService } from '@/services/ingredient'
 import { IngredientTag } from '@/services/ingredientExtras'
 
 export interface RecipeFilterValues {
@@ -25,7 +26,7 @@ export interface RecipeFilterValues {
 	difficulty: '' | 'easy' | 'medium' | 'hard'
 	minCookTime: string
 	maxCookTime: string
-	ingredient: string
+	ingredients: Array<{ id: number; name: string; unit?: string }>
 	tagIds: number[]
 	excludeTagIds: number[]
 	// Ordenación
@@ -62,7 +63,7 @@ export const DEFAULT_FILTERS: RecipeFilterValues = {
 	difficulty: '',
 	minCookTime: '',
 	maxCookTime: '',
-	ingredient: '',
+	ingredients: [],
 	tagIds: [],
 	excludeTagIds: [],
 	sortBy: 'createdAt',
@@ -81,9 +82,15 @@ export function RecipeFilters({
 	hiddenTotal = 0,
 }: RecipeFiltersProps) {
 	const { t } = useTranslation()
+	const ingredientInputId = useId()
+	const ingredientListboxId = useId()
 
 	// Estado local para inputs de texto (debounce)
-	const [localIngredient, setLocalIngredient] = useState(filters.ingredient)
+	const [localIngredient, setLocalIngredient] = useState('')
+	const [ingredientOptions, setIngredientOptions] = useState<Ingredient[]>([])
+	const [ingredientOptionsOpen, setIngredientOptionsOpen] = useState(false)
+	const [ingredientOptionsLoading, setIngredientOptionsLoading] = useState(false)
+	const [activeIngredientIndex, setActiveIngredientIndex] = useState(-1)
 	const [localMinCal, setLocalMinCal] = useState(filters.minCalories)
 	const [localMaxCal, setLocalMaxCal] = useState(filters.maxCalories)
 	const [localMinProt, setLocalMinProt] = useState(filters.minProtein)
@@ -99,7 +106,11 @@ export function RecipeFilters({
 
 	// Sincronizar cuando se limpia externamente
 	useEffect(() => {
-		if (filters.ingredient === '') setLocalIngredient('')
+		if (filters.ingredients.length === 0) {
+			setLocalIngredient('')
+			setIngredientOptions([])
+			setIngredientOptionsOpen(false)
+		}
 		if (filters.minCalories === '') setLocalMinCal('')
 		if (filters.maxCalories === '') setLocalMaxCal('')
 		if (filters.minProtein === '') setLocalMinProt('')
@@ -115,12 +126,22 @@ export function RecipeFilters({
 	}, [filters])
 
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const ingredientSearchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const ingredientSearchRequestRef = useRef(0)
+
+	useEffect(
+		() => () => {
+			if (debounceRef.current) clearTimeout(debounceRef.current)
+			if (ingredientSearchTimerRef.current) clearTimeout(ingredientSearchTimerRef.current)
+		},
+		[]
+	)
+
 	const scheduleChange = (patch: Partial<RecipeFilterValues>) => {
 		if (debounceRef.current) clearTimeout(debounceRef.current)
 		debounceRef.current = setTimeout(() => {
 			onChange({
 				...filters,
-				ingredient: localIngredient,
 				minCalories: localMinCal,
 				maxCalories: localMaxCal,
 				minProtein: localMinProt,
@@ -141,7 +162,6 @@ export function RecipeFilters({
 	const updateImmediate = (patch: Partial<RecipeFilterValues>) => {
 		onChange({
 			...filters,
-			ingredient: localIngredient,
 			minCalories: localMinCal,
 			maxCalories: localMaxCal,
 			minProtein: localMinProt,
@@ -156,6 +176,86 @@ export function RecipeFilters({
 			maxCookTime: localMaxCook,
 			...patch,
 		})
+	}
+
+	const searchIngredientOptions = (value: string) => {
+		if (ingredientSearchTimerRef.current) clearTimeout(ingredientSearchTimerRef.current)
+		const query = value.trim()
+		const requestId = ++ingredientSearchRequestRef.current
+
+		if (!query) {
+			setIngredientOptions([])
+			setIngredientOptionsOpen(false)
+			setIngredientOptionsLoading(false)
+			setActiveIngredientIndex(-1)
+			return
+		}
+
+		setIngredientOptionsLoading(true)
+		setIngredientOptionsOpen(true)
+		ingredientSearchTimerRef.current = setTimeout(async () => {
+			try {
+				const results = await ingredientService.search(query)
+				if (ingredientSearchRequestRef.current !== requestId) return
+				const selectedIds = new Set(filters.ingredients.map((ingredient) => ingredient.id))
+				const availableResults = results.filter((ingredient) => !selectedIds.has(ingredient.id))
+				setIngredientOptions(availableResults)
+				setActiveIngredientIndex(availableResults.length > 0 ? 0 : -1)
+			} catch {
+				if (ingredientSearchRequestRef.current !== requestId) return
+				setIngredientOptions([])
+				setActiveIngredientIndex(-1)
+			} finally {
+				if (ingredientSearchRequestRef.current === requestId) {
+					setIngredientOptionsLoading(false)
+				}
+			}
+		}, 200)
+	}
+
+	const selectIngredient = (ingredient: Ingredient) => {
+		if (debounceRef.current) clearTimeout(debounceRef.current)
+		if (ingredientSearchTimerRef.current) clearTimeout(ingredientSearchTimerRef.current)
+		ingredientSearchRequestRef.current += 1
+		setLocalIngredient('')
+		setIngredientOptions([])
+		setIngredientOptionsOpen(false)
+		setIngredientOptionsLoading(false)
+		setActiveIngredientIndex(-1)
+		if (!filters.ingredients.some((selected) => selected.id === ingredient.id)) {
+			updateImmediate({
+				ingredients: [
+					...filters.ingredients,
+					{ id: ingredient.id, name: ingredient.name, unit: ingredient.unit },
+				],
+			})
+		}
+	}
+
+	const removeIngredient = (ingredientId: number) => {
+		updateImmediate({
+			ingredients: filters.ingredients.filter((ingredient) => ingredient.id !== ingredientId),
+		})
+	}
+
+	const handleIngredientKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (event.key === 'Escape') {
+			setIngredientOptionsOpen(false)
+			return
+		}
+		if (!ingredientOptionsOpen || ingredientOptions.length === 0) return
+		if (event.key === 'ArrowDown') {
+			event.preventDefault()
+			setActiveIngredientIndex((current) => (current + 1) % ingredientOptions.length)
+		} else if (event.key === 'ArrowUp') {
+			event.preventDefault()
+			setActiveIngredientIndex(
+				(current) => (current - 1 + ingredientOptions.length) % ingredientOptions.length
+			)
+		} else if (event.key === 'Enter' && activeIngredientIndex >= 0) {
+			event.preventDefault()
+			selectIngredient(ingredientOptions[activeIngredientIndex])
+		}
 	}
 
 	return (
@@ -485,18 +585,92 @@ export function RecipeFilters({
 			</div>
 
 			{/* ── Ingrediente ── */}
-			<div className='recipe-filters__group'>
-				<label className='recipe-filters__label'>{t('recipes.filterIngredient')}</label>
-				<input
-					type='text'
-					className='form-input recipe-filters__input'
-					placeholder={t('recipes.filterIngredientPlaceholder')}
-					value={localIngredient}
-					onChange={(e) => {
-						setLocalIngredient(e.target.value)
-						scheduleChange({ ingredient: e.target.value })
-					}}
-				/>
+			<div className='recipe-filters__group recipe-filters__group--ingredients'>
+				<label className='recipe-filters__label' htmlFor={ingredientInputId}>
+					{t('recipes.filterIngredient')}
+				</label>
+				<div className='recipe-filters__ingredient-combobox'>
+					<input
+						id={ingredientInputId}
+						type='text'
+						className='form-input recipe-filters__input'
+						placeholder={
+							filters.ingredients.length > 0
+								? t('recipes.filterIngredientAddPlaceholder')
+								: t('recipes.filterIngredientPlaceholder')
+						}
+						value={localIngredient}
+						role='combobox'
+						autoComplete='off'
+						aria-autocomplete='list'
+						aria-controls={ingredientListboxId}
+						aria-expanded={ingredientOptionsOpen}
+						aria-activedescendant={
+							activeIngredientIndex >= 0
+								? `${ingredientListboxId}-${ingredientOptions[activeIngredientIndex]?.id}`
+								: undefined
+						}
+						onFocus={() => {
+							if (localIngredient.trim()) searchIngredientOptions(localIngredient)
+						}}
+						onBlur={() => window.setTimeout(() => setIngredientOptionsOpen(false), 120)}
+						onKeyDown={handleIngredientKeyDown}
+						onChange={(e) => {
+							const value = e.target.value
+							setLocalIngredient(value)
+							searchIngredientOptions(value)
+						}}
+					/>
+					{ingredientOptionsOpen && (
+						<div
+							id={ingredientListboxId}
+							className='recipe-filters__ingredient-options'
+							role='listbox'>
+							{ingredientOptionsLoading ? (
+								<div className='recipe-filters__ingredient-message' role='status'>
+									{t('ingredients.loading')}
+								</div>
+							) : ingredientOptions.length > 0 ? (
+								ingredientOptions.map((ingredient, index) => (
+									<button
+										type='button'
+										id={`${ingredientListboxId}-${ingredient.id}`}
+										key={ingredient.id}
+										className={`recipe-filters__ingredient-option${index === activeIngredientIndex ? ' active' : ''}`}
+										role='option'
+										aria-selected={index === activeIngredientIndex}
+										onMouseDown={(event) => event.preventDefault()}
+										onMouseEnter={() => setActiveIngredientIndex(index)}
+										onClick={() => selectIngredient(ingredient)}>
+										<strong>{ingredient.name}</strong>
+										{ingredient.unit && <span>{ingredient.unit}</span>}
+									</button>
+								))
+							) : (
+								<div className='recipe-filters__ingredient-message'>
+									{t('ingredients.noResults')}
+								</div>
+							)}
+						</div>
+					)}
+					{filters.ingredients.length > 0 && (
+						<div
+							className='recipe-filters__selected-ingredients'
+							aria-label={t('recipes.filterIngredient')}>
+							{filters.ingredients.map((ingredient) => (
+								<span className='recipe-filters__selected-ingredient' key={ingredient.id}>
+									{ingredient.name}
+									<button
+										type='button'
+										onClick={() => removeIngredient(ingredient.id)}
+										aria-label={`${t('remove')}: ${ingredient.name}`}>
+										×
+									</button>
+								</span>
+							))}
+						</div>
+					)}
+				</div>
 			</div>
 
 			{/* ── Tags de ingredientes ── */}

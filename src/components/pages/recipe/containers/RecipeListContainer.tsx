@@ -160,7 +160,14 @@ export function RecipeListContainer() {
 		difficulty: (searchParams.get('difficulty') as RecipeFilterValues['difficulty']) || '',
 		minCookTime: searchParams.get('minCook') || '',
 		maxCookTime: searchParams.get('maxCook') || '',
-		ingredient: searchParams.get('ingredient') || '',
+		ingredients: (searchParams.get('ingredientIds') || '')
+			.split(',')
+			.map(Number)
+			.filter((id) => Number.isInteger(id) && id > 0)
+			.map((id, index) => ({
+				id,
+				name: (searchParams.get('ingredientNames') || '').split('|')[index] || `#${id}`,
+			})),
 		tagIds: searchParams.get('tags')
 			? searchParams
 					.get('tags')!
@@ -196,7 +203,7 @@ export function RecipeListContainer() {
 		filters.difficulty,
 		filters.minCookTime,
 		filters.maxCookTime,
-		filters.ingredient,
+		filters.ingredients.length > 0,
 		filters.tagIds.length > 0,
 		filters.excludeTagIds.length > 0,
 		filters.authorId != null,
@@ -227,7 +234,7 @@ export function RecipeListContainer() {
 				search: normalizeText(search),
 				visibility: filters.visibility,
 				hidden: filters.hidden,
-				ingredient: filters.ingredient,
+				ingredientIds: filters.ingredients.map((ingredient) => ingredient.id),
 				difficulty: filters.difficulty || undefined,
 				minCookTime: filters.minCookTime ? Number(filters.minCookTime) : undefined,
 				maxCookTime: filters.maxCookTime ? Number(filters.maxCookTime) : undefined,
@@ -365,7 +372,18 @@ export function RecipeListContainer() {
 				setOrDel('difficulty', newFilters.difficulty || undefined)
 				setOrDel('minCook', newFilters.minCookTime || undefined)
 				setOrDel('maxCook', newFilters.maxCookTime || undefined)
-				setOrDel('ingredient', newFilters.ingredient || undefined)
+				setOrDel(
+					'ingredientIds',
+					newFilters.ingredients.length > 0
+						? newFilters.ingredients.map((ingredient) => ingredient.id).join(',')
+						: undefined
+				)
+				setOrDel(
+					'ingredientNames',
+					newFilters.ingredients.length > 0
+						? newFilters.ingredients.map((ingredient) => ingredient.name).join('|')
+						: undefined
+				)
 				setOrDel('tags', newFilters.tagIds.length > 0 ? newFilters.tagIds.join(',') : undefined)
 				setOrDel(
 					'exTags',
@@ -402,7 +420,8 @@ export function RecipeListContainer() {
 					'difficulty',
 					'minCook',
 					'maxCook',
-					'ingredient',
+					'ingredientIds',
+					'ingredientNames',
 					'tags',
 					'exTags',
 					'sortBy',
@@ -899,13 +918,17 @@ export function RecipeListContainer() {
 			clear: () => handleFiltersChange({ ...filters, difficulty: '' }),
 		})
 	}
-	if (filters.ingredient) {
+	filters.ingredients.forEach((ingredient) => {
 		activeFilterChips.push({
-			key: 'ingredient',
-			label: `${t('recipes.filterIngredient')}: ${filters.ingredient}`,
-			clear: () => handleFiltersChange({ ...filters, ingredient: '' }),
+			key: `ingredient-${ingredient.id}`,
+			label: `${t('recipes.filterIngredient')}: ${ingredient.name}`,
+			clear: () =>
+				handleFiltersChange({
+					...filters,
+					ingredients: filters.ingredients.filter((item) => item.id !== ingredient.id),
+				}),
 		})
-	}
+	})
 	if (filters.authorId != null) {
 		activeFilterChips.push({
 			key: 'author',
@@ -1089,7 +1112,7 @@ export function RecipeListContainer() {
 					authors={authors}
 					onChange={handleFiltersChange}
 					onClear={handleFiltersClear}
-						onClose={() => setFiltersOpen(false)}
+					onClose={() => setFiltersOpen(false)}
 					activeCount={activeFilterCount}
 					hiddenTotal={hiddenTotal}
 				/>
