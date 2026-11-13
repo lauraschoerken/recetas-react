@@ -662,7 +662,9 @@
 	white-space: nowrap;
 }
 
-.recipe-view-preview-copy small { color: var(--text-secondary); }
+.recipe-view-preview-copy small {
+	color: var(--text-secondary);
+}
 .recipe-view-preview-copy > span {
 	width: fit-content;
 	padding: 0.12rem 0.4rem;
@@ -680,16 +682,37 @@
 	text-align: right;
 }
 
-.recipe-view-preview-card--minimal { aspect-ratio: 1.58 / 1; }
-.recipe-view-preview-card--minimal .recipe-view-preview-image { position: absolute; inset: 0; aspect-ratio: auto; }
+.recipe-view-preview-card--minimal {
+	aspect-ratio: 1.58 / 1;
+}
+.recipe-view-preview-card--minimal .recipe-view-preview-image {
+	position: absolute;
+	inset: 0;
+	aspect-ratio: auto;
+}
 .recipe-view-preview-card--minimal .recipe-view-preview-image::after {
 	content: '';
 	position: absolute;
 	inset: 0;
-	background: linear-gradient(180deg, rgba(3, 9, 18, 0.72), transparent 45%, rgba(3, 9, 18, 0.9));
+	background: linear-gradient(
+		180deg,
+		rgba(3, 9, 18, 0.56) 0%,
+		rgba(3, 9, 18, 0.14) 24%,
+		transparent 42%,
+		transparent 80%,
+		rgba(3, 9, 18, 0.4) 100%
+	);
 }
-.recipe-view-preview-card--minimal .recipe-view-preview-copy { position: absolute; z-index: 2; inset: 0; color: #fff; }
-.recipe-view-preview-card--minimal .recipe-view-preview-copy small { margin-top: auto; color: #fff; }
+.recipe-view-preview-card--minimal .recipe-view-preview-copy {
+	position: absolute;
+	z-index: 2;
+	inset: 0;
+	color: #fff;
+}
+.recipe-view-preview-card--minimal .recipe-view-preview-copy small {
+	margin-top: auto;
+	color: #fff;
+}
 .recipe-view-preview-card--minimal .recipe-view-preview-actions {
 	position: absolute;
 	z-index: 3;
@@ -712,7 +735,9 @@
 	pointer-events: none;
 }
 
-.recipe-view-preview-card .item-card { width: 100%; }
+.recipe-view-preview-card .item-card {
+	width: 100%;
+}
 
 .settings-pagination-title {
 	margin-top: 1.5rem;
@@ -733,7 +758,9 @@
 }
 
 @media (max-width: 68rem) {
-	.recipe-view-configurator { grid-template-columns: 1fr; }
+	.recipe-view-configurator {
+		grid-template-columns: 1fr;
+	}
 }
 
 @media (max-width: 40rem) {
