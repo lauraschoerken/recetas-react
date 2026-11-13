@@ -21,6 +21,7 @@ interface DayCardProps {
 		planId: number,
 		options?: { myPercentage?: number; householdShares?: { userId: number; percentage: number }[] }
 	) => void
+	onAdd?: () => void
 }
 
 export function DayCard({
@@ -32,6 +33,7 @@ export function DayCard({
 	onMovePlan,
 	onCook,
 	onConsume,
+	onAdd,
 }: DayCardProps) {
 	const { t } = useTranslation()
 	const [isDragOver, setIsDragOver] = useState(false)
@@ -85,12 +87,16 @@ export function DayCard({
 	const preps = plans.filter((p) => p.type === 'prep')
 
 	const getItemTitle = (plan: WeekPlan) => {
+		if (plan.manualTitle) return `✍️ ${plan.manualTitle}`
+		if (plan.ingredient) return `🥕 ${plan.ingredient.name}`
 		return plan.recipe?.title || t('noTitle')
 	}
 
 	const getItemLink = (plan: WeekPlan) => {
-		return plan.recipe ? `/recipes/${plan.recipeId}` : '#'
+		return plan.recipe ? `/recipes/${plan.recipeId}` : null
 	}
+
+	const isIngredientPlan = (plan: WeekPlan) => !!plan.ingredientId
 
 	const hasComponents = (plan: WeekPlan) => {
 		return plan.recipe?.components && plan.recipe.components.length > 0
@@ -211,16 +217,26 @@ export function DayCard({
 						</span>
 					)}
 					{hasComponents(plan) && <span className='day-card-badge'>{t('recipes.variants')}</span>}
-					<Link to={getItemLink(plan)} className='day-card-recipe'>
-						{getItemTitle(plan)}
-					</Link>
+					{getItemLink(plan) ? (
+						<Link to={getItemLink(plan) ?? '#'} className='day-card-recipe'>
+							{getItemTitle(plan)}
+						</Link>
+					) : (
+						<span className='day-card-recipe'>{getItemTitle(plan)}</span>
+					)}
 				</div>
 				<div className='day-card-item-footer'>
 					<span className='day-card-servings'>
-						{plan.servings} {t('weekPlan.portions')}
+						{plan.manualTitle
+							? [plan.mealTime, plan.manualCalories != null ? `${plan.manualCalories} kcal` : null]
+									.filter(Boolean)
+									.join(' · ')
+							: isIngredientPlan(plan)
+								? `${plan.ingredientQty} ${plan.ingredientUnit}`
+								: `${parseFloat(plan.servings.toFixed(2))} ${t('weekPlan.portions')}`}
 					</span>
 					<div className='day-card-actions'>
-						{isPrep && !plan.cooked && (
+						{!isIngredientPlan(plan) && isPrep && !plan.cooked && (
 							<button
 								className='day-card-cook'
 								onClick={() => handleOpenCookModal(plan)}
@@ -228,7 +244,7 @@ export function DayCard({
 								<CookIcon size={14} aria-hidden='true' />
 							</button>
 						)}
-						{!isPrep && !plan.consumed && onConsume && (
+						{!isIngredientPlan(plan) && !isPrep && !plan.consumed && onConsume && (
 							<button
 								className='day-card-consume'
 								onClick={() => handleOpenConsumeModal(plan)}
@@ -255,8 +271,19 @@ export function DayCard({
 			onDragLeave={handleDragLeave}
 			onDrop={handleDrop}>
 			<div className='day-card-header'>
-				<span className='day-card-name'>{dayName}</span>
-				<span className='day-card-date'>{displayDate}</span>
+				<div>
+					<span className='day-card-name'>{dayName}</span>
+					<span className='day-card-date'>{displayDate}</span>
+				</div>
+				{onAdd && (
+					<button
+						type='button'
+						className='day-card-add'
+						onClick={onAdd}
+						aria-label={t('weekPlan.addBtn')}>
+						+
+					</button>
+				)}
 			</div>
 
 			<div className='day-card-content'>

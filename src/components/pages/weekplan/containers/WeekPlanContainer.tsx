@@ -1,9 +1,10 @@
 import './WeekPlanContainer.scss'
 
-import { CSSProperties, useEffect, useState } from 'react'
+import { CSSProperties, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
+import { WorkoutFormModal } from '@/components/pages/workout/components/WorkoutFormModal'
 import { AddToWeekModal } from '@/components/shared/modals/AddToWeekModal'
 import { Ingredient, ingredientService } from '@/services/ingredient'
 import {
@@ -14,6 +15,7 @@ import {
 } from '@/services/profile'
 import { Recipe, recipeService } from '@/services/recipe'
 import { CreateWeekPlanData, shoppingService, WeekPlan } from '@/services/shopping'
+import { WorkoutInput, workoutService } from '@/services/workout'
 import { useDialog } from '@/utils/dialog/DialogContext'
 import {
 	buildWeekPlanExport,
@@ -25,8 +27,6 @@ import {
 import { ManualMealModal } from '../components/ManualMealModal'
 import { WeekCalendar } from '../components/WeekCalendar'
 import { WeekPlanImportModal } from '../components/WeekPlanImportModal'
-import { WorkoutFormModal } from '@/components/pages/workout/components/WorkoutFormModal'
-import { WorkoutInput, workoutService } from '@/services/workout'
 
 function getWeekStart(date: Date): Date {
 	const d = new Date(date)
@@ -98,10 +98,33 @@ export function WeekPlanContainer() {
 	const [savingManualMeal, setSavingManualMeal] = useState(false)
 	const [showImport, setShowImport] = useState(false)
 	const [importingPlan, setImportingPlan] = useState(false)
-	const [showExportMenu, setShowExportMenu] = useState(false)
+	const [openActionMenu, setOpenActionMenu] = useState<'add' | 'workouts' | 'data' | 'more' | null>(
+		null
+	)
 	const [exportingPeriod, setExportingPeriod] = useState<WeekPlanExportPeriod | null>(null)
 	const [showWorkout, setShowWorkout] = useState(false)
 	const [savingWorkout, setSavingWorkout] = useState(false)
+	const actionMenusRef = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		if (!openActionMenu) return
+
+		const handlePointerDown = (event: MouseEvent) => {
+			if (!actionMenusRef.current?.contains(event.target as Node)) {
+				setOpenActionMenu(null)
+			}
+		}
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === 'Escape') setOpenActionMenu(null)
+		}
+
+		document.addEventListener('mousedown', handlePointerDown)
+		document.addEventListener('keydown', handleKeyDown)
+		return () => {
+			document.removeEventListener('mousedown', handlePointerDown)
+			document.removeEventListener('keydown', handleKeyDown)
+		}
+	}, [openActionMenu])
 
 	useEffect(() => {
 		loadWeekPlan()
@@ -177,7 +200,7 @@ export function WeekPlanContainer() {
 
 	const handleExportJson = async (period: WeekPlanExportPeriod) => {
 		setExportingPeriod(period)
-		setShowExportMenu(false)
+		setOpenActionMenu(null)
 		try {
 			const range = getWeekPlanExportRange(period, selectedDay, currentWeekStart)
 			const [plans, nutrition, targets] = await Promise.all([
@@ -570,44 +593,147 @@ export function WeekPlanContainer() {
 
 	return (
 		<>
-			<div className='page-header'>
-				<h1 className='page-title'>{t('weekPlan.title')}</h1>
-				<div className='page-header-actions'>
-					<div className='week-plan-export'>
+			<div className='page-header week-plan-page-header'>
+				<div>
+					<h1 className='page-title'>{t('weekPlan.title')}</h1>
+					<p className='week-plan-subtitle'>{t('weekPlan.subtitle')}</p>
+				</div>
+				<div className='week-plan-actions' ref={actionMenusRef}>
+					<div className='week-plan-action-group'>
 						<button
-							className='btn btn-outline'
-							disabled={exportingPeriod !== null}
-							onClick={() => setShowExportMenu((open) => !open)}>
-							{exportingPeriod ? t('weekPlan.exporting') : t('weekPlan.exportJson')}
+							className='btn btn-primary week-plan-action-trigger'
+							aria-haspopup='menu'
+							aria-expanded={openActionMenu === 'add'}
+							onClick={() => setOpenActionMenu((current) => (current === 'add' ? null : 'add'))}>
+							+ {t('weekPlan.addMenu')} <span aria-hidden='true'>⌄</span>
 						</button>
-						{showExportMenu && (
-							<div className='week-plan-export-menu' role='menu'>
+						{openActionMenu === 'add' && (
+							<div className='week-plan-action-menu' role='menu'>
+								<Link to='/recipes' role='menuitem' onClick={() => setOpenActionMenu(null)}>
+									<strong>{t('weekPlan.addRecipe').replace('+ ', '')}</strong>
+									<small>{t('weekPlan.addRecipeHint')}</small>
+								</Link>
+								<button
+									role='menuitem'
+									onClick={() => {
+										setOpenActionMenu(null)
+										openManualMeal()
+									}}>
+									<strong>{t('weekPlan.addManualMeal').replace('+ ', '')}</strong>
+									<small>{t('weekPlan.addManualMealHint')}</small>
+								</button>
+								<button
+									role='menuitem'
+									onClick={() => {
+										setOpenActionMenu(null)
+										void handleOpenAddIngredient()
+									}}>
+									<strong>{t('weekPlan.addIngredient').replace('+ ', '')}</strong>
+									<small>{t('weekPlan.addIngredientHint')}</small>
+								</button>
+							</div>
+						)}
+					</div>
+
+					<div className='week-plan-action-group week-plan-desktop-action'>
+						<button
+							className='btn btn-outline week-plan-action-trigger'
+							aria-haspopup='menu'
+							aria-expanded={openActionMenu === 'workouts'}
+							onClick={() =>
+								setOpenActionMenu((current) => (current === 'workouts' ? null : 'workouts'))
+							}>
+							{t('weekPlan.workoutsMenu')} <span aria-hidden='true'>⌄</span>
+						</button>
+						{openActionMenu === 'workouts' && (
+							<div className='week-plan-action-menu' role='menu'>
+								<button
+									role='menuitem'
+									onClick={() => {
+										setOpenActionMenu(null)
+										setShowWorkout(true)
+									}}>
+									<strong>{t('workouts.addCustom').replace('+ ', '')}</strong>
+									<small>{t('weekPlan.addWorkoutHint')}</small>
+								</button>
+								<Link to='/workouts' role='menuitem' onClick={() => setOpenActionMenu(null)}>
+									<strong>{t('workouts.savedWorkouts')}</strong>
+									<small>{t('weekPlan.savedWorkoutsHint')}</small>
+								</Link>
+							</div>
+						)}
+					</div>
+
+					<div className='week-plan-action-group week-plan-desktop-action'>
+						<button
+							className='btn btn-outline week-plan-action-trigger'
+							disabled={exportingPeriod !== null}
+							aria-haspopup='menu'
+							aria-expanded={openActionMenu === 'data'}
+							onClick={() => setOpenActionMenu((current) => (current === 'data' ? null : 'data'))}>
+							{exportingPeriod ? t('weekPlan.exporting') : t('weekPlan.dataMenu')}{' '}
+							<span aria-hidden='true'>⌄</span>
+						</button>
+						{openActionMenu === 'data' && (
+							<div className='week-plan-action-menu week-plan-data-menu' role='menu'>
+								<button
+									role='menuitem'
+									onClick={() => {
+										setOpenActionMenu(null)
+										setShowImport(true)
+									}}>
+									<strong>{t('weekPlan.importJson')}</strong>
+									<small>{t('weekPlan.importHintShort')}</small>
+								</button>
+								<p className='week-plan-menu-label'>{t('weekPlan.exportJson')}</p>
 								{(['day', 'week', 'month'] as WeekPlanExportPeriod[]).map((period) => (
 									<button key={period} role='menuitem' onClick={() => handleExportJson(period)}>
-										{t(`weekPlan.exportPeriods.${period}`)}
+										<strong>{t(`weekPlan.exportPeriods.${period}`)}</strong>
 									</button>
 								))}
 							</div>
 						)}
 					</div>
-					<button className='btn btn-outline' onClick={() => setShowImport(true)}>
-						{t('weekPlan.importJson')}
-					</button>
-					<button className='btn btn-primary' onClick={() => openManualMeal()}>
-						{t('weekPlan.addManualMeal')}
-					</button>
-					<button className='btn btn-outline workout-action' onClick={() => setShowWorkout(true)}>
-						{t('workouts.addCustom')}
-					</button>
-					<Link to='/workouts' className='btn btn-outline'>
-						{t('workouts.savedWorkouts')}
-					</Link>
-					<button className='btn btn-outline' onClick={handleOpenAddIngredient}>
-						{t('weekPlan.addIngredient')}
-					</button>
-					<Link to='/recipes' className='btn btn-primary'>
-						{t('weekPlan.addRecipe')}
-					</Link>
+
+					<div className='week-plan-action-group week-plan-mobile-more'>
+						<button
+							className='btn btn-outline week-plan-action-trigger'
+							disabled={exportingPeriod !== null}
+							aria-haspopup='menu'
+							aria-expanded={openActionMenu === 'more'}
+							onClick={() => setOpenActionMenu((current) => (current === 'more' ? null : 'more'))}>
+							{t('weekPlan.moreActions')} <span aria-hidden='true'>⌄</span>
+						</button>
+						{openActionMenu === 'more' && (
+							<div className='week-plan-action-menu week-plan-mobile-menu' role='menu'>
+								<button
+									role='menuitem'
+									onClick={() => {
+										setOpenActionMenu(null)
+										setShowWorkout(true)
+									}}>
+									<strong>{t('workouts.addCustom').replace('+ ', '')}</strong>
+								</button>
+								<Link to='/workouts' role='menuitem' onClick={() => setOpenActionMenu(null)}>
+									<strong>{t('workouts.savedWorkouts')}</strong>
+								</Link>
+								<button
+									role='menuitem'
+									onClick={() => {
+										setOpenActionMenu(null)
+										setShowImport(true)
+									}}>
+									<strong>{t('weekPlan.importJson')}</strong>
+								</button>
+								<p className='week-plan-menu-label'>{t('weekPlan.exportJson')}</p>
+								{(['day', 'week', 'month'] as WeekPlanExportPeriod[]).map((period) => (
+									<button key={period} role='menuitem' onClick={() => handleExportJson(period)}>
+										<strong>{t(`weekPlan.exportPeriods.${period}`)}</strong>
+									</button>
+								))}
+							</div>
+						)}
+					</div>
 				</div>
 			</div>
 
@@ -653,7 +779,23 @@ export function WeekPlanContainer() {
 											/>
 										</div>
 									</div>
-									{(selectedDayNutrition.exerciseCalories || 0) > 0 && <div className='workout-day-summary'><span>{t('workouts.burnedToday', { calories: selectedDayNutrition.exerciseCalories })}</span>{(selectedDayNutrition.calorieTargetAdjustment || 0) > 0 && <strong>{t('workouts.dayAdjustment', { calories: selectedDayNutrition.calorieTargetAdjustment })}</strong>}<Link to='/workouts'>{t('workouts.title')} →</Link></div>}
+									{(selectedDayNutrition.exerciseCalories || 0) > 0 && (
+										<div className='workout-day-summary'>
+											<span>
+												{t('workouts.burnedToday', {
+													calories: selectedDayNutrition.exerciseCalories,
+												})}
+											</span>
+											{(selectedDayNutrition.calorieTargetAdjustment || 0) > 0 && (
+												<strong>
+													{t('workouts.dayAdjustment', {
+														calories: selectedDayNutrition.calorieTargetAdjustment,
+													})}
+												</strong>
+											)}
+											<Link to='/workouts'>{t('workouts.title')} →</Link>
+										</div>
+									)}
 
 									<div className='macro-progress-item'>
 										<div className='macro-progress-header'>
@@ -826,7 +968,7 @@ export function WeekPlanContainer() {
 												</span>
 												<span className='stat-label'>{t('weekPlan.kcal')}</span>
 												{recommendedMacros && (
-											<span className='stat-target'>/ {selectedDayCalorieTarget}</span>
+													<span className='stat-target'>/ {selectedDayCalorieTarget}</span>
 												)}
 											</div>
 											<div className='weekly-stat'>
@@ -935,24 +1077,25 @@ export function WeekPlanContainer() {
 				)}
 			</div>
 
-			<div className='card mb-2'>
-				<div className='flex flex-between flex-center'>
-					<button className='btn btn-outline btn-sm' onClick={goToPreviousWeek}>
-						&larr; {t('weekPlan.prev')}
-					</button>
-					<div className='text-center'>
-						<strong>{weekLabel}</strong>
-						<button
-							className='btn btn-outline btn-sm'
-							onClick={goToCurrentWeek}
-							style={{ marginLeft: '1rem' }}>
-							{t('weekPlan.today')}
-						</button>
-					</div>
-					<button className='btn btn-outline btn-sm' onClick={goToNextWeek}>
-						{t('weekPlan.next')} &rarr;
+			<div className='week-plan-navigation' aria-label={weekLabel}>
+				<button
+					className='week-plan-nav-arrow'
+					onClick={goToPreviousWeek}>
+					<span aria-hidden='true'>&larr;</span>
+					<span className='week-plan-nav-label'>{t('weekPlan.prev')}</span>
+				</button>
+				<div className='week-plan-navigation-current'>
+					<strong>{weekLabel}</strong>
+					<button className='week-plan-today' onClick={goToCurrentWeek}>
+						{t('weekPlan.today')}
 					</button>
 				</div>
+				<button
+					className='week-plan-nav-arrow'
+					onClick={goToNextWeek}>
+					<span className='week-plan-nav-label'>{t('weekPlan.next')}</span>
+					<span aria-hidden='true'>&rarr;</span>
+				</button>
 			</div>
 
 			{loading ? (
@@ -966,6 +1109,7 @@ export function WeekPlanContainer() {
 					onCook={handleCook}
 					onConsume={handleConsume}
 					onDayClick={handleDayClick}
+					selectedDay={selectedDay}
 				/>
 			)}
 
@@ -1061,7 +1205,13 @@ export function WeekPlanContainer() {
 				</div>
 			)}
 
-			<WorkoutFormModal open={showWorkout} initialDate={selectedDay} saving={savingWorkout} onClose={() => setShowWorkout(false)} onSave={handleAddWorkout} />
+			<WorkoutFormModal
+				open={showWorkout}
+				initialDate={selectedDay}
+				saving={savingWorkout}
+				onClose={() => setShowWorkout(false)}
+				onSave={handleAddWorkout}
+			/>
 
 			{dayModalDate && !selectedRecipeForWeek && (
 				<div className='modal-overlay' onClick={() => setDayModalDate(null)}>

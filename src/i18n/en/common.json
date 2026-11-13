@@ -600,6 +600,17 @@
 	},
 	"weekPlan": {
 		"title": "Week Plan",
+		"subtitle": "Organize the whole week's meals and preparations.",
+		"addMenu": "Add",
+		"workoutsMenu": "Workouts",
+		"dataMenu": "Import / Export",
+		"moreActions": "More actions",
+		"addRecipeHint": "Choose an existing recipe",
+		"addManualMealHint": "Log something you already ate",
+		"addIngredientHint": "Add an individual ingredient",
+		"addWorkoutHint": "Log a one-off workout",
+		"savedWorkoutsHint": "Open your saved routines",
+		"importHintShort": "Load a saved plan",
 		"exportJson": "Export JSON",
 		"exporting": "Exporting...",
 		"exportPeriods": {
