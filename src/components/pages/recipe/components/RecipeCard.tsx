@@ -24,6 +24,7 @@ interface RecipeCardProps {
 	onSelect?: (id: number) => void
 	onHide?: (recipe: Recipe) => void
 	onUnhide?: (recipe: Recipe) => void
+	variant?: 'minimal' | 'visual'
 }
 
 export function RecipeCard({
@@ -35,6 +36,7 @@ export function RecipeCard({
 	onSelect,
 	onHide,
 	onUnhide,
+	variant,
 }: RecipeCardProps) {
 	const { t } = useTranslation()
 	const { toast } = useDialog()
@@ -46,8 +48,6 @@ export function RecipeCard({
 	const [pdfRecipeCache, setPdfRecipeCache] = useState<Record<number, any>>({})
 	const [loadingPdfOptions, setLoadingPdfOptions] = useState(false)
 	const [pdfMerge, setPdfMerge] = useState(false)
-
-	const hasVariants = (recipe.components || []).some((c) => c.options.length > 1)
 
 	const itemData: ItemCardData = {
 		id: recipe.id,
@@ -62,6 +62,7 @@ export function RecipeCard({
 		tags: recipe.tags,
 		type: 'recipe',
 		isPublic: recipe.isPublic,
+		authorName: recipe.authorName,
 	}
 
 	const selectionKey = (recipeId: number, componentId: number) => `${recipeId}:${componentId}`
@@ -289,6 +290,7 @@ export function RecipeCard({
 				onSelect={onSelect ? () => onSelect(recipe.id) : undefined}
 				onHide={onHide ? () => onHide(recipe) : undefined}
 				onUnhide={onUnhide ? () => onUnhide(recipe) : undefined}
+				variant={variant}
 			/>
 
 			<RecipeExportModal

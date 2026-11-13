@@ -13,6 +13,8 @@ node_modules
 # Carpetas de build
 dist
 dist-ssr
+cypress/screenshots
+cypress/videos
 
 # Archivos locales
 *.local

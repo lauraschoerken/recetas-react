@@ -24,6 +24,7 @@ afterEach(function () {
 // Limpiar datos de test antes de ejecutar la suite.
 // Si el backend no está disponible, la task devuelve { success: false } sin fallar.
 before(() => {
+	if (Cypress.env('skipDataCleanup')) return
 	cy.task<TaskResult>('cleanupAllTestData').then((result) => {
 		if (result?.success) {
 			cy.log(`Pre-test cleanup: ${result.message}`)
@@ -35,6 +36,7 @@ before(() => {
 
 // Limpiar ingredientes de test después de toda la suite.
 after(() => {
+	if (Cypress.env('skipDataCleanup')) return
 	cy.task<TaskResult>('cleanupTestIngredients').then((result) => {
 		if (result?.success) {
 			cy.log(`Post-test cleanup: ${result.message}`)

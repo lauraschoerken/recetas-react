@@ -140,7 +140,7 @@ export function RecipeFormContainer() {
 				</div>
 			)}
 
-			<div className='card'>
+			<div className='recipe-form-shell'>
 				<RecipeForm
 					initialData={recipe || undefined}
 					onSubmit={handleSubmit}

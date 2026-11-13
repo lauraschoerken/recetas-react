@@ -336,7 +336,7 @@ export function IngredientsList({
 						{ingredients.map((ing) => (
 							<div key={ing.id} className='ingredient-row-container'>
 								<div className='ingredients-table-row'>
-									<div className='ingredient-input-wrapper'>
+									<div className='ingredient-input-wrapper ingredient-field' data-label={t('ingredients.ingredientLabel')}>
 										{ing.name && !ing.isFromDatabase && (
 											<span
 												className='new-ingredient-badge'
@@ -355,6 +355,7 @@ export function IngredientsList({
 												if (e.key === 'Enter') e.preventDefault()
 											}}
 											placeholder={t('ingredients.namePlaceholder')}
+											aria-label={t('ingredients.ingredientLabel')}
 											autoComplete='off'
 										/>
 										{activeInputId === ing.id && suggestions[ing.id]?.length > 0 && (
@@ -396,11 +397,12 @@ export function IngredientsList({
 											</ul>
 										)}
 									</div>
-									<div className='variant-selector'>
+									<div className='variant-selector ingredient-field' data-label={t('ingredients.stateHeader')}>
 										{ing.variants && ing.variants.length > 0 ? (
 											<select
 												className='form-input form-input-sm'
 												value={ing.variantId || ''}
+												aria-label={t('ingredients.stateHeader')}
 												onChange={(e) => handleVariantChange(ing.id, parseInt(e.target.value))}>
 												{ing.variants.map((v) => (
 													<option key={v.id} value={v.id}>
@@ -412,6 +414,7 @@ export function IngredientsList({
 											<select
 												className='form-input form-input-sm'
 												value={ing.variantName || ''}
+												aria-label={t('ingredients.stateHeader')}
 												onChange={(e) =>
 													onChange(
 														ingredients.map((i) =>
@@ -429,23 +432,23 @@ export function IngredientsList({
 											<span className='variant-default'>{t('ingredients.rawVariant')}</span>
 										)}
 									</div>
-									<input
-										type='number'
-										className={`form-input${errors?.[ing.id] ? ' has-error' : ''}`}
-										value={ing.quantity}
-										onChange={(e) =>
-											updateIngredient(ing.id, 'quantity', parseFloat(e.target.value) || 0)
-										}
-										onKeyDown={(e) => {
-											if (e.key === 'Enter') e.preventDefault()
-										}}
-										min={0}
-										step={0.1}
-									/>
-									<div className='unit-selector-wrapper'>
+									<div className='ingredient-field' data-label={t('ingredients.quantityPlaceholder')}>
+										<input
+											type='number'
+											className={`form-input${errors?.[ing.id] ? ' has-error' : ''}`}
+											value={ing.quantity}
+											aria-label={t('ingredients.quantityPlaceholder')}
+											onChange={(e) => updateIngredient(ing.id, 'quantity', parseFloat(e.target.value) || 0)}
+											onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault() }}
+											min={0}
+											step={0.1}
+										/>
+									</div>
+									<div className='unit-selector-wrapper ingredient-field' data-label={t('ingredients.unitHeader')}>
 										<select
 											className='form-input'
 											value={ing.unit}
+											aria-label={t('ingredients.unitHeader')}
 											onChange={(e) => handleUnitChange(ing.id, e.target.value)}>
 											{getAvailableUnits(ing).map((u) => (
 												<option key={u} value={u}>
@@ -609,6 +612,8 @@ export function IngredientsList({
 										<button
 											type='button'
 											className='ingredients-remove-btn'
+											aria-label={t('delete')}
+											title={t('delete')}
 											onClick={() => removeIngredient(ing.id)}>
 											<CloseIcon size={14} aria-hidden='true' />
 										</button>

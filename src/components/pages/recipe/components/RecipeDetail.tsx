@@ -4,7 +4,12 @@ import '@uiw/react-markdown-preview/markdown.css'
 import MDPreview from '@uiw/react-markdown-preview'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { HiOutlineEye, HiOutlineEyeSlash, HiOutlineLockClosed } from 'react-icons/hi2'
+import {
+	HiOutlineEye,
+	HiOutlineEyeSlash,
+	HiOutlineGlobeAlt,
+	HiOutlineLockClosed,
+} from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
 
 import {
@@ -341,15 +346,17 @@ export function RecipeDetail({
 		<div className='recipe-detail'>
 			<div className='recipe-detail-header'>
 				<div>
-					<h1 className='recipe-detail-title'>
-						{recipe.title}
-						{recipe.isPublic === false && (
-							<span className='recipe-detail-lock' title={t('private')} aria-hidden='true'>
-								<HiOutlineLockClosed size={18} />
-							</span>
-						)}
-					</h1>
+					<h1 className='recipe-detail-title'>{recipe.title}</h1>
+					<p className='recipe-detail-author'>{recipe.authorName || `#${recipe.userId}`}</p>
 					<div className='recipe-detail-meta'>
+						<span className='recipe-detail-chip recipe-detail-chip--visibility'>
+							{recipe.isPublic ? (
+								<HiOutlineGlobeAlt aria-hidden='true' />
+							) : (
+								<HiOutlineLockClosed aria-hidden='true' />
+							)}
+							{t(recipe.isPublic ? 'public' : 'private')}
+						</span>
 						<span className='recipe-detail-chip'>
 							{recipe.servings} {t('recipes.portionsUnit')}
 						</span>
@@ -366,7 +373,12 @@ export function RecipeDetail({
 					{showAdminOwnership && (
 						<div className='recipe-detail-admin-owner'>
 							<strong>{t(recipe.isPublic ? 'public' : 'private')}</strong>
-							<span>{t('recipes.adminOwner', { owner: recipe.authorName || `#${recipe.userId}`, id: recipe.userId })}</span>
+							<span>
+								{t('recipes.adminOwner', {
+									owner: recipe.authorName || `#${recipe.userId}`,
+									id: recipe.userId,
+								})}
+							</span>
 						</div>
 					)}
 				</div>
@@ -387,7 +399,7 @@ export function RecipeDetail({
 					)}
 					{(isOwner || canDelete) && (
 						<>
-							<button className='btn btn-danger' onClick={onDelete}>
+							<button className='btn btn-danger recipe-detail-delete' onClick={onDelete}>
 								{t('delete')}
 							</button>
 						</>
@@ -407,180 +419,212 @@ export function RecipeDetail({
 				</div>
 			</div>
 
-			<div className='recipe-threshold-section'>
-				<h3>
-					{t('recipes.minStock')} {hasThreshold && <span className='threshold-active'>✓</span>}
-				</h3>
-				<p className='form-hint'>{t('recipes.minStockHint')}</p>
-				<div className='threshold-form'>
-					<input
-						type='number'
-						className='form-input form-input-sm'
-						placeholder={t('recipes.minServings')}
-						value={minServings}
-						onChange={(e) => setMinServings(e.target.value)}
-						min={0}
-						step={1}
-					/>
-					<span className='threshold-unit'>{t('recipes.portionsUnit')}</span>
-					<button
-						className='btn btn-sm btn-primary'
-						onClick={handleSaveThreshold}
-						disabled={!minServings || Number(minServings) <= 0}>
-						{t('recipes.saveThreshold')}
-					</button>
-					{hasThreshold && (
-						<button className='btn btn-sm btn-outline btn-danger' onClick={handleDeleteThreshold}>
-							{t('recipes.removeThreshold')}
-						</button>
+			<div
+				className={`recipe-detail-intro${recipe.imageUrl ? '' : ' recipe-detail-intro--no-image'}`}>
+				{recipe.imageUrl && (
+					<div className='recipe-detail-image'>
+						<img src={recipe.imageUrl} alt={recipe.title} />
+					</div>
+				)}
+				<div className='recipe-detail-summary'>
+					{recipe.description && (
+						<div className='recipe-detail-description'>
+							<MDPreview source={recipe.description} />
+						</div>
+					)}
+
+					{recipe.tags && recipe.tags.length > 0 && (
+						<div className='recipe-detail-tags'>
+							{recipe.tags.map((tag) => (
+								<span
+									key={tag.id}
+									className='recipe-detail-tag'
+									style={tag.color ? { borderColor: tag.color } : {}}>
+									{tag.name}
+								</span>
+							))}
+						</div>
+					)}
+
+					{hasNutrition && recipe.nutritionPerServing && (
+						<div className='recipe-nutrition-card'>
+							<h3>
+								{t('recipes.nutritionInfo')}{' '}
+								<span className='nutrition-subtitle'>{t('recipes.perServing')}</span>
+							</h3>
+							<div className='nutrition-grid'>
+								<div className='nutrition-item'>
+									<span className='nutrition-value'>{recipe.nutritionPerServing.calories}</span>
+									<span className='nutrition-label'>{t('weekPlan.kcal')}</span>
+								</div>
+								<div className='nutrition-item protein'>
+									<span className='nutrition-value'>{recipe.nutritionPerServing.protein}g</span>
+									<span className='nutrition-label'>{t('weekPlan.protein')}</span>
+								</div>
+								<div className='nutrition-item carbs'>
+									<span className='nutrition-value'>{recipe.nutritionPerServing.carbs}g</span>
+									<span className='nutrition-label'>{t('weekPlan.carbs')}</span>
+								</div>
+								<div className='nutrition-item fat'>
+									<span className='nutrition-value'>{recipe.nutritionPerServing.fat}g</span>
+									<span className='nutrition-label'>{t('weekPlan.fat')}</span>
+								</div>
+								<div className='nutrition-item fiber'>
+									<span className='nutrition-value'>{recipe.nutritionPerServing.fiber}g</span>
+									<span className='nutrition-label'>{t('fiber')}</span>
+								</div>
+							</div>
+							{recipe.nutrition && (
+								<p className='nutrition-total'>
+									{t('recipes.totalRecipeNutrition', {
+										calories: recipe.nutrition.calories,
+										protein: recipe.nutrition.protein,
+										carbs: recipe.nutrition.carbs,
+										fat: recipe.nutrition.fat,
+										fiber: recipe.nutrition.fiber,
+									})}
+								</p>
+							)}
+						</div>
 					)}
 				</div>
 			</div>
 
-			{recipe.imageUrl && (
-				<div className='recipe-detail-image'>
-					<img src={recipe.imageUrl} alt={recipe.title} />
-				</div>
-			)}
-
-			{recipe.description && (
-				<div className='recipe-detail-description'>
-					<MDPreview source={recipe.description} />
-				</div>
-			)}
-
-			{recipe.tags && recipe.tags.length > 0 && (
-				<div className='recipe-detail-tags'>
-					{recipe.tags.map((tag) => (
-						<span
-							key={tag.id}
-							className='recipe-detail-tag'
-							style={tag.color ? { borderColor: tag.color, color: tag.color } : {}}>
-							{tag.name}
-						</span>
-					))}
-				</div>
-			)}
-
-			{hasNutrition && recipe.nutritionPerServing && (
-				<div className='recipe-nutrition-card'>
-					<h3>
-						{t('recipes.nutritionInfo')}{' '}
-						<span className='nutrition-subtitle'>{t('recipes.perServing')}</span>
-					</h3>
-					<div className='nutrition-grid'>
-						<div className='nutrition-item'>
-							<span className='nutrition-value'>{recipe.nutritionPerServing.calories}</span>
-							<span className='nutrition-label'>{t('weekPlan.kcal')}</span>
-						</div>
-						<div className='nutrition-item protein'>
-							<span className='nutrition-value'>{recipe.nutritionPerServing.protein}g</span>
-							<span className='nutrition-label'>{t('weekPlan.protein')}</span>
-						</div>
-						<div className='nutrition-item carbs'>
-							<span className='nutrition-value'>{recipe.nutritionPerServing.carbs}g</span>
-							<span className='nutrition-label'>{t('weekPlan.carbs')}</span>
-						</div>
-						<div className='nutrition-item fat'>
-							<span className='nutrition-value'>{recipe.nutritionPerServing.fat}g</span>
-							<span className='nutrition-label'>{t('weekPlan.fat')}</span>
-						</div>
-						<div className='nutrition-item fiber'>
-							<span className='nutrition-value'>{recipe.nutritionPerServing.fiber}g</span>
-							<span className='nutrition-label'>{t('fiber')}</span>
-						</div>
-					</div>
-					{recipe.nutrition && (
-						<p className='nutrition-total'>
-							{t('recipes.totalRecipeNutrition', {
-								calories: recipe.nutrition.calories,
-								protein: recipe.nutrition.protein,
-								carbs: recipe.nutrition.carbs,
-								fat: recipe.nutrition.fat,
-								fiber: recipe.nutrition.fiber,
-							})}
-						</p>
-					)}
-				</div>
-			)}
-
-			{hasIngredients && (
-				<div className='recipe-detail-section'>
-					<h2>{t('recipes.ingredientsTab')}</h2>
-					<ul className='recipe-ingredients-list'>
-						{recipe.ingredients.map((ing) => (
-							<li key={ing.id} className='recipe-ingredient-item'>
-								<span className='ingredient-quantity'>
-									{ing.quantity} {ing.unit}
-								</span>
-								<span className='ingredient-name'>{ing.name}</span>
-							</li>
-						))}
-					</ul>
-				</div>
-			)}
-
-			{hasComponents && (
-				<div className='recipe-detail-section'>
-					<h2>{t('recipes.componentsTitle')}</h2>
-					<div className='recipe-components-list'>
-						{recipe.components!.map((comp) => (
-							<div key={comp.id} className='recipe-component'>
-								<h3 className='component-name'>
-									{comp.name}
-									{comp.isOptional && (
-										<span className='optional-badge'>{t('recipes.optionalBadge')}</span>
-									)}
-								</h3>
-								<ul className='component-options'>
-									{comp.options.map((opt) => (
-										<li
-											key={opt.id}
-											className={`component-option ${opt.isDefault ? 'default' : ''}`}>
-											<span className='option-icon'>
-												{opt.recipeId || opt.recipe ? '📖' : '🥕'}
+			<div
+				className={`recipe-reading-layout${hasIngredients || hasComponents ? '' : ' recipe-reading-layout--steps-only'}`}>
+				{(hasIngredients || hasComponents) && (
+					<aside className='recipe-reading-sidebar'>
+						{hasIngredients && (
+							<div className='recipe-detail-section'>
+								<h2>{t('recipes.ingredientsTab')}</h2>
+								<ul className='recipe-ingredients-list'>
+									{recipe.ingredients.map((ing) => (
+										<li key={ing.id} className='recipe-ingredient-item'>
+											<span className='ingredient-quantity'>
+												{ing.quantity} {ing.unit}
 											</span>
-											<span className='option-name'>
-												{opt.name ||
-													opt.recipe?.title ||
-													opt.ingredient?.name ||
-													t('recipes.option')}
-											</span>
-											{opt.recipe && (
-												<Link to={`/recipes/${opt.recipe.id}`} className='option-link'>
-													{t('recipes.viewRecipe')}
-												</Link>
-											)}
-											{opt.ingredient && opt.quantity && (
-												<span className='option-quantity'>
-													({opt.quantity} {opt.unit})
-												</span>
-											)}
-											{opt.isDefault && (
-												<span className='default-badge'>{t('recipes.defaultBadge')}</span>
-											)}
+											<span className='ingredient-name'>{ing.name}</span>
 										</li>
 									))}
 								</ul>
 							</div>
-						))}
-					</div>
-				</div>
-			)}
+						)}
 
-			{recipe.instructions && (
-				<div className='recipe-detail-section'>
-					<h2>{t('recipes.instructions')}</h2>
-					<div className='recipe-instructions'>
-						{(recipe.instructions.includes('\n---\n')
-							? recipe.instructions.split('\n---\n')
-							: recipe.instructions.split('\n')
-						).map((line, index) => (
-							<p key={index}>{line}</p>
-						))}
+						{hasComponents && (
+							<div className='recipe-detail-section'>
+								<h2>{t('recipes.componentsTitle')}</h2>
+								<div className='recipe-components-list'>
+									{recipe.components!.map((comp) => (
+										<div key={comp.id} className='recipe-component'>
+											<h3 className='component-name'>
+												{comp.name}
+												{comp.isOptional && (
+													<span className='optional-badge'>{t('recipes.optionalBadge')}</span>
+												)}
+											{!comp.isOptional && (
+												<span className='required-badge'>{t('recipes.requiredBadge')}</span>
+											)}
+												{comp.isOptional && comp.defaultEnabled && (
+													<span className='default-badge'>{t('recipes.defaultBadge')}</span>
+												)}
+											</h3>
+											<ul className='component-options'>
+												{comp.options.map((opt) => (
+													<li
+														key={opt.id}
+														className={`component-option ${opt.isDefault ? 'default' : ''}`}>
+														<span className='option-icon'>
+															{opt.recipeId || opt.recipe ? '📖' : '🥕'}
+														</span>
+														<span className='option-name'>
+															{opt.name ||
+																opt.recipe?.title ||
+																opt.ingredient?.name ||
+																t('recipes.option')}
+														</span>
+														{opt.recipe && (
+															<Link to={`/recipes/${opt.recipe.id}`} className='option-link'>
+																{t('recipes.viewRecipe')}
+															</Link>
+														)}
+														{opt.ingredient && opt.quantity && (
+															<span className='option-quantity'>
+																({opt.quantity} {opt.unit})
+															</span>
+														)}
+														{opt.recipe && opt.recipeServings && (
+															<span className='option-quantity'>
+																({opt.recipeServings} {t('recipes.portionsUnit')})
+															</span>
+														)}
+														{opt.isDefault && (
+															<span className='default-badge'>{t('recipes.defaultBadge')}</span>
+														)}
+													</li>
+												))}
+											</ul>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
+					</aside>
+				)}
+
+				<article className='recipe-reading-steps'>
+					{recipe.instructions && (
+						<div className='recipe-detail-section'>
+							<h2>{t('recipes.instructions')}</h2>
+							<div className='recipe-instructions'>
+								{(recipe.instructions.includes('\n---\n')
+									? recipe.instructions.split('\n---\n')
+									: recipe.instructions.split('\n')
+								).map((line, index) => (
+									<p key={index}>
+										<span>{line}</span>
+									</p>
+								))}
+							</div>
+						</div>
+					)}
+				</article>
+			</div>
+
+			<details className='recipe-threshold-section'>
+				<summary>
+					{t('recipes.minStock')} {hasThreshold && <span className='threshold-active'>✓</span>}
+				</summary>
+				<div className='recipe-threshold-content'>
+					<p className='form-hint'>{t('recipes.minStockHint')}</p>
+					<div className='threshold-form'>
+						<label className='sr-only' htmlFor='recipe-min-servings'>
+							{t('recipes.minServings')}
+						</label>
+						<input
+							id='recipe-min-servings'
+							type='number'
+							className='form-input form-input-sm'
+							placeholder={t('recipes.minServings')}
+							value={minServings}
+							onChange={(e) => setMinServings(e.target.value)}
+							min={0}
+							step={1}
+						/>
+						<span className='threshold-unit'>{t('recipes.portionsUnit')}</span>
+						<button
+							className='btn btn-sm btn-primary'
+							onClick={handleSaveThreshold}
+							disabled={!minServings || Number(minServings) <= 0}>
+							{t('recipes.saveThreshold')}
+						</button>
+						{hasThreshold && (
+							<button className='btn btn-sm btn-outline btn-danger' onClick={handleDeleteThreshold}>
+								{t('recipes.removeThreshold')}
+							</button>
+						)}
 					</div>
 				</div>
-			)}
+			</details>
 
 			<RecipeExportModal
 				isOpen={showExportFormatModal}

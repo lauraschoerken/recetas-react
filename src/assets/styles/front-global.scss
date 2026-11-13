@@ -1,9 +1,9 @@
 :root {
 	color-scheme: light;
-	--primary-color: #3b82f6;
-	--primary-hover: #2563eb;
-	--primary-light: #e8f0fe;
-	--secondary-color: #64748b;
+	--primary-color: #248dcc;
+	--primary-hover: #1678b3;
+	--primary-light: #dceefa;
+	--secondary-color: #526b76;
 	--success-color: #10b981;
 	--success-light: #d1fae5;
 	--success-bg-opaque: rgba(134, 239, 172, 0.16);
@@ -13,18 +13,18 @@
 	--danger-light: #fde8e8;
 	--warning-color: #d97706;
 	--warning-light: #fef3c7;
-	--background-color: #e8ecf0;
-	--card-background: #f0f4f8;
-	--surface-0: #f0f4f8;
-	--surface-1: #e8ecf0;
-	--surface-2: #dde3ea;
-	--surface-3: #cfd6df;
-	--text-primary: #1a2332;
-	--text-secondary: #4a5568;
-	--text-muted: #718096;
+	--background-color: #f3f6fa;
+	--card-background: #ffffff;
+	--surface-0: #ffffff;
+	--surface-1: #f3f6fa;
+	--surface-2: #e8eef5;
+	--surface-3: #d8e2ed;
+	--text-primary: #142436;
+	--text-secondary: #455d75;
+	--text-muted: #61758a;
 	--text-inverse: #ffffff;
-	--border-color: #cdd5df;
-	--border-strong: #b8c2ce;
+	--border-color: #ccd8e5;
+	--border-strong: #9fb3c7;
 	--info-bg: #dbeafe;
 	--info-fg: #1e40af;
 	--success-bg: #d1fae5;
@@ -41,9 +41,9 @@
 	--macro-fat: #db2777;
 	--macro-fiber: #7c3aed;
 	--macro-calories: #d97706;
-	--shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.08);
-	--shadow-lg: 0 6px 14px rgba(0, 0, 0, 0.09);
-	--shadow-xl: 0 12px 30px rgba(0, 0, 0, 0.1);
+	--shadow: 0 1px 2px rgba(18, 42, 51, 0.08);
+	--shadow-lg: 0 8px 24px rgba(18, 42, 51, 0.1);
+	--shadow-xl: 0 18px 48px rgba(18, 42, 51, 0.16);
 	--radius: 12px;
 	--radius-sm: 8px;
 	--radius-lg: 16px;
@@ -54,10 +54,10 @@
 
 :root.theme-dark {
 	color-scheme: dark;
-	--primary-color: #60a5fa;
-	--primary-hover: #93c5fd;
-	--primary-light: #1e3a5f;
-	--secondary-color: #94a3b8;
+	--primary-color: #65b9f2;
+	--primary-hover: #8dccf6;
+	--primary-light: #142f47;
+	--secondary-color: #9bb1ba;
 	--success-color: #34d399;
 	--success-light: #11392f;
 	--success-bg-opaque: rgba(134, 239, 172, 0.12);
@@ -67,18 +67,18 @@
 	--danger-light: #4c1d24;
 	--warning-color: #fbbf24;
 	--warning-light: #4f3a0f;
-	--background-color: #0f172a;
-	--card-background: #111827;
-	--surface-0: #111827;
-	--surface-1: #0b1220;
-	--surface-2: #1f2937;
-	--surface-3: #334155;
-	--text-primary: #e5e7eb;
-	--text-secondary: #94a3b8;
-	--text-muted: #64748b;
-	--text-inverse: #0f172a;
-	--border-color: #334155;
-	--border-strong: #475569;
+	--background-color: #0a111b;
+	--card-background: #111b29;
+	--surface-0: #111b29;
+	--surface-1: #0d1724;
+	--surface-2: #172436;
+	--surface-3: #213149;
+	--text-primary: #f3f7fb;
+	--text-secondary: #b6c5d6;
+	--text-muted: #8fa3b9;
+	--text-inverse: #0d2027;
+	--border-color: #2a3b52;
+	--border-strong: #45617e;
 	--info-bg: #1e3a8a;
 	--info-fg: #bfdbfe;
 	--success-bg: #11392f;
@@ -109,28 +109,28 @@
 @media (prefers-color-scheme: dark) {
 	:root:not(.theme-light) {
 		color-scheme: dark;
-		--primary-color: #60a5fa;
-		--primary-hover: #93c5fd;
-		--primary-light: #1e3a5f;
-		--secondary-color: #94a3b8;
+		--primary-color: #65b9f2;
+		--primary-hover: #8dccf6;
+		--primary-light: #142f47;
+		--secondary-color: #9bb1ba;
 		--success-color: #34d399;
 		--success-light: #11392f;
 		--danger-color: #f87171;
 		--danger-light: #4c1d24;
 		--warning-color: #fbbf24;
 		--warning-light: #4f3a0f;
-		--background-color: #0f172a;
-		--card-background: #111827;
-		--surface-0: #111827;
-		--surface-1: #0b1220;
-		--surface-2: #1f2937;
-		--surface-3: #334155;
-		--text-primary: #e5e7eb;
-		--text-secondary: #94a3b8;
-		--text-muted: #64748b;
-		--text-inverse: #0f172a;
-		--border-color: #334155;
-		--border-strong: #475569;
+		--background-color: #0a111b;
+		--card-background: #111b29;
+		--surface-0: #111b29;
+		--surface-1: #0d1724;
+		--surface-2: #172436;
+		--surface-3: #213149;
+		--text-primary: #f3f7fb;
+		--text-secondary: #b6c5d6;
+		--text-muted: #8fa3b9;
+		--text-inverse: #0d2027;
+		--border-color: #2a3b52;
+		--border-strong: #45617e;
 		--info-bg: #1e3a8a;
 		--info-fg: #bfdbfe;
 		--success-bg: #11392f;
@@ -183,6 +183,33 @@ select,
 textarea {
 	font: inherit;
 	min-width: 0;
+	color: var(--text-primary);
+}
+
+button,
+a,
+input,
+select,
+textarea,
+summary {
+	touch-action: manipulation;
+}
+
+:where(button, a, input, select, textarea, summary):focus-visible {
+	outline: 3px solid color-mix(in srgb, var(--primary-color) 62%, white);
+	outline-offset: 2px;
+}
+
+.sr-only {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	padding: 0 !important;
+	margin: -1px !important;
+	overflow: hidden !important;
+	clip: rect(0, 0, 0, 0) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
 }
 
 fieldset {
@@ -239,7 +266,7 @@ body:has(.modal-overlay, .confirm-dialog-overlay, .cook-modal-overlay) {
 	transition: all 0.2s ease;
 	text-decoration: none;
 	gap: 0.5rem;
-	min-height: 2.625rem;
+	min-height: 2.75rem;
 	max-width: 100%;
 }
 
@@ -312,7 +339,7 @@ body:has(.modal-overlay, .confirm-dialog-overlay, .cook-modal-overlay) {
 .card {
 	background-color: var(--card-background);
 	border-radius: calc(var(--radius) - 4px);
-	box-shadow: var(--shadow-lg);
+	box-shadow: var(--shadow);
 	padding: clamp(0.875rem, 2vw, 1.25rem);
 	border: 1px solid var(--border-color);
 }
@@ -333,10 +360,12 @@ body:has(.modal-overlay, .confirm-dialog-overlay, .cook-modal-overlay) {
 	width: 100%;
 	padding: 0.875rem 1rem;
 	font-size: 1rem;
-	border: 2px solid var(--border-color);
+	min-height: 2.75rem;
+	border: 1px solid var(--border-color);
 	border-radius: var(--radius-sm);
 	transition: all 0.2s ease;
-	background-color: var(--card-background);
+	background-color: var(--surface-0);
+	color: var(--text-primary);
 }
 
 .form-input:hover {
@@ -369,6 +398,9 @@ body:has(.modal-overlay, .confirm-dialog-overlay, .cook-modal-overlay) {
 .empty-state {
 	text-align: center;
 	padding: 3rem;
+	background: var(--card-background);
+	border: 1px dashed var(--border-strong);
+	border-radius: var(--radius);
 	color: var(--text-secondary);
 }
 
@@ -454,7 +486,8 @@ body:has(.modal-overlay, .confirm-dialog-overlay, .cook-modal-overlay) {
 	padding: 0.75rem 1rem;
 	border: 2px solid var(--border-color);
 	border-radius: 6px;
-	background: white;
+	background: var(--surface-0);
+	color: var(--text-primary);
 	cursor: pointer;
 	font-size: 0.875rem;
 	transition: all 0.2s;
@@ -490,7 +523,9 @@ body:has(.modal-overlay, .confirm-dialog-overlay, .cook-modal-overlay) {
 		flex: 1;
 	}
 
-	input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+	input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not(
+			[type='color']
+		),
 	select {
 		min-height: 2.75rem;
 	}

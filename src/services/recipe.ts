@@ -40,7 +40,7 @@ export const recipeService = {
 		search?: string
 		visibility?: 'all' | 'public' | 'mine' | 'private'
 		hidden?: 'exclude' | 'only'
-		ingredient?: string
+		ingredientIds?: number[]
 		difficulty?: string
 		minCookTime?: number
 		maxCookTime?: number
@@ -54,7 +54,8 @@ export const recipeService = {
 		if (params.search) q.set('search', params.search)
 		if (params.visibility && params.visibility !== 'all') q.set('visibility', params.visibility)
 		if (params.hidden === 'only') q.set('hidden', 'only')
-		if (params.ingredient) q.set('ingredient', params.ingredient)
+		if (params.ingredientIds && params.ingredientIds.length > 0)
+			q.set('ingredientIds', params.ingredientIds.join(','))
 		if (params.difficulty) q.set('difficulty', params.difficulty)
 		if (params.minCookTime != null) q.set('minCookTime', String(params.minCookTime))
 		if (params.maxCookTime != null) q.set('maxCookTime', String(params.maxCookTime))
@@ -71,7 +72,9 @@ export const recipeService = {
 		return api.get<Recipe>(`/recipes/${id}`)
 	},
 
-	async getAuthors(hidden: 'exclude' | 'only' = 'exclude'): Promise<{ id: number; name: string }[]> {
+	async getAuthors(
+		hidden: 'exclude' | 'only' = 'exclude'
+	): Promise<{ id: number; name: string }[]> {
 		const query = hidden === 'only' ? '?hidden=only' : ''
 		return api.get<{ id: number; name: string }[]>(`/recipes/authors${query}`)
 	},

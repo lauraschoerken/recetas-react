@@ -18,6 +18,7 @@ export interface UserProfile {
 	customCarbs?: number | null
 	customFat?: number | null
 	customFiber?: number | null
+	recipeCardStyle?: 'minimal' | 'visual'
 }
 
 export interface RecommendedMacros {

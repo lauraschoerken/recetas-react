@@ -6,38 +6,107 @@
 	margin-bottom: 1rem;
 }
 
-.week-plan-export {
+.week-plan-page-header {
+	align-items: flex-end;
+	gap: 1.25rem;
+}
+
+.week-plan-subtitle {
+	margin: 0.35rem 0 0;
+	color: var(--text-secondary);
+	font-size: 0.875rem;
+}
+
+.week-plan-actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.week-plan-action-group {
 	position: relative;
 }
 
-.week-plan-export-menu {
+.week-plan-action-trigger {
+	min-height: 2.5rem;
+	white-space: nowrap;
+
+	span {
+		margin-left: 0.25rem;
+		opacity: 0.75;
+	}
+}
+
+.week-plan-action-menu {
 	position: absolute;
 	top: calc(100% + 0.5rem);
-	right: 0;
-	z-index: 20;
-	min-width: 190px;
+	left: 0;
+	z-index: 30;
+	min-width: 16rem;
 	max-width: calc(100vw - 1rem);
 	padding: 0.375rem;
 	background: var(--card-background);
 	border: 1px solid var(--border-color);
 	border-radius: var(--radius);
 	box-shadow: var(--shadow-lg);
+
+	button,
+	a {
+		display: flex;
+		width: 100%;
+		min-height: 2.75rem;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		gap: 0.125rem;
+		padding: 0.5rem 0.625rem;
+		border: 0;
+		border-radius: var(--radius-sm);
+		background: transparent;
+		color: var(--text-primary);
+		text-align: left;
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	button:hover,
+	button:focus-visible,
+	a:hover,
+	a:focus-visible {
+		background: var(--surface-2);
+		outline: none;
+	}
+
+	strong {
+		font-size: 0.8rem;
+	}
+
+	small {
+		color: var(--text-secondary);
+		font-size: 0.7rem;
+	}
 }
 
-.week-plan-export-menu button {
-	display: block;
-	width: 100%;
-	padding: 0.625rem 0.75rem;
-	border: 0;
-	border-radius: var(--radius-sm);
-	background: transparent;
-	color: var(--text-primary);
-	text-align: left;
-	cursor: pointer;
+.week-plan-data-menu {
+	left: auto;
+	right: 0;
 }
 
-.week-plan-export-menu button:hover {
-	background: var(--surface-2);
+.week-plan-menu-label {
+	margin: 0.35rem 0.625rem 0.15rem;
+	padding-top: 0.5rem;
+	border-top: 1px solid var(--border-color);
+	color: var(--text-muted);
+	font-size: 0.65rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.week-plan-mobile-more {
+	display: none;
 }
 
 .nutrition-panel-header {
@@ -738,10 +807,113 @@
 	color: var(--text-secondary);
 }
 
-.workout-day-summary strong { color: var(--success-color); }
-.workout-day-summary a { margin-left: auto; color: var(--primary-color); font-weight: 600; }
+.workout-day-summary strong {
+	color: var(--success-color);
+}
+.workout-day-summary a {
+	margin-left: auto;
+	color: var(--primary-color);
+	font-weight: 600;
+}
+
+.week-plan-navigation {
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: center;
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+	padding: 0.625rem;
+	background: var(--card-background);
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-lg);
+}
+
+.week-plan-nav-arrow {
+	display: flex;
+	height: 2.75rem;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4rem;
+	padding: 0 0.75rem;
+	border: 1px solid var(--border-color);
+	border-radius: var(--radius-sm);
+	background: var(--surface-1);
+	color: var(--text-primary);
+	font-size: 1rem;
+	cursor: pointer;
+}
+
+.week-plan-nav-label {
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+.week-plan-nav-arrow:hover,
+.week-plan-nav-arrow:focus-visible {
+	border-color: var(--primary-color);
+	color: var(--primary-color);
+}
+
+.week-plan-navigation-current {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem;
+	min-width: 0;
+
+	strong {
+		overflow: hidden;
+		font-size: 0.9rem;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+.week-plan-today {
+	padding: 0.35rem 0.65rem;
+	border: 0;
+	background: transparent;
+	color: var(--primary-color);
+	font-size: 0.75rem;
+	font-weight: 600;
+	cursor: pointer;
+}
 
 @media (max-width: 48rem) {
+	.week-plan-page-header {
+		align-items: stretch;
+	}
+
+	.week-plan-actions {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		width: 100%;
+	}
+
+	.week-plan-action-group,
+	.week-plan-action-trigger {
+		width: 100%;
+	}
+
+	.week-plan-desktop-action {
+		display: none;
+	}
+
+	.week-plan-mobile-more {
+		display: block;
+	}
+
+	.week-plan-action-menu {
+		left: 0;
+		right: auto;
+		width: min(20rem, calc(100vw - 2rem));
+	}
+
+	.week-plan-mobile-menu {
+		left: auto;
+		right: 0;
+	}
+
 	.nutrition-panel-header {
 		flex-direction: column;
 		align-items: stretch;
@@ -770,13 +942,24 @@
 	}
 
 	.nutrition-with-chart {
-		flex-direction: column;
-		align-items: center;
-		gap: 0.75rem;
+		display: block;
 	}
 
 	.macro-chart-container {
-		order: -1;
+		display: none;
+	}
+
+	.macro-progress-grid {
+		width: 100%;
+		gap: 0.75rem;
+	}
+
+	.macro-progress-header {
+		font-size: 0.78rem;
+	}
+
+	.progress-bar {
+		height: 7px;
 	}
 
 	.modal-card,
@@ -814,6 +997,10 @@
 }
 
 @media (max-width: 30rem) {
+	.week-plan-subtitle {
+		font-size: 0.8rem;
+	}
+
 	.nutrition-panel {
 		padding: 0.625rem;
 	}
@@ -824,6 +1011,29 @@
 
 	.day-num {
 		font-size: 0.9rem;
+	}
+
+	.week-plan-navigation {
+		grid-template-columns: 2.5rem 1fr 2.5rem;
+		gap: 0.35rem;
+	}
+
+	.week-plan-nav-arrow {
+		width: 2.5rem;
+		height: 2.5rem;
+		padding: 0;
+	}
+
+	.week-plan-nav-label {
+		display: none;
+	}
+
+	.week-plan-navigation-current {
+		gap: 0.25rem;
+
+		strong {
+			font-size: 0.78rem;
+		}
 	}
 
 	.modal-actions {

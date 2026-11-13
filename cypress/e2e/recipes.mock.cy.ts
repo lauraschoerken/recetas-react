@@ -78,9 +78,12 @@ describe('Recetas — con mocks', () => {
 
 		it('lanza una nueva petición al buscar por texto', () => {
 			// La búsqueda genera una nueva petición con ?search=...
-			cy.intercept({ method: 'GET', pathname: '/api/recipes', query: { search: 'tortilla' } }, {
-				body: { data: [], total: 0, hiddenTotal: 0 },
-			}).as('searchRecipes')
+			cy.intercept(
+				{ method: 'GET', pathname: '/api/recipes', query: { search: 'tortilla' } },
+				{
+					body: { data: [], total: 0, hiddenTotal: 0 },
+				}
+			).as('searchRecipes')
 
 			cy.get('input[type="search"], input[placeholder*="buscar" i], input[placeholder*="search" i]')
 				.first()
@@ -93,6 +96,30 @@ describe('Recetas — con mocks', () => {
 		it('muestra los filtros de visibilidad', () => {
 			cy.contains('button', /filtros|filters/i).click()
 			cy.contains(/visibilidad|visibility|todas|all|públicas|public/i).should('exist')
+		})
+
+		it('permite buscar y seleccionar un ingrediente real', () => {
+			cy.intercept('GET', '/api/ingredients/search*', {
+				body: [
+					{ id: 21, name: 'Pechuga de pollo', unit: 'g' },
+					{ id: 22, name: 'Pollo entero', unit: 'g' },
+				],
+			}).as('searchIngredients')
+			cy.intercept(
+				{ method: 'GET', pathname: '/api/recipes', query: { ingredientIds: '21' } },
+				{ body: { data: [], total: 0, hiddenTotal: 0 } }
+			).as('filterByIngredient')
+
+			cy.contains('button', /filtros|filters/i).click()
+			cy.contains('label', /ingrediente|ingredient/i)
+				.parent()
+				.find('input[role="combobox"]')
+				.type('pol')
+
+			cy.wait('@searchIngredients')
+			cy.get('[role="listbox"]').should('be.visible')
+			cy.contains('[role="option"]', 'Pechuga de pollo').click()
+			cy.wait('@filterByIngredient')
 		})
 
 		it('mantiene acceso visible y foco perceptible en móvil', () => {
@@ -269,9 +296,9 @@ describe('Recetas — con mocks', () => {
 		})
 
 		it('muestra el formulario de creación de receta', () => {
-			cy.get('input[placeholder*="Tortilla" i], input[placeholder*="nombre" i], input[placeholder*="title" i]').should(
-				'be.visible'
-			)
+			cy.get(
+				'input[placeholder*="Tortilla" i], input[placeholder*="nombre" i], input[placeholder*="title" i]'
+			).should('be.visible')
 		})
 
 		it('no envía el formulario si el título está vacío', () => {
@@ -305,7 +332,9 @@ describe('Recetas — con mocks', () => {
 				'getNewRecipe'
 			)
 
-			cy.get('input[placeholder*="Tortilla" i], input[placeholder*="nombre" i], input[placeholder*="title" i]')
+			cy.get(
+				'input[placeholder*="Tortilla" i], input[placeholder*="nombre" i], input[placeholder*="title" i]'
+			)
 				.first()
 				.type('Receta Test')
 
@@ -330,7 +359,9 @@ describe('Recetas — con mocks', () => {
 		})
 
 		it('pre-rellena el formulario con los datos de la receta', () => {
-			cy.get('input[placeholder*="Tortilla" i], input[placeholder*="nombre" i], input[placeholder*="title" i]')
+			cy.get(
+				'input[placeholder*="Tortilla" i], input[placeholder*="nombre" i], input[placeholder*="title" i]'
+			)
 				.first()
 				.should('have.value', 'Tortilla de Patatas')
 		})
@@ -354,7 +385,9 @@ describe('Recetas — con mocks', () => {
 			)
 			cy.intercept('GET', '/api/recipes/1', { body: updatedRecipe }).as('getUpdatedRecipe')
 
-			cy.get('input[placeholder*="Tortilla" i], input[placeholder*="nombre" i], input[placeholder*="title" i]')
+			cy.get(
+				'input[placeholder*="Tortilla" i], input[placeholder*="nombre" i], input[placeholder*="title" i]'
+			)
 				.first()
 				.clear()
 				.type('Tortilla de Patatas Actualizada')

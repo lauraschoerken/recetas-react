@@ -15,8 +15,6 @@ import { ComponentsEditor } from './features/ComponentsEditor'
 import { IncludedRecipe, IncludedRecipes } from './features/IncludedRecipes'
 import { NutritionEditor } from './features/NutritionEditor'
 
-type TabId = 'recipe' | 'nutrition'
-
 interface NutritionSummary {
 	calories: number
 	protein: number
@@ -87,7 +85,6 @@ export function RecipeForm({
 	onChangeCreateMinServings,
 }: RecipeFormProps) {
 	const { t } = useTranslation()
-	const [activeTab, setActiveTab] = useState<TabId>('recipe')
 	const [title, setTitle] = useState(initialData?.title || '')
 	const [description, setDescription] = useState(initialData?.description || '')
 	const [imageUrl, setImageUrl] = useState(initialData?.imageUrl || '')
@@ -106,6 +103,8 @@ export function RecipeForm({
 	const [servings, setServings] = useState(initialData?.servings || 4)
 	const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true)
 	const [defaultLocation, setDefaultLocation] = useState(initialData?.defaultLocation || '')
+	const [showNutritionDetails, setShowNutritionDetails] = useState(false)
+	const [activeSection, setActiveSection] = useState('general')
 
 	// Macros manuales
 	const [customMacros, setCustomMacros] = useState<CustomMacrosState>({
@@ -441,7 +440,6 @@ export function RecipeForm({
 
 		if (Object.keys(errors).length > 0) {
 			// Cambiar al tab de receta para que los errores sean visibles
-			setActiveTab('recipe')
 			// Desplazar al primer error visible (timeout mayor para dar tiempo al tab switch)
 			setTimeout(() => {
 				if (errors.components && componentsSectionRef.current) {
@@ -662,7 +660,7 @@ export function RecipeForm({
 		})
 
 		// Recetas incluidas
-		includedRecipes.forEach((recipe, idx) => {
+		includedRecipes.forEach((recipe) => {
 			if (recipe.recipeId && recipe.recipeName) {
 				result.push({
 					id: recipe.recipeId,
@@ -726,7 +724,11 @@ export function RecipeForm({
 			fat: number
 			fiber: number
 		}
-	}) => {
+	}, meta?: { initial: boolean }) => {
+		if (meta?.initial) {
+			if (data.calculatedNutrition) setLiveNutrition(data.calculatedNutrition)
+			return
+		}
 		const newIngredients = [...ingredients]
 		const newComponents = [...components]
 
@@ -772,6 +774,52 @@ export function RecipeForm({
 		}
 	}
 
+	const formSignature = JSON.stringify({
+		title,
+		description,
+		imageUrl,
+		cookTimeMinutes,
+		difficulty,
+		steps,
+		servings,
+		isPublic,
+		defaultLocation,
+		ingredients,
+		includedRecipes,
+		components,
+		customMacros,
+	})
+	const initialFormSignature = useRef(formSignature)
+	const isDirty = formSignature !== initialFormSignature.current
+
+	useEffect(() => {
+		const sections = Array.from(document.querySelectorAll<HTMLElement>('[id^="recipe-form-"]'))
+		const observer = new IntersectionObserver(
+			(entries) => {
+				const visible = entries
+					.filter((entry) => entry.isIntersecting)
+					.sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
+				if (visible) setActiveSection(visible.target.id.replace('recipe-form-', ''))
+			},
+			{ rootMargin: '-96px 0px -58% 0px', threshold: [0.05, 0.25, 0.5] }
+		)
+		sections.forEach((section) => observer.observe(section))
+		return () => observer.disconnect()
+	}, [])
+
+	useEffect(() => {
+		if (!isDirty || loading) return
+		const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+			event.preventDefault()
+		}
+		window.addEventListener('beforeunload', warnBeforeUnload)
+		return () => window.removeEventListener('beforeunload', warnBeforeUnload)
+	}, [isDirty, loading])
+
+	const handleCancel = () => {
+		if (!isDirty || window.confirm(t('recipes.unsavedChangesConfirm'))) onCancel()
+	}
+
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
 			const target = e.target as HTMLElement
@@ -780,6 +828,57 @@ export function RecipeForm({
 			}
 		}
 	}
+
+	const stockSettings = thresholdConfig ? (
+		<div className='form-group'>
+			<p className='form-hint'>{t('recipes.minStockHint')}</p>
+			<div className='threshold-form'>
+				<input
+					aria-label={t('recipes.minServings')}
+					type='number'
+					className='form-input form-input-sm'
+					placeholder={t('recipes.minServings')}
+					value={thresholdConfig.minServings}
+					onChange={(e) => thresholdConfig.onChange(e.target.value)}
+					min={0}
+					step={1}
+				/>
+				<span className='threshold-unit'>{t('recipes.portionsUnit')}</span>
+				<button
+					type='button'
+					className='btn btn-sm btn-primary'
+					onClick={thresholdConfig.onSave}
+					disabled={!thresholdConfig.minServings || Number(thresholdConfig.minServings) <= 0}>
+					{t('recipes.saveThreshold')}
+				</button>
+				{thresholdConfig.hasThreshold && (
+					<button
+						type='button'
+						className='btn btn-sm btn-outline btn-danger'
+						onClick={thresholdConfig.onDelete}>
+						{t('recipes.removeThreshold')}
+					</button>
+				)}
+			</div>
+		</div>
+	) : typeof createMinServings !== 'undefined' ? (
+		<div className='form-group'>
+			<p className='form-hint'>{t('recipes.minStockHint')}</p>
+			<div className='threshold-form'>
+				<input
+					aria-label={t('recipes.minServings')}
+					type='number'
+					className='form-input form-input-sm'
+					placeholder={t('recipes.minServings')}
+					value={createMinServings}
+					onChange={(e) => onChangeCreateMinServings?.(e.target.value)}
+					min={0}
+					step={1}
+				/>
+				<span className='threshold-unit'>{t('recipes.portionsUnit')}</span>
+			</div>
+		</div>
+	) : null
 
 	return (
 		<form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className='recipe-form'>
@@ -795,207 +894,213 @@ export function RecipeForm({
 					{error}
 				</div>
 			)}
-
-			<div className='form-section'>
-				<div className={`form-group${formErrors.title ? ' has-error' : ''}`} ref={titleRef}>
-					<label className='form-label'>{t('recipes.titleLabel')}</label>
-					<input
-						type='text'
-						className='form-input'
-						value={title}
-						onChange={(e) => setTitle(e.target.value)}
-						placeholder={t('recipes.titlePlaceholder')}
-					/>
-					{formErrors.title && <p className='field-error'>{formErrors.title}</p>}
-				</div>
-
-				<div className='form-group'>
-					<label className='form-label'>{t('recipes.descriptionLabel')}</label>
-					<MarkdownEditor
-						value={description}
-						onChange={setDescription}
-						placeholder={t('recipes.descriptionPlaceholder')}
-					/>
-				</div>
-
-				<div className='form-group'>
-					<label className='form-label'>{t('recipes.imageUrlLabel')}</label>
-					<div className='image-url-input'>
-						<input
-							type='url'
-							className='form-input'
-							value={imageUrl}
-							onChange={(e) => setImageUrl(e.target.value)}
-							placeholder={t('recipes.imagePlaceholder')}
-						/>
-						{imageUrl && (
-							<div className='image-preview'>
-								<img
-									src={imageUrl}
-									alt='Preview'
-									onError={(e) => (e.currentTarget.style.display = 'none')}
-								/>
-							</div>
-						)}
-					</div>
-				</div>
-			</div>
-
-			<div className='form-section'>
-				<div className='form-grid-2'>
-					<div className={`form-group${formErrors.servings ? ' has-error' : ''}`}>
-						<label className='form-label'>{t('recipes.servingsLabel')}</label>
-						<input
-							type='number'
-							className='form-input'
-							value={servings}
-							onChange={(e) => setServings(parseInt(e.target.value) || 1)}
-							min={1}
-							max={100}
-							style={{ width: '100px' }}
-						/>
-						{formErrors.servings && <p className='field-error'>{formErrors.servings}</p>}
-					</div>
-
-					{thresholdConfig && (
-						<div className='form-group'>
-							<label className='form-label'>
-								{t('recipes.minStock')}{' '}
-								{thresholdConfig.hasThreshold && <span className='threshold-active'>✓</span>}
-							</label>
-							<p className='form-hint' style={{ marginBottom: '0.4rem' }}>
-								{t('recipes.minStockHint')}
-							</p>
-							<div className='threshold-form'>
-								<input
-									type='number'
-									className='form-input form-input-sm'
-									placeholder={t('recipes.minServings')}
-									value={thresholdConfig.minServings}
-									onChange={(e) => thresholdConfig.onChange(e.target.value)}
-									min={0}
-									step={1}
-								/>
-								<span className='threshold-unit'>{t('recipes.portionsUnit')}</span>
+			{Object.keys(formErrors).length > 0 && (
+				<div className='form-error-summary' role='alert' tabIndex={-1}>
+					<strong>{t('recipes.validationSummary')}</strong>
+					<ul>
+						{formErrors.title && (
+							<li>
 								<button
 									type='button'
-									className='btn btn-sm btn-primary'
-									onClick={thresholdConfig.onSave}
-									disabled={
-										!thresholdConfig.minServings || Number(thresholdConfig.minServings) <= 0
+									onClick={() =>
+										titleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 									}>
-									{t('recipes.saveThreshold')}
+									{formErrors.title}
 								</button>
-								{thresholdConfig.hasThreshold && (
-									<button
-										type='button'
-										className='btn btn-sm btn-outline btn-danger'
-										onClick={thresholdConfig.onDelete}>
-										{t('recipes.removeThreshold')}
-									</button>
+							</li>
+						)}
+						{formErrors.servings && <li>{formErrors.servings}</li>}
+						{formErrors.ingredients && (
+							<li>
+								<button
+									type='button'
+									onClick={() =>
+										ingredientsSectionRef.current?.scrollIntoView({
+											behavior: 'smooth',
+											block: 'start',
+										})
+									}>
+									{formErrors.ingredients}
+								</button>
+							</li>
+						)}
+						{formErrors.components && (
+							<li>
+								<button
+									type='button'
+									onClick={() =>
+										componentsSectionRef.current?.scrollIntoView({
+											behavior: 'smooth',
+											block: 'start',
+										})
+									}>
+									{formErrors.components}
+								</button>
+							</li>
+						)}
+					</ul>
+				</div>
+			)}
+
+			<div className='form-editor-layout'>
+				<nav className='form-section-nav' aria-label={t('recipes.formSections')}>
+					{[
+						['general', t('recipes.formGeneral')],
+						['details', t('recipes.formDetails')],
+						['ingredients', t('recipes.formIngredients')],
+						['components', t('recipes.componentsTitle')],
+						['preparation', t('recipes.formPreparation')],
+						['stock', t('recipes.minStock')],
+						['nutrition', t('recipes.formNutrition')],
+					].map(([id, label], index) => (
+						<button
+							type='button'
+							key={id}
+							className={activeSection === id ? 'active' : ''}
+							onClick={() => {
+								setActiveSection(id)
+								document
+									.getElementById(`recipe-form-${id}`)
+									?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+							}}>
+							<span>{index + 1}</span>
+							{label}
+						</button>
+					))}
+				</nav>
+				<div className='form-editor-content'>
+					<section id='recipe-form-general' className='form-section form-section--surface'>
+						<h2 className='form-section-heading'>{t('recipes.formGeneral')}</h2>
+						<div className={`form-group${formErrors.title ? ' has-error' : ''}`} ref={titleRef}>
+							<label className='form-label' htmlFor='recipe-title'>
+								{t('recipes.titleLabel')}
+							</label>
+							<input
+								id='recipe-title'
+								type='text'
+								className='form-input'
+								value={title}
+								onChange={(e) => setTitle(e.target.value)}
+								placeholder={t('recipes.titlePlaceholder')}
+							/>
+							{formErrors.title && <p className='field-error'>{formErrors.title}</p>}
+						</div>
+
+						<div className='form-group' role='group' aria-labelledby='recipe-description-label'>
+							<label className='form-label' id='recipe-description-label'>
+								{t('recipes.descriptionLabel')}
+							</label>
+							<MarkdownEditor
+								value={description}
+								onChange={setDescription}
+								placeholder={t('recipes.descriptionPlaceholder')}
+							/>
+						</div>
+
+						<div className='form-group'>
+							<label className='form-label' htmlFor='recipe-image-url'>
+								{t('recipes.imageUrlLabel')}
+							</label>
+							<p className='form-hint'>{t('recipes.imageUrlHint')}</p>
+							<div className='image-url-input'>
+								<input
+									id='recipe-image-url'
+									type='url'
+									className='form-input'
+									value={imageUrl}
+									onChange={(e) => setImageUrl(e.target.value)}
+									placeholder={t('recipes.imagePlaceholder')}
+								/>
+								{imageUrl && (
+									<div className='image-preview'>
+										<img
+											src={imageUrl}
+											alt='Preview'
+											onError={(e) => (e.currentTarget.style.display = 'none')}
+										/>
+									</div>
 								)}
 							</div>
 						</div>
-					)}
+					</section>
 
-					{/* Create-mode threshold input: simple input stored in parent via props */}
-					{!thresholdConfig && typeof createMinServings !== 'undefined' && (
-						<div className='form-group'>
-							<label className='form-label'>{t('recipes.minStock')}</label>
-							<p className='form-hint' style={{ marginBottom: '0.4rem' }}>
-								{t('recipes.minStockHint')}
-							</p>
-							<div className='threshold-form'>
+					<section id='recipe-form-details' className='form-section form-section--surface'>
+						<h2 className='form-section-heading'>{t('recipes.formDetails')}</h2>
+						<div className='form-grid-2'>
+							<div className={`form-group${formErrors.servings ? ' has-error' : ''}`}>
+								<label className='form-label' htmlFor='recipe-servings'>
+									{t('recipes.servingsLabel')}
+								</label>
 								<input
+									id='recipe-servings'
 									type='number'
-									className='form-input form-input-sm'
-									placeholder={t('recipes.minServings')}
-									value={createMinServings}
-									onChange={(e) => onChangeCreateMinServings?.(e.target.value)}
-									min={0}
-									step={1}
+									className='form-input'
+									value={servings}
+									onChange={(e) => setServings(parseInt(e.target.value) || 1)}
+									min={1}
+									max={100}
+									style={{ width: '100px' }}
 								/>
-								<span className='threshold-unit'>{t('recipes.portionsUnit')}</span>
+								{formErrors.servings && <p className='field-error'>{formErrors.servings}</p>}
+							</div>
+
+							<div className='form-group'>
+								<label className='form-label' htmlFor='recipe-cook-time'>
+									{t('recipes.timeLabel')}
+								</label>
+								<input
+									id='recipe-cook-time'
+									type='number'
+									className='form-input'
+									value={cookTimeMinutes || ''}
+									onChange={(e) => setCookTimeMinutes(parseInt(e.target.value) || 0)}
+									min={0}
+									placeholder={t('recipes.timePlaceholder')}
+								/>
+							</div>
+
+							<div className='form-group'>
+								<label className='form-label' htmlFor='recipe-difficulty'>
+									{t('recipes.difficultyLabel')}
+								</label>
+								<select
+									id='recipe-difficulty'
+									className='form-input'
+									value={difficulty}
+									onChange={(e) => setDifficulty(e.target.value)}>
+									<option value=''>{t('recipes.difficultySelect')}</option>
+									<option value='easy'>{t('recipes.difficultyEasy')}</option>
+									<option value='medium'>{t('recipes.difficultyMedium')}</option>
+									<option value='hard'>{t('recipes.difficultyHard')}</option>
+								</select>
+							</div>
+
+							<div className='form-group'>
+								<label className='form-label'>{t('recipes.visibilityLabel')}</label>
+								<div className={`visibility-box ${isPublic ? 'is-public' : 'is-private'}`}>
+									<label className='toggle-container'>
+										<input
+											aria-label={t('recipes.visibilityLabel')}
+											type='checkbox'
+											checked={isPublic}
+											onChange={(e) => setIsPublic(e.target.checked)}
+										/>
+										<span className='toggle-slider'></span>
+									</label>
+									<span className='visibility-hint'>
+										{isPublic ? t('recipes.publicHint') : t('recipes.privateHint')}
+									</span>
+								</div>
 							</div>
 						</div>
-					)}
+					</section>
 
-					<div className='form-group'>
-						<label className='form-label'>{t('recipes.timeLabel')}</label>
-						<input
-							type='number'
-							className='form-input'
-							value={cookTimeMinutes || ''}
-							onChange={(e) => setCookTimeMinutes(parseInt(e.target.value) || 0)}
-							min={0}
-							placeholder={t('recipes.timePlaceholder')}
-						/>
-					</div>
-
-					<div className='form-group'>
-						<label className='form-label'>{t('recipes.difficultyLabel')}</label>
-						<select
-							className='form-input'
-							value={difficulty}
-							onChange={(e) => setDifficulty(e.target.value)}>
-							<option value=''>{t('recipes.difficultySelect')}</option>
-							<option value='easy'>{t('recipes.difficultyEasy')}</option>
-							<option value='medium'>{t('recipes.difficultyMedium')}</option>
-							<option value='hard'>{t('recipes.difficultyHard')}</option>
-						</select>
-					</div>
-
-					<div className='form-group'>
-						<label className='form-label'>{t('recipes.saveInLabel')}</label>
-						<select
-							className='form-input'
-							value={defaultLocation}
-							onChange={(e) => setDefaultLocation(e.target.value)}>
-							<option value=''>{t('recipes.noPreference')}</option>
-							<option value='nevera'>{t('homePage.fridge')}</option>
-							<option value='congelador'>{t('homePage.freezer')}</option>
-							<option value='despensa'>{t('homePage.pantry')}</option>
-						</select>
-					</div>
-
-					<div className='form-group'>
-						<label className='form-label'>{t('recipes.visibilityLabel')}</label>
-						<div className={`visibility-box ${isPublic ? 'is-public' : 'is-private'}`}>
-							<label className='toggle-container'>
-								<input
-									type='checkbox'
-									checked={isPublic}
-									onChange={(e) => setIsPublic(e.target.checked)}
-								/>
-								<span className='toggle-slider'></span>
-							</label>
-							<span className='visibility-hint'>
-								{isPublic ? t('recipes.publicHint') : t('recipes.privateHint')}
-							</span>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div className='form-tabs'>
-				<button
-					type='button'
-					className={`form-tab ${activeTab === 'recipe' ? 'active' : ''}`}
-					onClick={() => setActiveTab('recipe')}>
-					{t('recipes.ingredientsTab')}
-				</button>
-				<button
-					type='button'
-					className={`form-tab ${activeTab === 'nutrition' ? 'active' : ''}`}
-					onClick={() => setActiveTab('nutrition')}>
-					{t('recipes.nutritionTab')}
-				</button>
-			</div>
-
-			{activeTab === 'recipe' && (
-				<>
-					<div className='form-section' ref={ingredientsSectionRef}>
-						<label className='form-label'>{t('recipes.directIngredients')}</label>
+					<section
+						id='recipe-form-ingredients'
+						className='form-section form-section--surface'
+						ref={ingredientsSectionRef}>
+						<h2 className='form-section-heading'>{t('recipes.formIngredients')}</h2>
+						<p className='form-label'>{t('recipes.directIngredients')}</p>
 						<p className='form-hint'>{t('recipes.directIngredientsHint')}</p>
 						{formErrors.ingredients && <p className='section-error'>{formErrors.ingredients}</p>}
 						{duplicateIngredients.length > 0 && (
@@ -1015,15 +1120,18 @@ export function RecipeForm({
 								.filter((g) => g.name.trim() !== '')}
 							onAddToGroup={handleAddToGroup}
 						/>
-					</div>
+					</section>
 
-					<div className='form-section'>
+					<section className='form-section form-section--surface form-section--secondary'>
 						<label className='form-label'>{t('recipes.includedRecipes')}</label>
 						<p className='form-hint'>{t('recipes.includedRecipesHint')}</p>
 						<IncludedRecipes recipes={includedRecipes} onChange={setIncludedRecipes} />
-					</div>
+					</section>
 
-					<div className='form-section' ref={componentsSectionRef}>
+					<section
+						id='recipe-form-components'
+						className='form-section form-section--surface form-section--secondary'
+						ref={componentsSectionRef}>
 						<label className='form-label'>{t('recipes.optionalVariants')}</label>
 						<p className='form-hint'>{t('recipes.optionalVariantsHint')}</p>
 						{formErrors.components && <p className='section-error'>{formErrors.components}</p>}
@@ -1035,12 +1143,38 @@ export function RecipeForm({
 							onConvertToFixed={handleConvertToFixed}
 							showErrors={!!formErrors.components}
 						/>
-					</div>
+					</section>
 
-					<div className='form-section'>
-						<label className='form-label'>{t('recipes.stepsLabel')}</label>
+					<section id='recipe-form-preparation' className='form-section form-section--surface'>
+						<h2 className='form-section-heading'>{t('recipes.formPreparation')}</h2>
+						<p className='form-label'>{t('recipes.stepsLabel')}</p>
 						<StepsList steps={steps} onChange={setSteps} />
-					</div>
+					</section>
+
+					<section id='recipe-form-stock' className='form-section form-section--surface'>
+						<h2 className='form-section-heading'>
+							{t('recipes.minStock')}{' '}
+							{thresholdConfig?.hasThreshold && <span className='threshold-active'>✓</span>}
+						</h2>
+						<div className='form-grid-2'>
+							<div>{stockSettings}</div>
+							<div className='form-group'>
+								<label className='form-label' htmlFor='recipe-location'>
+									{t('recipes.saveInLabel')}
+								</label>
+								<select
+									id='recipe-location'
+									className='form-input'
+									value={defaultLocation}
+									onChange={(e) => setDefaultLocation(e.target.value)}>
+									<option value=''>{t('recipes.noPreference')}</option>
+									<option value='nevera'>{t('homePage.fridge')}</option>
+									<option value='congelador'>{t('homePage.freezer')}</option>
+									<option value='despensa'>{t('homePage.pantry')}</option>
+								</select>
+							</div>
+						</div>
+					</section>
 
 					{displayNutrition && (
 						<div className='form-section nutrition-summary'>
@@ -1079,22 +1213,42 @@ export function RecipeForm({
 							)}
 						</div>
 					)}
-				</>
-			)}
-
-			{activeTab === 'nutrition' && (
-				<div className='form-section'>
-					<NutritionEditor
-						ingredients={nutritionIngredients}
-						customMacros={customMacros}
-						servings={servings}
-						onChange={handleNutritionChange}
-					/>
+					<section id='recipe-form-nutrition' className='form-section form-section--surface'>
+						<div className='nutrition-section-heading'>
+							<div>
+								<h2 className='form-section-heading'>{t('recipes.formNutrition')}</h2>
+								<p className='form-hint'>{t('recipes.nutritionDetailsHint')}</p>
+							</div>
+							<button
+								type='button'
+								className='btn btn-outline'
+								aria-expanded={showNutritionDetails}
+								aria-controls='recipe-nutrition-details'
+								onClick={() => setShowNutritionDetails((visible) => !visible)}>
+								{showNutritionDetails
+									? t('recipes.hideNutritionDetails')
+									: t('recipes.showNutritionDetails')}
+							</button>
+						</div>
+						{showNutritionDetails && (
+							<div id='recipe-nutrition-details' className='nutrition-details-panel'>
+								<NutritionEditor
+									ingredients={nutritionIngredients}
+									customMacros={customMacros}
+									servings={servings}
+									onChange={handleNutritionChange}
+								/>
+							</div>
+						)}
+					</section>
 				</div>
-			)}
+			</div>
 
 			<div className='form-actions'>
-				<button type='button' className='btn btn-outline' onClick={onCancel}>
+				<span className={`form-save-state${isDirty ? ' is-dirty' : ''}`}>
+					{t(isDirty ? 'recipes.unsavedChanges' : 'recipes.noUnsavedChanges')}
+				</span>
+				<button type='button' className='btn btn-outline' onClick={handleCancel}>
 					{t('cancel')}
 				</button>
 				<button type='submit' className='btn btn-primary' disabled={loading}>

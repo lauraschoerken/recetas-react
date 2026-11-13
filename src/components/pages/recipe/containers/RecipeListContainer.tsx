@@ -155,10 +155,19 @@ export function RecipeListContainer() {
 		maxCarbs: searchParams.get('maxCarbs') || '',
 		minFat: searchParams.get('minFat') || '',
 		maxFat: searchParams.get('maxFat') || '',
+		minFiber: searchParams.get('minFiber') || '',
+		maxFiber: searchParams.get('maxFiber') || '',
 		difficulty: (searchParams.get('difficulty') as RecipeFilterValues['difficulty']) || '',
 		minCookTime: searchParams.get('minCook') || '',
 		maxCookTime: searchParams.get('maxCook') || '',
-		ingredient: searchParams.get('ingredient') || '',
+		ingredients: (searchParams.get('ingredientIds') || '')
+			.split(',')
+			.map(Number)
+			.filter((id) => Number.isInteger(id) && id > 0)
+			.map((id, index) => ({
+				id,
+				name: (searchParams.get('ingredientNames') || '').split('|')[index] || `#${id}`,
+			})),
 		tagIds: searchParams.get('tags')
 			? searchParams
 					.get('tags')!
@@ -189,10 +198,12 @@ export function RecipeListContainer() {
 		filters.maxCarbs,
 		filters.minFat,
 		filters.maxFat,
+		filters.minFiber,
+		filters.maxFiber,
 		filters.difficulty,
 		filters.minCookTime,
 		filters.maxCookTime,
-		filters.ingredient,
+		filters.ingredients.length > 0,
 		filters.tagIds.length > 0,
 		filters.excludeTagIds.length > 0,
 		filters.authorId != null,
@@ -223,7 +234,7 @@ export function RecipeListContainer() {
 				search: normalizeText(search),
 				visibility: filters.visibility,
 				hidden: filters.hidden,
-				ingredient: filters.ingredient,
+				ingredientIds: filters.ingredients.map((ingredient) => ingredient.id),
 				difficulty: filters.difficulty || undefined,
 				minCookTime: filters.minCookTime ? Number(filters.minCookTime) : undefined,
 				maxCookTime: filters.maxCookTime ? Number(filters.maxCookTime) : undefined,
@@ -356,10 +367,23 @@ export function RecipeListContainer() {
 				setOrDel('maxCarbs', newFilters.maxCarbs || undefined)
 				setOrDel('minFat', newFilters.minFat || undefined)
 				setOrDel('maxFat', newFilters.maxFat || undefined)
+				setOrDel('minFiber', newFilters.minFiber || undefined)
+				setOrDel('maxFiber', newFilters.maxFiber || undefined)
 				setOrDel('difficulty', newFilters.difficulty || undefined)
 				setOrDel('minCook', newFilters.minCookTime || undefined)
 				setOrDel('maxCook', newFilters.maxCookTime || undefined)
-				setOrDel('ingredient', newFilters.ingredient || undefined)
+				setOrDel(
+					'ingredientIds',
+					newFilters.ingredients.length > 0
+						? newFilters.ingredients.map((ingredient) => ingredient.id).join(',')
+						: undefined
+				)
+				setOrDel(
+					'ingredientNames',
+					newFilters.ingredients.length > 0
+						? newFilters.ingredients.map((ingredient) => ingredient.name).join('|')
+						: undefined
+				)
 				setOrDel('tags', newFilters.tagIds.length > 0 ? newFilters.tagIds.join(',') : undefined)
 				setOrDel(
 					'exTags',
@@ -391,10 +415,13 @@ export function RecipeListContainer() {
 					'maxCarbs',
 					'minFat',
 					'maxFat',
+					'minFiber',
+					'maxFiber',
 					'difficulty',
 					'minCook',
 					'maxCook',
-					'ingredient',
+					'ingredientIds',
+					'ingredientNames',
 					'tags',
 					'exTags',
 					'sortBy',
@@ -832,8 +859,23 @@ export function RecipeListContainer() {
 		await handleImportPdf(file, e.target)
 	}
 
-	if (loading && initialLoad) return <div className='loading'>{t('recipes.loading')}</div>
-	if (error) return <div className='error-message'>{error}</div>
+	if (loading && initialLoad) {
+		return (
+			<div className='recipe-page-state' role='status'>
+				{t('recipes.loading')}
+			</div>
+		)
+	}
+	if (error) {
+		return (
+			<div className='recipe-page-state recipe-page-state--error' role='alert'>
+				<p>{error}</p>
+				<button type='button' className='btn btn-outline' onClick={() => void loadRecipes()}>
+					{t('retry')}
+				</button>
+			</div>
+		)
+	}
 
 	// Filtro client-side de macros (los calcula el servidor pero no filtra por ellos)
 	const applyClientFilters = (list: Recipe[]) => {
@@ -851,16 +893,116 @@ export function RecipeListContainer() {
 			if (filters.maxCarbs && carbs != null && carbs > Number(filters.maxCarbs)) return false
 			if (filters.minFat && fat != null && fat < Number(filters.minFat)) return false
 			if (filters.maxFat && fat != null && fat > Number(filters.maxFat)) return false
+			const fiber = r.nutritionPerServing?.fiber
+			if (filters.minFiber && fiber != null && fiber < Number(filters.minFiber)) return false
+			if (filters.maxFiber && fiber != null && fiber > Number(filters.maxFiber)) return false
 			return true
 		})
 	}
 
 	const visibleRecipes = applyClientFilters(recipes)
+	const rangeLabel = (label: string, min: string, max: string, unit: string) =>
+		`${label}: ${min || '0'}–${max || '∞'}${unit ? ` ${unit}` : ''}`
+	const activeFilterChips: { key: string; label: string; clear: () => void }[] = []
+	if (filters.visibility !== 'all') {
+		activeFilterChips.push({
+			key: 'visibility',
+			label: `${t('recipes.filterVisibility')}: ${t(filters.visibility)}`,
+			clear: () => handleFiltersChange({ ...filters, visibility: 'all' }),
+		})
+	}
+	if (filters.difficulty) {
+		activeFilterChips.push({
+			key: 'difficulty',
+			label: `${t('recipes.difficultyLabel')}: ${t(`recipes.difficulty${filters.difficulty.charAt(0).toUpperCase() + filters.difficulty.slice(1)}`)}`,
+			clear: () => handleFiltersChange({ ...filters, difficulty: '' }),
+		})
+	}
+	filters.ingredients.forEach((ingredient) => {
+		activeFilterChips.push({
+			key: `ingredient-${ingredient.id}`,
+			label: `${t('recipes.filterIngredient')}: ${ingredient.name}`,
+			clear: () =>
+				handleFiltersChange({
+					...filters,
+					ingredients: filters.ingredients.filter((item) => item.id !== ingredient.id),
+				}),
+		})
+	})
+	if (filters.authorId != null) {
+		activeFilterChips.push({
+			key: 'author',
+			label: `${t('recipes.filterAuthor')}: ${authors.find((a) => a.id === filters.authorId)?.name || `#${filters.authorId}`}`,
+			clear: () => handleFiltersChange({ ...filters, authorId: null }),
+		})
+	}
+	if (filters.minCookTime || filters.maxCookTime) {
+		activeFilterChips.push({
+			key: 'cook-time',
+			label: rangeLabel(
+				t('recipes.filterCookTime'),
+				filters.minCookTime,
+				filters.maxCookTime,
+				t('recipes.minuteShort')
+			),
+			clear: () => handleFiltersChange({ ...filters, minCookTime: '', maxCookTime: '' }),
+		})
+	}
+	if (filters.minCalories || filters.maxCalories) {
+		activeFilterChips.push({
+			key: 'calories',
+			label: rangeLabel(
+				t('recipes.filterCalories'),
+				filters.minCalories,
+				filters.maxCalories,
+				'kcal'
+			),
+			clear: () => handleFiltersChange({ ...filters, minCalories: '', maxCalories: '' }),
+		})
+	}
+	if (filters.minProtein || filters.maxProtein) {
+		activeFilterChips.push({
+			key: 'protein',
+			label: rangeLabel(t('weekPlan.protein'), filters.minProtein, filters.maxProtein, 'g'),
+			clear: () => handleFiltersChange({ ...filters, minProtein: '', maxProtein: '' }),
+		})
+	}
+	if (filters.minCarbs || filters.maxCarbs) {
+		activeFilterChips.push({
+			key: 'carbs',
+			label: rangeLabel(t('weekPlan.carbs'), filters.minCarbs, filters.maxCarbs, 'g'),
+			clear: () => handleFiltersChange({ ...filters, minCarbs: '', maxCarbs: '' }),
+		})
+	}
+	if (filters.minFat || filters.maxFat) {
+		activeFilterChips.push({
+			key: 'fat',
+			label: rangeLabel(t('weekPlan.fat'), filters.minFat, filters.maxFat, 'g'),
+			clear: () => handleFiltersChange({ ...filters, minFat: '', maxFat: '' }),
+		})
+	}
+	if (filters.minFiber || filters.maxFiber) {
+		activeFilterChips.push({
+			key: 'fiber',
+			label: rangeLabel(t('fiber'), filters.minFiber, filters.maxFiber, 'g'),
+			clear: () => handleFiltersChange({ ...filters, minFiber: '', maxFiber: '' }),
+		})
+	}
+	if (filters.tagIds.length || filters.excludeTagIds.length) {
+		activeFilterChips.push({
+			key: 'tags',
+			label: `${t('recipes.filterTags')}: ${filters.tagIds.length + filters.excludeTagIds.length}`,
+			clear: () => handleFiltersChange({ ...filters, tagIds: [], excludeTagIds: [] }),
+		})
+	}
 
 	return (
 		<>
 			<div className='page-header'>
-				<h1 className='page-title'>{t('recipes.title')}</h1>
+				<div className='recipe-page-heading'>
+					<h1 className='page-title'>{t('recipes.title')}</h1>
+					<p>{t('recipes.listSubtitle')}</p>
+				</div>
 				<div className='page-header-actions'>
 					<button
 						type='button'
@@ -926,39 +1068,41 @@ export function RecipeListContainer() {
 				</div>
 			)}
 
-			<div className='search-bar-container'>
-				<input
-					type='search'
-					className='form-input'
-					placeholder={t('search')}
-					value={search}
-					onChange={(e) => handleSearch(e.target.value)}
-				/>
-				<button
-					type='button'
-					className={`btn btn-outline${filters.hidden === 'only' ? ' active' : ''}`}
-					onClick={() =>
-						handleFiltersChange({
-							...filters,
-							hidden: filters.hidden === 'only' ? 'exclude' : 'only',
-							visibility: 'all',
-							authorId: null,
-						})
-					}
-					aria-pressed={filters.hidden === 'only'}>
-					{filters.hidden === 'only'
-						? t('recipes.showVisible')
-						: t('recipes.showHiddenCount', { count: hiddenTotal })}
-				</button>
-				<button
-					type='button'
-					className={`btn btn-outline recipe-filter-toggle${activeFilterCount > 0 ? ' active' : ''}`}
-					onClick={() => setFiltersOpen((o) => !o)}>
-					{t('recipes.filters')}
-					{activeFilterCount > 0 && (
-						<span className='recipe-filter-badge'>{activeFilterCount}</span>
-					)}
-				</button>
+			<div className='recipe-library-toolbar'>
+				<div className='search-bar-container'>
+					<input
+						type='search'
+						className='form-input'
+						placeholder={t('search')}
+						aria-label={t('search')}
+						value={search}
+						onChange={(e) => handleSearch(e.target.value)}
+					/>
+					<button
+						type='button'
+						className={`btn btn-outline recipe-filter-toggle${activeFilterCount > 0 ? ' active' : ''}`}
+						onClick={() => setFiltersOpen((o) => !o)}>
+						{t('recipes.filters')}
+						{activeFilterCount > 0 && (
+							<span className='recipe-filter-badge'>{activeFilterCount}</span>
+						)}
+					</button>
+				</div>
+				{activeFilterChips.length > 0 && (
+					<div className='recipe-active-filters' aria-label={t('recipes.filters')}>
+						{activeFilterChips.map((chip) => (
+							<span key={chip.key} className='recipe-active-filter'>
+								{chip.label}
+								<button
+									type='button'
+									onClick={chip.clear}
+									aria-label={`${t('recipes.filterClear')}: ${chip.label}`}>
+									×
+								</button>
+							</span>
+						))}
+					</div>
+				)}
 			</div>
 
 			{filtersOpen && (
@@ -968,21 +1112,29 @@ export function RecipeListContainer() {
 					authors={authors}
 					onChange={handleFiltersChange}
 					onClear={handleFiltersClear}
+					onClose={() => setFiltersOpen(false)}
 					activeCount={activeFilterCount}
+					hiddenTotal={hiddenTotal}
 				/>
 			)}
 
-			<RecipeList
-				recipes={visibleRecipes}
-				currentUserId={currentUser?.id || 0}
-				onDelete={handleDelete}
-				onAddToWeek={handleAddToWeek}
-				selectedIds={selectedIds}
-				onToggleSelect={handleToggleSelect}
-				onHide={filters.hidden === 'exclude' ? handleHide : undefined}
-				onUnhide={filters.hidden === 'only' ? handleUnhide : undefined}
-				showingHidden={filters.hidden === 'only'}
-			/>
+			<p className='recipe-results-summary' aria-live='polite'>
+				{t('recipes.resultsCount', { count: visibleRecipes.length })}
+			</p>
+			<div className='recipe-results' aria-busy={loading}>
+				{loading && <span className='recipe-results-loading'>{t('recipes.loading')}</span>}
+				<RecipeList
+					recipes={visibleRecipes}
+					currentUserId={currentUser?.id || 0}
+					onDelete={handleDelete}
+					onAddToWeek={handleAddToWeek}
+					selectedIds={selectedIds}
+					onToggleSelect={handleToggleSelect}
+					onHide={filters.hidden === 'exclude' ? handleHide : undefined}
+					onUnhide={filters.hidden === 'only' ? handleUnhide : undefined}
+					showingHidden={filters.hidden === 'only'}
+				/>
+			</div>
 
 			{showExportModal && (
 				<div className='modal-overlay' onClick={() => setShowExportModal(false)}>

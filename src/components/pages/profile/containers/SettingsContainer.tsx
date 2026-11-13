@@ -15,23 +15,29 @@ import {
 } from 'react-icons/hi2'
 import { Link } from 'react-router-dom'
 
+import { ItemCard, ItemCardData } from '@/components/shared/item-card/ItemCard'
 import { alertService, IngredientThreshold, RecipeThreshold } from '@/services/alert'
 import { authService } from '@/services/auth'
 import { backupService } from '@/services/backup'
 import { Household, householdService } from '@/services/household'
 import { IngredientTag, ingredientTagService } from '@/services/ingredientExtras'
 import { storeService, UserStore } from '@/services/store'
-import { useDialog } from '@/utils/dialog/DialogContext'
 import { copyTextToClipboard } from '@/utils/clipboard'
+import { useDialog } from '@/utils/dialog/DialogContext'
 import {
 	getStoredPageSize,
 	getStoredSnoozeDuration,
-	PageSizeScope,
 	PAGE_SIZE_OPTIONS,
+	PageSizeScope,
 	setStoredPageSize,
 	setStoredSnoozeDuration,
 	SNOOZE_OPTIONS,
 } from '@/utils/pagination/usePagination'
+import {
+	getStoredRecipeCardStyle,
+	RecipeCardStyle,
+	setStoredRecipeCardStyle,
+} from '@/utils/recipeCardStyle'
 
 type SettingsSection =
 	| 'household'
@@ -44,6 +50,23 @@ type SettingsSection =
 	| 'stores'
 	| 'tags'
 	| 'hiddenRecipes'
+
+const RECIPE_CARD_PREVIEW: ItemCardData = {
+	id: 0,
+	title: 'Pasta con pollo y pesto ligero',
+	description: 'Pasta cremosa con pesto, pollo y tomate seco.',
+	imageUrl:
+		'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=720&q=80',
+	userId: 1,
+	caloriesPerServing: 585,
+	cookTimeMinutes: 35,
+	difficulty: 'easy',
+	servings: 2,
+	tags: [{ id: 1, name: 'Frutos secos', color: '#d59a45' }],
+	type: 'recipe',
+	isPublic: true,
+	authorName: 'Demo',
+}
 
 export function SettingsContainer() {
 	const { t } = useTranslation()
@@ -69,6 +92,7 @@ export function SettingsContainer() {
 		ingredients: getStoredPageSize('ingredients'),
 		home: getStoredPageSize('home'),
 	}))
+	const [recipeCardStyle, setRecipeCardStyle] = useState<RecipeCardStyle>(getStoredRecipeCardStyle)
 	const [snoozeDuration, setSnoozeDurationState] = useState(getStoredSnoozeDuration)
 
 	// Thresholds state
@@ -661,71 +685,72 @@ export function SettingsContainer() {
 
 	const aiWorkoutTemplate = JSON.stringify(
 		{
-			"templates": [
+			templates: [
 				{
-					"title": "Pierna y carrera corta",
-					"durationMinutes": 55,
-					"caloriesBurned": 430,
-					"averageHeartRate": 142,
-					"exercises": "Sentadillas: 3 series de 10\nZancadas: 3 series de 10 por pierna\nAbdominales: 3 series de 15\nCorrer 2 km",
-					"notes": "Descanso de 60-90 segundos entre series",
-					"defaultAddCaloriesToGoal": false
-				}
+					title: 'Pierna y carrera corta',
+					durationMinutes: 55,
+					caloriesBurned: 430,
+					averageHeartRate: 142,
+					exercises:
+						'Sentadillas: 3 series de 10\nZancadas: 3 series de 10 por pierna\nAbdominales: 3 series de 15\nCorrer 2 km',
+					notes: 'Descanso de 60-90 segundos entre series',
+					defaultAddCaloriesToGoal: false,
+				},
 			],
-			"entries": [
+			entries: [
 				{
-					"kind": "template",
-					"date": "2026-10-19",
-					"templateTitle": "Pierna y carrera corta",
-					"addCaloriesToGoal": true,
-					"notes": "Hoy subí el peso en sentadillas"
+					kind: 'template',
+					date: '2026-10-19',
+					templateTitle: 'Pierna y carrera corta',
+					addCaloriesToGoal: true,
+					notes: 'Hoy subí el peso en sentadillas',
 				},
 				{
-					"kind": "custom",
-					"date": "2026-10-20",
-					"title": "Paseo largo",
-					"durationMinutes": 70,
-					"caloriesBurned": 280,
-					"averageHeartRate": 105,
-					"activityType": "walking",
-					"locationName": "Parque del barrio",
-					"distanceMeters": 6000,
-					"durationSeconds": 4200,
-					"movingDurationSeconds": 3900,
-					"elapsedDurationSeconds": 4200,
-					"averageSpeedMps": 1.43,
-					"averageMovingSpeedMps": 1.54,
-					"maxSpeedMps": 1.8,
-					"elevationGainMeters": 85,
-					"elevationLossMeters": 82,
-					"minElevationMeters": 610,
-					"averageElevationMeters": 642,
-					"maxElevationMeters": 681,
-					"minHeartRate": 76,
-					"maxHeartRate": 128,
-					"steps": 7800,
-					"averageCadence": 112,
-					"maxCadence": 126,
-					"activeCalories": 230,
-					"restingCalories": 50,
-					"estimatedSweatLossMl": 450,
-					"moderateIntensityMinutes": 35,
-					"vigorousIntensityMinutes": 0,
-					"intensityMinutes": 35,
-					"maxVerticalSpeedMps": 0.35,
-					"lapCount": 1,
-					"averagePowerWatts": 185,
-					"maxPowerWatts": 420,
-					"normalizedPowerWatts": 205,
-					"totalReps": 45,
-					"totalSets": 6,
-					"aerobicTrainingEffect": 3.1,
-					"anaerobicTrainingEffect": 1.4,
-					"exercises": "Caminar 6 km",
-					"notes": "Sesión puntual; no se guarda como plantilla",
-					"addCaloriesToGoal": false
-				}
-			]
+					kind: 'custom',
+					date: '2026-10-20',
+					title: 'Paseo largo',
+					durationMinutes: 70,
+					caloriesBurned: 280,
+					averageHeartRate: 105,
+					activityType: 'walking',
+					locationName: 'Parque del barrio',
+					distanceMeters: 6000,
+					durationSeconds: 4200,
+					movingDurationSeconds: 3900,
+					elapsedDurationSeconds: 4200,
+					averageSpeedMps: 1.43,
+					averageMovingSpeedMps: 1.54,
+					maxSpeedMps: 1.8,
+					elevationGainMeters: 85,
+					elevationLossMeters: 82,
+					minElevationMeters: 610,
+					averageElevationMeters: 642,
+					maxElevationMeters: 681,
+					minHeartRate: 76,
+					maxHeartRate: 128,
+					steps: 7800,
+					averageCadence: 112,
+					maxCadence: 126,
+					activeCalories: 230,
+					restingCalories: 50,
+					estimatedSweatLossMl: 450,
+					moderateIntensityMinutes: 35,
+					vigorousIntensityMinutes: 0,
+					intensityMinutes: 35,
+					maxVerticalSpeedMps: 0.35,
+					lapCount: 1,
+					averagePowerWatts: 185,
+					maxPowerWatts: 420,
+					normalizedPowerWatts: 205,
+					totalReps: 45,
+					totalSets: 6,
+					aerobicTrainingEffect: 3.1,
+					anaerobicTrainingEffect: 1.4,
+					exercises: 'Caminar 6 km',
+					notes: 'Sesión puntual; no se guarda como plantilla',
+					addCaloriesToGoal: false,
+				},
+			],
 		},
 		null,
 		2
@@ -1153,11 +1178,30 @@ export function SettingsContainer() {
 			const { profileService } = await import('@/services/profile')
 			const profileData = await profileService.getProfile()
 			setPlanningScope((profileData as any).planningAlertScope || 'own')
+			if (profileData.recipeCardStyle === 'minimal' || profileData.recipeCardStyle === 'visual') {
+				setStoredRecipeCardStyle(profileData.recipeCardStyle)
+				setRecipeCardStyle(profileData.recipeCardStyle)
+			}
 		} catch {
 			console.error('Error loading planning scope')
 		}
 
 		setLoading(false)
+	}
+
+	const handleRecipeCardStyleChange = async (style: RecipeCardStyle) => {
+		const previous = recipeCardStyle
+		setStoredRecipeCardStyle(style)
+		setRecipeCardStyle(style)
+		try {
+			const { profileService } = await import('@/services/profile')
+			await profileService.updateProfile({ recipeCardStyle: style })
+			toast.success(t('settings.configSaved'))
+		} catch {
+			setStoredRecipeCardStyle(previous)
+			setRecipeCardStyle(previous)
+			toast.error(t('settings.errorSaving'))
+		}
 	}
 
 	const handleCreateHousehold = async () => {
@@ -1915,13 +1959,27 @@ export function SettingsContainer() {
 							<textarea
 								readOnly
 								value={aiWorkoutTemplate}
-								style={{ width: '100%', height: '520px', padding: '1rem', borderRadius: '14px', border: '1px solid var(--border-color)', background: 'var(--surface-1)', color: 'var(--text-primary)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '0.81rem', lineHeight: 1.5, resize: 'vertical' }}
+								style={{
+									width: '100%',
+									height: '520px',
+									padding: '1rem',
+									borderRadius: '14px',
+									border: '1px solid var(--border-color)',
+									background: 'var(--surface-1)',
+									color: 'var(--text-primary)',
+									fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+									fontSize: '0.81rem',
+									lineHeight: 1.5,
+									resize: 'vertical',
+								}}
 							/>
 
 							<h3 className='settings-subsection-title' style={{ marginTop: '2rem' }}>
 								{t('settings.ingredientJsonTemplate')}
 							</h3>
-							<p className='settings-card-description'>{t('settings.ingredientJsonTemplateDesc')}</p>
+							<p className='settings-card-description'>
+								{t('settings.ingredientJsonTemplateDesc')}
+							</p>
 							<p className='settings-card-description' style={{ marginTop: '-0.25rem' }}>
 								{t('settings.ingredientJsonTemplateHint')}
 							</p>
@@ -1933,7 +1991,19 @@ export function SettingsContainer() {
 							<textarea
 								readOnly
 								value={aiIngredientTemplate}
-								style={{ width: '100%', height: '420px', padding: '1rem', borderRadius: '14px', border: '1px solid var(--border-color)', background: 'var(--surface-1)', color: 'var(--text-primary)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '0.81rem', lineHeight: 1.5, resize: 'vertical' }}
+								style={{
+									width: '100%',
+									height: '420px',
+									padding: '1rem',
+									borderRadius: '14px',
+									border: '1px solid var(--border-color)',
+									background: 'var(--surface-1)',
+									color: 'var(--text-primary)',
+									fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+									fontSize: '0.81rem',
+									lineHeight: 1.5,
+									resize: 'vertical',
+								}}
 							/>
 
 							<h3 className='settings-subsection-title' style={{ marginTop: '2rem' }}>
@@ -1948,7 +2018,19 @@ export function SettingsContainer() {
 							<textarea
 								readOnly
 								value={aiProductTemplate}
-								style={{ width: '100%', height: '220px', padding: '1rem', borderRadius: '14px', border: '1px solid var(--border-color)', background: 'var(--surface-1)', color: 'var(--text-primary)', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '0.81rem', lineHeight: 1.5, resize: 'vertical' }}
+								style={{
+									width: '100%',
+									height: '220px',
+									padding: '1rem',
+									borderRadius: '14px',
+									border: '1px solid var(--border-color)',
+									background: 'var(--surface-1)',
+									color: 'var(--text-primary)',
+									fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+									fontSize: '0.81rem',
+									lineHeight: 1.5,
+									resize: 'vertical',
+								}}
 							/>
 						</div>
 					)}
@@ -2609,12 +2691,61 @@ export function SettingsContainer() {
 							<h2 className='settings-card-title'>{t('settings.displaySection')}</h2>
 							<p className='settings-card-description'>{t('settings.displaySectionDesc')}</p>
 
+							<section className='recipe-view-settings' aria-labelledby='recipe-view-heading'>
+								<h3 id='recipe-view-heading' className='settings-subsection-title'>
+									{t('settings.recipeViewTitle')}
+								</h3>
+								<p className='settings-card-description'>{t('settings.recipeViewDesc')}</p>
+								<div className='recipe-view-configurator'>
+									<div className='recipe-view-options' role='radiogroup'>
+										{(['minimal', 'visual'] as RecipeCardStyle[]).map((style) => (
+											<label
+												key={style}
+												className={`recipe-view-option${recipeCardStyle === style ? ' active' : ''}`}>
+												<input
+													type='radio'
+													name='recipe-card-style'
+													value={style}
+													checked={recipeCardStyle === style}
+													onChange={() => void handleRecipeCardStyleChange(style)}
+												/>
+												<span className='recipe-view-option-copy'>
+													<strong>{t(`settings.recipeView_${style}`)}</strong>
+													<small>{t(`settings.recipeView_${style}Desc`)}</small>
+												</span>
+											</label>
+										))}
+									</div>
+									<div
+										className='recipe-view-preview'
+										aria-label={t('settings.recipeViewPreview')}>
+										<span className='recipe-view-preview-label'>
+											{t('settings.recipeViewPreview')}
+										</span>
+										<div className='recipe-view-preview-card' aria-hidden='true'>
+											<ItemCard
+												item={RECIPE_CARD_PREVIEW}
+												currentUserId={1}
+												onDelete={() => undefined}
+												onAddToWeek={() => undefined}
+												onDownloadPdf={() => undefined}
+												editPath='/settings'
+												detailPath='/settings'
+												variant={recipeCardStyle}
+											/>
+										</div>
+									</div>
+								</div>
+							</section>
+
+							<h3 className='settings-subsection-title settings-pagination-title'>
+								{t('settings.paginationTitle')}
+							</h3>
+
 							<div className='pagination-settings-grid'>
 								{(['recipes', 'ingredients', 'home'] as PageSizeScope[]).map((scope) => (
 									<div className='form-group' key={scope}>
-										<label className='form-label'>
-											{t(`settings.itemsPerPage_${scope}`)}
-										</label>
+										<label className='form-label'>{t(`settings.itemsPerPage_${scope}`)}</label>
 										<div className='page-size-options'>
 											{PAGE_SIZE_OPTIONS.map((size) => (
 												<button

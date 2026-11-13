@@ -1,6 +1,14 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { profileService } from '@/services/profile'
 import { Recipe } from '@/services/recipe'
+import {
+	getStoredRecipeCardStyle,
+	RECIPE_CARD_STYLE_EVENT,
+	RecipeCardStyle,
+	setStoredRecipeCardStyle,
+} from '@/utils/recipeCardStyle'
 
 import { RecipeCard } from './RecipeCard'
 
@@ -28,6 +36,32 @@ export function RecipeList({
 	showingHidden = false,
 }: RecipeListProps) {
 	const { t } = useTranslation()
+	const [cardStyle, setCardStyle] = useState<RecipeCardStyle>(getStoredRecipeCardStyle)
+
+	useEffect(() => {
+		const handleStyleChange = (event: Event) => {
+			setCardStyle((event as CustomEvent<RecipeCardStyle>).detail || getStoredRecipeCardStyle())
+		}
+		const handleStorage = () => setCardStyle(getStoredRecipeCardStyle())
+		window.addEventListener(RECIPE_CARD_STYLE_EVENT, handleStyleChange)
+		window.addEventListener('storage', handleStorage)
+		return () => {
+			window.removeEventListener(RECIPE_CARD_STYLE_EVENT, handleStyleChange)
+			window.removeEventListener('storage', handleStorage)
+		}
+	}, [])
+
+	useEffect(() => {
+		void profileService
+			.getProfile()
+			.then((profile) => {
+				if (profile.recipeCardStyle === 'minimal' || profile.recipeCardStyle === 'visual') {
+					setStoredRecipeCardStyle(profile.recipeCardStyle)
+					setCardStyle(profile.recipeCardStyle)
+				}
+			})
+			.catch(() => undefined)
+	}, [])
 
 	if (recipes.length === 0) {
 		return (
@@ -41,7 +75,7 @@ export function RecipeList({
 	}
 
 	return (
-		<div className='grid grid-4'>
+		<div className={`recipe-list-grid recipe-list-grid--${cardStyle}`}>
 			{recipes.map((recipe) => (
 				<RecipeCard
 					key={recipe.id}
@@ -53,6 +87,7 @@ export function RecipeList({
 					onSelect={onToggleSelect}
 					onHide={onHide}
 					onUnhide={onUnhide}
+					variant={cardStyle}
 				/>
 			))}
 		</div>
